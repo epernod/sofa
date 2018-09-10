@@ -167,6 +167,14 @@ LCPForceFeedback<DataTypes>::LCPForceFeedback()
     timer_iterations = 0;
 }
 
+template <class DataTypes>
+LCPForceFeedback<DataTypes>::~LCPForceFeedback()
+{
+    std::cout << " ~LCPForceFeedback()" << std::endl;
+    //delete(_timer);
+    std::cout << " ~LCPForceFeedback() Over" << std::endl;
+}
+
 
 template <class DataTypes>
 void LCPForceFeedback<DataTypes>::init()

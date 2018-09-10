@@ -212,7 +212,7 @@ void EdgeSetTopologyModifier::removeEdgesProcess(const sofa::helper::vector<unsi
 {
     if(!m_container->hasEdges())	// this method should only be called when edges exist
     {
-        msg_warning() << "Edge array is empty.";
+        //msg_warning() << "Edge array is empty.";
         return;
     }
 

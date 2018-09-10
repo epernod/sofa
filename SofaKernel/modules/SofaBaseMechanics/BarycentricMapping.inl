@@ -2037,10 +2037,12 @@ void BarycentricMapperQuadSetTopology<In,Out>::applyJT ( typename In::VecDeriv& 
 
 template <class In, class Out>
 void BarycentricMapperTetrahedronSetTopology<In,Out>::applyJT ( typename In::VecDeriv& out, const typename Out::VecDeriv& in )
-{
+{    
     const sofa::helper::vector<core::topology::BaseMeshTopology::Tetrahedron>& tetrahedra = this->fromTopology->getTetrahedra();
-
     ForceMask& mask = *this->maskFrom;
+     
+    if (this->maskTo->size() != map.getValue().size())
+        this->maskTo->resize(map.getValue().size());
 
     for( size_t i=0 ; i<this->maskTo->size() ; ++i)
     {
@@ -2051,6 +2053,7 @@ void BarycentricMapperTetrahedronSetTopology<In,Out>::applyJT ( typename In::Vec
         const OutReal fy = ( OutReal ) map.getValue()[i].baryCoords[1];
         const OutReal fz = ( OutReal ) map.getValue()[i].baryCoords[2];
         int index = map.getValue()[i].in_index;
+
         const core::topology::BaseMeshTopology::Tetrahedron& tetra = tetrahedra[index];
         out[tetra[0]] += v * ( 1-fx-fy-fz );
         out[tetra[1]] += v * fx;
