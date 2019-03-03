@@ -65,7 +65,8 @@ public:
     void addFirstPath(const std::string& path);
 
     /// Replaces every occurrences of "//" by "/"
-    std::string cleanPath( const std::string& path );
+    /// @deprecated Use FileSystem::cleanPath instead.
+    static std::string cleanPath(const std::string& path);
 
     /// Adds a path to the back of the set of paths.
     void addLastPath(const std::string& path);
@@ -87,6 +88,8 @@ public:
     static std::string relativeToPath(std::string path, std::string refPath, bool doLowerCaseOnWin32=true);
 
     const std::vector< std::string > &getPaths() const {return vpath;}
+
+    const std::string getPathsJoined();
 
     const std::string& getDirectAccessProtocolPrefix() const { return directAccessProtocolPrefix; }
     void setDirectAccessProtocolPrefix(const std::string& protocolPrefix) { directAccessProtocolPrefix = protocolPrefix; }
