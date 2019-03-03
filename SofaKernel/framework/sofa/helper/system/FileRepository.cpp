@@ -127,26 +127,16 @@ FileRepository::~FileRepository()
 {
 }
 
-std::string FileRepository::cleanPath( const std::string& path )
+std::string FileRepository::cleanPath(const std::string& path)
 {
-    std::string p = path;
-    size_t pos = p.find("//");
-    size_t len = p.length();
-    while( pos != std::string::npos )
-    {
-        if ( pos == (len-2))
-            p.replace( pos, 2, "");
-        else
-            p.replace(pos,2,"/");
-        pos = p.find("//");
-    }
-    return p;
+    msg_deprecated("FileRepository::cleanPath") << "Use FileSystem::cleanPath instead.";
+    return FileSystem::cleanPath(path);
 }
 
 void FileRepository::addFirstPath(const std::string& p)
 {
     // replacing every occurences of "//" by "/"
-    std::string path = cleanPath( p );
+    std::string path = FileSystem::cleanPath(p);
 
     std::vector<std::string> entries;
     size_t p0 = 0;
@@ -166,7 +156,7 @@ void FileRepository::addFirstPath(const std::string& p)
 void FileRepository::addLastPath(const std::string& p)
 {
     // replacing every occurences of "//" by "/"
-    std::string path = cleanPath( p );
+    std::string path = FileSystem::cleanPath(p);
 
     std::vector<std::string> entries;
     size_t p0 = 0;
@@ -280,6 +270,19 @@ void FileRepository::print()
 {
     for (std::vector<std::string>::const_iterator it = vpath.begin(); it != vpath.end(); ++it)
         std::cout << *it << std::endl;
+}
+
+const std::string FileRepository::getPathsJoined()
+{
+    std::ostringstream imploded;
+    char* delim = ":";
+#ifdef WIN32
+    delim = ";";
+#endif
+    std::copy(vpath.begin(), vpath.end(), std::ostream_iterator<std::string>(imploded, delim));
+    std::string implodedStr = imploded.str();
+    implodedStr = implodedStr.substr(0, implodedStr.size()-1); // remove trailing separator
+    return implodedStr;
 }
 
 /*static*/

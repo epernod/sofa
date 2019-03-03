@@ -49,16 +49,16 @@ namespace collision
 
 template<class DataTypes>
 TTriangleModel<DataTypes>::TTriangleModel()
-    : bothSide(initData(&bothSide, false, "bothSide", "activate collision on both side of the triangle model") )
-    , computeNormals(initData(&computeNormals, true, "computeNormals", "set to false to disable computation of triangles normal"))
+    : d_bothSide(initData(&d_bothSide, false, "bothSide", "activate collision on both side of the triangle model") )
+    , d_computeNormals(initData(&d_computeNormals, true, "computeNormals", "set to false to disable computation of triangles normal"))
     , m_mstate(NULL)
     , m_topology(NULL)
-    , needsUpdate(true)
+    , m_needsUpdate(true)
     , m_topologyRevision(-1)
     , m_pointModels(NULL)
     , m_lmdFilter(NULL)
 {
-    p_triangles = &my_triangles;
+    m_triangles = &m_internalTriangles;
     enum_type = TRIANGLE_TYPE;
 }
 
@@ -66,7 +66,7 @@ template<class DataTypes>
 void TTriangleModel<DataTypes>::resize(int size)
 {
     this->core::CollisionModel::resize(size);
-    normals.resize(size);
+    m_normals.resize(size);
 }
 
 template<class DataTypes>
@@ -115,7 +115,7 @@ void TTriangleModel<DataTypes>::init()
     else
     {
         // just redirect to the topology buffer.
-        p_triangles = &m_topology->getTriangles();
+        m_triangles = &m_topology->getTriangles();
         resize(m_topology->getNbTriangles());
         updateNormals();
     }
@@ -150,23 +150,18 @@ void TTriangleModel<DataTypes>::updateFromTopology()
 
     if (nquads == 0) // only triangles
     {
-        if (ntris == (unsigned)size) // revision changed but no changes on the triangulation.
-            return;
-
         resize(ntris);
-        p_triangles = & m_topology->getTriangles();
+        m_triangles = & m_topology->getTriangles();
     }
     else
     {
         const unsigned newsize = ntris+2*nquads;
-
-        if (newsize==(unsigned)size) // revision changed but no changes on the triangulation/quads.
-            return;
-
         const unsigned npoints = m_mstate->getSize();
 
-        p_triangles = &my_triangles;
-        my_triangles.resize(newsize);
+        m_triangles = &m_internalTriangles;
+        m_internalTriangles.resize(newsize);
+        resize(newsize);
+
         int index = 0;
         for (unsigned i=0; i<ntris; i++)
         {
@@ -178,7 +173,7 @@ void TTriangleModel<DataTypes>::updateFromTopology()
                 if (idx[1] >= npoints) idx[1] = npoints-1;
                 if (idx[2] >= npoints) idx[2] = npoints-1;
             }
-            my_triangles[index] = idx;
+            m_internalTriangles[index] = idx;
             ++index;
         }
         for (unsigned i=0; i<nquads; i++)
@@ -192,13 +187,13 @@ void TTriangleModel<DataTypes>::updateFromTopology()
                 if (idx[2] >= npoints) idx[2] = npoints-1;
                 if (idx[3] >= npoints) idx[3] = npoints-1;
             }
-            my_triangles[index][0] = idx[1];
-            my_triangles[index][1] = idx[2];
-            my_triangles[index][2] = idx[0];
+            m_internalTriangles[index][0] = idx[1];
+            m_internalTriangles[index][1] = idx[2];
+            m_internalTriangles[index][2] = idx[0];
             ++index;
-            my_triangles[index][0] = idx[3];
-            my_triangles[index][1] = idx[0];
-            my_triangles[index][2] = idx[2];
+            m_internalTriangles[index][0] = idx[3];
+            m_internalTriangles[index][1] = idx[0];
+            m_internalTriangles[index][2] = idx[2];
             ++index;
         }
     }
@@ -206,22 +201,22 @@ void TTriangleModel<DataTypes>::updateFromTopology()
     updateNormals();
 
     // topology has changed, force boudingTree recomputation
-    needsUpdate = true;
+    m_needsUpdate = true;
 }
 
 template<class DataTypes>
 void TTriangleModel<DataTypes>::updateFlags(int /*ntri*/)
 {
 #if 0
-    if (ntri < 0) ntri = p_triangles->size();
+    if (ntri < 0) ntri = m_triangles->size();
     //VecCoord& x =m_mstate->read(core::ConstVecCoordId::position())->getValue();
     //VecDeriv& v = m_mstate->read(core::ConstVecDerivId::velocity())->getValue();
     vector<bool> pflags(m_mstate->getSize());
     std::set<std::pair<int,int> > eflags;
-    for (unsigned i=0; i<p_triangles->size(); i++)
+    for (unsigned i=0; i<m_triangles->size(); i++)
     {
         int f = 0;
-        topology::Triangle t = (*p_triangles)[i];
+        topology::Triangle t = (*m_triangles)[i];
         if (!pflags[t[0]])
         {
             f |= FLAG_P1;
@@ -301,17 +296,17 @@ void TTriangleModel<DataTypes>::computeBoundingTree(int maxDepth)
     if (m_topology->getRevision() != m_topologyRevision)
         updateFromTopology();
 
-    if (needsUpdate && !cubeModel->empty()) cubeModel->resize(0);
+    if (m_needsUpdate && !cubeModel->empty()) cubeModel->resize(0);
 
-    if (!isMoving() && !cubeModel->empty() && !needsUpdate) return; // No need to recompute BBox if immobile nor if mesh didn't change.
+    if (!isMoving() && !cubeModel->empty() && !m_needsUpdate) return; // No need to recompute BBox if immobile nor if mesh didn't change.
 
     // set to false to avoid excesive loop
-    needsUpdate=false;
+    m_needsUpdate=false;
 
     defaulttype::Vector3 minElem, maxElem;
     const VecCoord& x = this->m_mstate->read(core::ConstVecCoordId::position())->getValue();
 
-    const bool calcNormals = computeNormals.getValue();
+    const bool calcNormals = d_computeNormals.getValue();
 
     cubeModel->resize(size);  // size = number of triangles
     if (!empty())
@@ -363,10 +358,10 @@ void TTriangleModel<DataTypes>::computeContinuousBoundingTree(double dt, int max
     if (m_topology->getRevision() != m_topologyRevision)
         updateFromTopology();
 
-    if (needsUpdate) cubeModel->resize(0);
-    if (!isMoving() && !cubeModel->empty() && !needsUpdate) return; // No need to recompute BBox if immobile nor if mesh didn't change.
+    if (m_needsUpdate) cubeModel->resize(0);
+    if (!isMoving() && !cubeModel->empty() && !m_needsUpdate) return; // No need to recompute BBox if immobile nor if mesh didn't change.
 
-    needsUpdate=false;
+    m_needsUpdate=false;
     defaulttype::Vector3 minElem, maxElem;
 
     cubeModel->resize(size);
@@ -430,7 +425,7 @@ template<class DataTypes>
 int TTriangleModel<DataTypes>::getTriangleFlags(Topology::TriangleID i)
 {
     int f = 0;
-    sofa::core::topology::BaseMeshTopology::Triangle t = (*p_triangles)[i];
+    sofa::core::topology::BaseMeshTopology::Triangle t = (*m_triangles)[i];
 
     if (i < m_topology->getNbTriangles())
     {
@@ -514,7 +509,7 @@ void TTriangleModel<DataTypes>::draw(const core::visual::VisualParams* vparams)
         if (m_topology->getRevision() != m_topologyRevision)
             return;
 
-        if (bothSide.getValue() || vparams->displayFlags().getShowWireFrame())
+        if (d_bothSide.getValue() || vparams->displayFlags().getShowWireFrame())
             vparams->drawTool()->setPolygonMode(0,vparams->displayFlags().getShowWireFrame());
         else
         {
