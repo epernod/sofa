@@ -1,6 +1,6 @@
 /******************************************************************************
 *       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2018 INRIA, USTL, UJF, CNRS, MGH                    *
+*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -740,7 +740,7 @@ void EdgeSetGeometryAlgorithms<DataTypes>::draw(const core::visual::VisualParams
 
 
     // Draw edges
-    if (_draw.getValue() && this->m_topology->getNbEdges() != 0)
+    if (d_drawEdges.getValue() && this->m_topology->getNbEdges() != 0)
     {
         const sofa::helper::vector<Edge> &edgeArray = this->m_topology->getEdges();
 
@@ -754,7 +754,7 @@ void EdgeSetGeometryAlgorithms<DataTypes>::draw(const core::visual::VisualParams
             positions.push_back(defaulttype::Vector3(DataTypes::getCPos(coords[e[0]])));
             positions.push_back(defaulttype::Vector3(DataTypes::getCPos(coords[e[1]])));
         }
-        vparams->drawTool()->drawLines(positions,1.0f, _drawColor.getValue());
+        vparams->drawTool()->drawLines(positions, 1.0f, _drawColor.getValue());
         vparams->drawTool()->drawPoints(positions, 4.0f, _drawColor.getValue());
     }
 
