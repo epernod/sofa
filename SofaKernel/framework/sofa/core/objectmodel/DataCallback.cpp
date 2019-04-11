@@ -19,41 +19,72 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include <SofaHaptics/NullForceFeedbackT.h>
-#include <sofa/core/ObjectFactory.h>
-
-using namespace std;
+#include <sofa/core/objectmodel/DataCallback.h>
 
 namespace sofa
 {
-namespace component
+
+namespace core
 {
-namespace controller
+
+namespace objectmodel
 {
 
-//void NullForceFeedback::init()
-//{
-//	this->ForceFeedback::init();
-//};
-//
-//void NullForceFeedback::computeForce(SReal /*x*/, SReal /*y*/, SReal /*z*/, SReal /*u*/, SReal /*v*/, SReal /*w*/, SReal /*q*/, SReal& fx, SReal& fy, SReal& fz)
-//{
-//	fx = fy = fz = 0.0;
-//};
-//
-//void NullForceFeedback::computeWrench(const SolidTypes<SReal>::Transform &/*world_H_tool*/, const SolidTypes<SReal>::SpatialVector &/*V_tool_world*/, SolidTypes<SReal>::SpatialVector &W_tool_world )
-//{
-//	W_tool_world.clear();
-//};
-int nullForceFeedbackTClass = sofa::core::RegisterObject("Null force feedback for haptic feedback device")
-        .add< NullForceFeedbackT<sofa::defaulttype::Vec1Types> >()
-        .add< NullForceFeedbackT<sofa::defaulttype::Rigid3Types> >()
+void DataCallback::addInputs(std::initializer_list<BaseData*> data)
+{
+    for(BaseData* d : data)
+    {
+        addInput(d);
+    }
+}
 
-        ;
+void DataCallback::addCallback(std::function<void(void)> f)
+{
+    m_callbacks.push_back(f);
+}
 
-//int nullForceFeedbackClass = sofa::core::RegisterObject("Null force feedback for haptic feedback device")
-//    .add< NullForceFeedback >();
+void DataCallback::notifyEndEdit(const core::ExecParams* params)
+{
+    if (!m_updating)
+    {
+        m_updating = true;
+        for (auto& callback : m_callbacks)
+            callback();
 
-} // namespace controller
-} // namespace component
-} // namespace sofa
+        sofa::core::objectmodel::DDGNode::notifyEndEdit(params);
+        m_updating = false;
+    }
+    else
+    {
+        msg_warning("DataCallback") << "A DataCallback seems to have a circular dependency, please fix it to remove this warning.";
+    }
+}
+
+const std::string& DataCallback::getName() const
+{
+    static std::string s="";
+    return s;
+}
+
+sofa::core::objectmodel::Base* DataCallback::getOwner() const
+{
+    return nullptr;
+}
+
+sofa::core::objectmodel::BaseData* DataCallback::getData() const
+{
+    return nullptr;
+}
+
+void DataCallback::update()
+{
+
+}
+
+} /// namespace objectmodel
+
+} /// namespace core
+
+} /// namespace sofa
+
+

@@ -158,8 +158,8 @@ const sofa::helper::vector<EdgeSetTopologyContainer::Edge> &EdgeSetTopologyConta
 
 const sofa::helper::vector<EdgeSetTopologyContainer::Edge> &EdgeSetTopologyContainer::getEdgeArray()
 {
-    if(CHECK_TOPOLOGY && !hasEdges() && getNbPoints()>0)
-        msg_warning() << "Edge array is empty with " << getNbPoints() << " vertices.";
+    if(CHECK_TOPOLOGY)
+        msg_warning_when(!hasEdges() && getNbPoints()>0) << "Edge array is empty with " << getNbPoints() << " vertices.";
 
     return d_edge.getValue();
 }
@@ -194,7 +194,7 @@ EdgeSetTopologyContainer::EdgeID EdgeSetTopologyContainer::getEdgeIndex(PointID 
 const EdgeSetTopologyContainer::Edge EdgeSetTopologyContainer::getEdge (EdgeID i)
 {
     if ((size_t)i >= getNbEdges())
-        return sofa::core::topology::InvalidEdge;
+        return InvalidEdge;
     else
         return (d_edge.getValue())[i];
 }
@@ -513,8 +513,8 @@ size_t EdgeSetTopologyContainer::getNumberOfElements() const
 
 const sofa::helper::vector< sofa::helper::vector<EdgeSetTopologyContainer::EdgeID> > &EdgeSetTopologyContainer::getEdgesAroundVertexArray()
 {
-    if(CHECK_TOPOLOGY && m_edgesAroundVertex.empty())
-        msg_warning() << "EdgesAroundVertex shell array is empty.";
+    if(CHECK_TOPOLOGY)
+        msg_warning_when(m_edgesAroundVertex.empty()) << "EdgesAroundVertex shell array is empty.";
 
     return m_edgesAroundVertex;
 }
@@ -526,7 +526,7 @@ const EdgeSetTopologyContainer::EdgesAroundVertex& EdgeSetTopologyContainer::get
     else if(CHECK_TOPOLOGY)
         msg_error() << "EdgesAroundVertex array access out of bounds: " << id << " >= " << m_edgesAroundVertex.size();
 
-    return sofa::core::topology::InvalidSet;
+    return InvalidSet;
 }
 
 sofa::helper::vector< EdgeSetTopologyContainer::EdgeID > &EdgeSetTopologyContainer::getEdgesAroundVertexForModification(const PointID i)

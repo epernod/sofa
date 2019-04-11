@@ -19,11 +19,8 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_COMPONENT_CONTROLLER_NULLFORCEFEEDBACK_H
-#define SOFA_COMPONENT_CONTROLLER_NULLFORCEFEEDBACK_H
-#include "config.h"
-
-#include <SofaHaptics/ForceFeedback.h>
+#include <sofa/helper/system/config.h>
+#include <SofaHaptics/initHaptics.h>
 
 namespace sofa
 {
@@ -31,29 +28,50 @@ namespace sofa
 namespace component
 {
 
-namespace controller
+
+extern "C" {
+SOFA_SOFAHAPTICS_API void initExternalModule();
+SOFA_SOFAHAPTICS_API const char* getModuleName();
+SOFA_SOFAHAPTICS_API const char* getModuleVersion();
+SOFA_SOFAHAPTICS_API const char* getModuleLicense();
+SOFA_SOFAHAPTICS_API const char* getModuleDescription();
+SOFA_SOFAHAPTICS_API const char* getModuleComponentList();
+}
+
+void initExternalModule()
 {
+    static bool first = true;
+    if (first)
+    {
+        first = false;
+    }
+}
 
-/**
-* Device driver force field
-*/
-class SOFA_HAPTICS_API NullForceFeedback : public sofa::component::controller::ForceFeedback
+const char* getModuleName()
 {
+    return "SofaHaptics";
+}
 
-public:
-    SOFA_CLASS(NullForceFeedback,sofa::component::controller::ForceFeedback);
-    void init() override;
+const char* getModuleVersion()
+{
+    return "1.0";
+}
 
-    void computeForce(SReal x, SReal y, SReal z, SReal u, SReal v, SReal w, SReal q, SReal& fx, SReal& fy, SReal& fz) override;
-    void computeWrench(const sofa::defaulttype::SolidTypes<SReal>::Transform &world_H_tool, const sofa::defaulttype::SolidTypes<SReal>::SpatialVector &V_tool_world, sofa::defaulttype::SolidTypes<SReal>::SpatialVector &W_tool_world ) override;
+const char* getModuleLicense()
+{
+    return "LGPL";
+}
 
+const char* getModuleDescription()
+{
+    return "This module contains the base infrastructure for haptics rendering in Sofa.";
+}
 
-};
-
-} // namespace controller
+const char* getModuleComponentList()
+{
+    return "NullForceFeedback LCPForceFeedback";
+}
 
 } // namespace component
 
 } // namespace sofa
-
-#endif

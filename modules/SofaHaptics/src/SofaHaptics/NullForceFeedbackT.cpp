@@ -19,56 +19,22 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_COMPONENT_CONTROLLER_FORCEFEEDBACK_H
-#define SOFA_COMPONENT_CONTROLLER_FORCEFEEDBACK_H
-#include "config.h"
+#include <SofaHaptics/NullForceFeedbackT.h>
+#include <sofa/core/ObjectFactory.h>
 
-#include <sofa/simulation/Node.h>
-#include <sofa/core/behavior/BaseController.h>
-#include <sofa/defaulttype/SolidTypes.h>
-#include <sofa/defaulttype/RigidTypes.h>
+using namespace std;
 
 namespace sofa
 {
-
 namespace component
 {
-
 namespace controller
 {
 
-
-/**
-* Device driver force field
-*/
-class SOFA_HAPTICS_API ForceFeedback : public core::behavior::BaseController
-{
-
-public:
-    SOFA_CLASS(ForceFeedback,core::behavior::BaseController);
-    Data<bool> f_activate; ///< boolean to activate or deactivate the forcefeedback
-    Data<int> indice; ///< Tool indice in the OmniDriver
-
-
-    simulation::Node *context;
-protected:
-    ForceFeedback():
-        f_activate(initData(&f_activate, false, "activate", "boolean to activate or deactivate the forcefeedback"))
-        , indice(initData(&indice, 0, "indice", "Tool indice in the OmniDriver"))
-    {
-    }
-public:
-    void init() override {context = dynamic_cast<simulation::Node *>(this->getContext());};
-    virtual void computeForce(SReal x, SReal y, SReal z, SReal u, SReal v, SReal w, SReal q, SReal& fx, SReal& fy, SReal& fz) = 0;
-    virtual void computeWrench(const sofa::defaulttype::SolidTypes<SReal>::Transform &, const sofa::defaulttype::SolidTypes<SReal>::SpatialVector &, sofa::defaulttype::SolidTypes<SReal>::SpatialVector & )=0;
-    virtual bool isEnabled() { return this->getContext()->isActive(); }
-    virtual void setReferencePosition(sofa::defaulttype::SolidTypes<SReal>::Transform& /*referencePosition*/) {};
-};
+static int nullForceFeedbackTClass = sofa::core::RegisterObject("Null force feedback for haptic feedback device")
+        .add< NullForceFeedbackT<sofa::defaulttype::Vec1Types> >()
+        .add< NullForceFeedbackT<sofa::defaulttype::Rigid3Types> >();
 
 } // namespace controller
-
 } // namespace component
-
 } // namespace sofa
-
-#endif
