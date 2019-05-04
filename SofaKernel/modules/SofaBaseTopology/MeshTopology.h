@@ -322,7 +322,6 @@ public:
 
     //virtual const helper::vector <PointID>& getPointsOnBorder();
 
-
 public:
     typedef helper::vector<defaulttype::Vec<3, SReal > > SeqPoints;
     Data< SeqPoints > seqPoints; ///< List of point positions

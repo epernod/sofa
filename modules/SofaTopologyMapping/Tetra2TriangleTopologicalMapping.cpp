@@ -427,7 +427,6 @@ void Tetra2TriangleTopologicalMapping::updateTopologicalMappingTopDown()
             }
 
             m_outTopoModifier->addTriangles(triangles_to_create);
-
             break;
         }
 
