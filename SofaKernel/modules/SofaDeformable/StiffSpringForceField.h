@@ -29,7 +29,7 @@
 #include <SofaDeformable/SpringForceField.h>
 #include <sofa/defaulttype/Mat.h>
 #include <sofa/core/MechanicalParams.h>
-
+#include <SofaBaseTopology/TopologySubsetData.h>
 
 namespace sofa
 {
@@ -61,6 +61,8 @@ public:
 
     typedef core::objectmodel::Data<VecDeriv>    DataVecDeriv;
     typedef core::objectmodel::Data<VecCoord>    DataVecCoord;
+    typedef helper::vector<unsigned int> SetIndexArray;
+    typedef sofa::component::topology::PointSubsetData< SetIndexArray > SetIndex;
 
 
     typedef typename Inherit::Spring Spring;
@@ -69,6 +71,9 @@ public:
     enum { N=DataTypes::spatial_dimensions };
     typedef defaulttype::Mat<N,N,Real> Mat;
 
+    SetIndex f_indices1; ///< Indices of the source points on the first model
+    SetIndex f_indices2; ///< Indices of the fixed points on the second model
+    core::objectmodel::Data<SReal> d_length;
 protected:
     sofa::helper::vector<Mat>  dfdx;
 
@@ -81,11 +86,17 @@ protected:
 
     StiffSpringForceField(MechanicalState* object1, MechanicalState* object2, double ks=100.0, double kd=5.0)
         : SpringForceField<DataTypes>(object1, object2, ks, kd)
+        , f_indices1( initData(&f_indices1,"indices1","Indices of the source points on the first model") )
+        , f_indices2( initData(&f_indices2,"indices2","Indices of the fixed points on the second model") )
+        , d_length(initData(&d_length, static_cast<Real>(0.0), "length", "uniform length of all springs"))
     {
     }
 
     StiffSpringForceField(double ks=100.0, double kd=5.0)
         : SpringForceField<DataTypes>(ks, kd)
+        , f_indices1( initData(&f_indices1,"indices1","Indices of the source points on the first model") )
+        , f_indices2( initData(&f_indices2,"indices2","Indices of the fixed points on the second model") )
+        , d_length(initData(&d_length, static_cast<Real>(0.0), "length", "uniform length of all springs"))
     {
     }
 public:

@@ -29,7 +29,7 @@
 #include <sofa/helper/AdvancedTimer.h>
 
 #include <sofa/core/visual/VisualParams.h>
-
+#include <SofaBaseTopology/TopologySubsetData.inl>
 namespace sofa
 {
 
@@ -43,6 +43,21 @@ namespace interactionforcefield
 template<class DataTypes>
 void StiffSpringForceField<DataTypes>::init()
 {
+    if (f_indices1.isSet() && f_indices2.isSet() && (f_indices1.getValue().size() == f_indices2.getValue().size()))
+    {
+        helper::vector<Spring>& _springs = *this->springs.beginEdit();
+        const SetIndexArray & indices1 = f_indices1.getValue();
+        const SetIndexArray & indices2 = f_indices2.getValue();
+        const SReal& _ks = this->ks.getValue();
+        const SReal& _kd = this->kd.getValue();
+        const SReal& _length = d_length.getValue();
+        for (unsigned int i=0; i<indices1.size(); ++i)
+            _springs.push_back(Spring(indices1[i], indices2[i], _ks, _kd, _length));
+
+        this->springs.endEdit();
+    }
+
+
     this->SpringForceField<DataTypes>::init();
 }
 
