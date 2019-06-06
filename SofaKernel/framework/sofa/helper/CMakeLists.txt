@@ -235,7 +235,7 @@ if(Boost_thread_FOUND)
     list(APPEND SOURCE_FILES system/thread/TimeoutWatchdog.cpp)
 endif()
 
-if(Boost_FILESYSTEM_FOUND AND Boost_LOCALE_FOUND)
+if(Boost_FILESYSTEM_FOUND)
     list(APPEND HEADER_FILES system/FileRepository.h)
     list(APPEND SOURCE_FILES system/FileRepository.cpp)
 endif()
@@ -296,7 +296,7 @@ find_package(FFMPEGexec QUIET)
 if (FFMPEG_EXEC_FOUND AND NOT SOFA_NO_OPENGL)
 	list(APPEND HEADER_FILES gl/VideoRecorderFFMPEG.h)
     list(APPEND SOURCE_FILES gl/VideoRecorderFFMPEG.cpp)
-endif( FFMPEG_EXEC_FOUND)
+endif()
 
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SHADER_FILES} ${SOURCE_FILES})
@@ -343,10 +343,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 list(REMOVE_DUPLICATES SOFAFRAMEWORK_DEPENDENCY_INCLUDE_DIRECTORIES)
 target_include_directories(${PROJECT_NAME} SYSTEM
     PUBLIC "$<BUILD_INTERFACE:${SOFAFRAMEWORK_DEPENDENCY_INCLUDE_DIRECTORIES}>"
-    PUBLIC "$<INSTALL_INTERFACE:include/extlibs/WinDepPack>"
     PUBLIC "$<INSTALL_INTERFACE:include/extlibs/Eigen>"
     PUBLIC "$<INSTALL_INTERFACE:include/extlibs/json>"
     )
+if(MSVC)
+    target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC "$<INSTALL_INTERFACE:include/extlibs/WinDepPack>")
+endif()
 
 set(SOFAHELPER_COMPILE_FLAGS "-DSOFA_BUILD_HELPER")
 

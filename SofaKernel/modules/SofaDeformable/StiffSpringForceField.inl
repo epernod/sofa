@@ -39,6 +39,21 @@ namespace component
 namespace interactionforcefield
 {
 
+template<class DataTypes>
+StiffSpringForceField<DataTypes>::StiffSpringForceField(double ks, double kd)
+    : StiffSpringForceField<DataTypes>(nullptr, nullptr, ks, kd)
+{
+}
+
+template<class DataTypes>
+StiffSpringForceField<DataTypes>::StiffSpringForceField(MechanicalState* object1, MechanicalState* object2, double ks, double kd)
+    : SpringForceField<DataTypes>(object1, object2, ks, kd)
+    , f_indices1(initData(&f_indices1, "indices1", "Indices of the source points on the first model"))
+    , f_indices2(initData(&f_indices2, "indices2", "Indices of the fixed points on the second model"))
+    , d_length(initData(&d_length, static_cast<Real>(0.0), "length", "uniform length of all springs"))
+{
+}
+
 
 template<class DataTypes>
 void StiffSpringForceField<DataTypes>::init()

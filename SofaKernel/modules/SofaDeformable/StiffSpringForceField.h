@@ -83,22 +83,9 @@ protected:
     /// Apply the stiffness, i.e. accumulate df given dx
     virtual void addSpringDForce(VecDeriv& df1,const  VecDeriv& dx1, VecDeriv& df2,const  VecDeriv& dx2, int i, const Spring& spring, double kFactor, double bFactor);
 
+    StiffSpringForceField(double ks=100.0, double kd=5.0);
+    StiffSpringForceField(MechanicalState* object1, MechanicalState* object2, double ks=100.0, double kd=5.0);
 
-    StiffSpringForceField(MechanicalState* object1, MechanicalState* object2, double ks=100.0, double kd=5.0)
-        : SpringForceField<DataTypes>(object1, object2, ks, kd)
-        , f_indices1( initData(&f_indices1,"indices1","Indices of the source points on the first model") )
-        , f_indices2( initData(&f_indices2,"indices2","Indices of the fixed points on the second model") )
-        , d_length(initData(&d_length, static_cast<Real>(0.0), "length", "uniform length of all springs"))
-    {
-    }
-
-    StiffSpringForceField(double ks=100.0, double kd=5.0)
-        : SpringForceField<DataTypes>(ks, kd)
-        , f_indices1( initData(&f_indices1,"indices1","Indices of the source points on the first model") )
-        , f_indices2( initData(&f_indices2,"indices2","Indices of the fixed points on the second model") )
-        , d_length(initData(&d_length, static_cast<Real>(0.0), "length", "uniform length of all springs"))
-    {
-    }
 public:
     void init() override;
 
