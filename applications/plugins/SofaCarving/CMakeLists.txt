@@ -35,10 +35,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${SOFACARVING_VERSION})
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${HEADER_FILES}")
 
 ## Install rules for the library and headers; CMake package configurations files
-sofa_create_package(SofaCarving ${SOFACARVING_VERSION} SofaCarving SofaCarving)
-
-## Install rules for the resources
-install(DIRECTORY examples/ DESTINATION share/sofa/plugins/${PROJECT_NAME})
+sofa_create_package(${PROJECT_NAME} 1.0 ${PROJECT_NAME} ${PROJECT_NAME})
 
 if(SOFA_BUILD_TESTS)
     find_package(SofaTest QUIET)

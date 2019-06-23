@@ -42,8 +42,7 @@ if(Metis_FOUND)
 endif()
 
 ## Install rules for the library; CMake package configurations files
-sofa_generate_package(NAME SceneCreator VERSION ${SCENECREATOR_VERSION} TARGETS SceneCreator  INCLUDE_INSTALL_DIR SceneCreator)
-
+sofa_create_package(${PROJECT_NAME} 1.0 ${PROJECT_NAME} ${PROJECT_NAME})
 
 ## Add example project to use sceneCreator
 add_subdirectory(sceneCreatorExamples)
