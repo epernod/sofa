@@ -625,6 +625,9 @@ template<class DataTypes>
 void LineCollisionModel<DataTypes>::computeBBox(const core::ExecParams* params, bool onlyVisible)
 {
     if( !onlyVisible ) return;
+    
+    if (!needsUpdate && (!this->isMoving() || !this->isSimulated()))
+        return;
 
     static const Real max_real = std::numeric_limits<Real>::max();
     static const Real min_real = std::numeric_limits<Real>::lowest();

@@ -58,6 +58,7 @@ PointCollisionModel<DataTypes>::PointCollisionModel()
     , PointActiverPath(initData(&PointActiverPath,"PointActiverPath", "path of a component PointActiver that activate or deactivate collision point during execution") )
     , m_lmdFilter( NULL )
     , m_displayFreePosition(initData(&m_displayFreePosition, false, "displayFreePosition", "Display Collision Model Points free position(in green)") )
+    , m_needsUpdate(false)
 {
     enum_type = POINT_TYPE;
 }
@@ -505,6 +506,9 @@ void PointCollisionModel<DataTypes>::computeBBox(const core::ExecParams* params,
 
     const int npoints = mstate->getSize();
     if (npoints != size)
+        return;
+
+    if (!m_needsUpdate && (!this->isMoving() || !this->isSimulated()))
         return;
 
     static const Real max_real = std::numeric_limits<Real>::max();
