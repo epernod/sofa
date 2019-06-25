@@ -33,12 +33,7 @@ if(Metis_FOUND)
 endif()
 
 ## Install rules for the library; CMake package configurations files
-sofa_generate_package(
-    NAME ${PROJECT_NAME}
-    TARGETS ${PROJECT_NAME}
-    VERSION ${PROJECT_VERSION}
-    RELOCATABLE "plugins"
-    )
+sofa_create_package(${PROJECT_NAME} 1.0 ${PROJECT_NAME} ${PROJECT_NAME})
 
 ## Add example project to use sceneCreator
 add_subdirectory(sceneCreatorExamples)
