@@ -117,6 +117,7 @@ public:
     Data<bool> m_handleDynamicTopology; ///< True if topological changes should be handled
     Data<bool> m_fixMergedUVSeams; ///< True if UV seams should be handled even when duplicate UVs are merged
     Data<bool> m_keepLines; ///< keep and draw lines (false by default)
+    Data<bool> m_isFixed; ///< Do not update position at each step
 
     Data< VecCoord > m_vertices2; ///< vertices of the model (only if vertices have multiple normals/texcoords, otherwise positions are used)
     topology::PointData< VecTexCoord > m_vtexcoords; ///< coordinates of the texture

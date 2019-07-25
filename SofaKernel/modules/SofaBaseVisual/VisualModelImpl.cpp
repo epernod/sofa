@@ -193,6 +193,7 @@ VisualModelImpl::VisualModelImpl() //const std::string &name, std::string filena
     , m_handleDynamicTopology (initData   (&m_handleDynamicTopology, true, "handleDynamicTopology", "True if topological changes should be handled"))
     , m_fixMergedUVSeams (initData   (&m_fixMergedUVSeams, true, "fixMergedUVSeams", "True if UV seams should be handled even when duplicate UVs are merged"))
     , m_keepLines (initData   (&m_keepLines, false, "keepLines", "keep and draw lines (false by default)"))
+    , m_isFixed   (initData(&m_isFixed, false, "isFixed", "Visual model is not moving and doesn't need to be recomputed over the simulation"))
     , m_vertices2       (initData   (&m_vertices2, "vertices", "vertices of the model (only if vertices have multiple normals/texcoords, otherwise positions are used)"))
     , m_vtexcoords      (initData   (&m_vtexcoords, "texcoords", "coordinates of the texture"))
     , m_vtangents       (initData   (&m_vtangents, "tangents", "tangents for normal mapping"))
@@ -1249,7 +1250,36 @@ void VisualModelImpl::updateVisual()
             last = m_vtexcoords.getValue().size();
         }
     */
-    if (modified && (!getVertices().empty() || useTopology))
+
+    if (m_isFixed.getValue())
+    {
+        if (m_topology && m_topology->getRevision() != lastMeshRev)
+        {
+            computeMesh();
+            if (m_vtexcoords.getValue().size() == 0)
+                computeUVSphereProjection();
+
+            sofa::helper::AdvancedTimer::stepBegin("VisualModelImpl::computePositions");
+            computePositions();
+            sofa::helper::AdvancedTimer::stepEnd("VisualModelImpl::computePositions");
+
+            sofa::helper::AdvancedTimer::stepBegin("VisualModelImpl::updateBuffers");
+            updateBuffers();
+            sofa::helper::AdvancedTimer::stepEnd("VisualModelImpl::updateBuffers");
+
+            sofa::helper::AdvancedTimer::stepBegin("VisualModelImpl::computeNormals");
+            computeNormals();
+            sofa::helper::AdvancedTimer::stepEnd("VisualModelImpl::computeNormals");
+
+            if (m_updateTangents.getValue())
+            {
+                sofa::helper::AdvancedTimer::stepBegin("VisualModelImpl::computeTangents");
+                computeTangents();
+                sofa::helper::AdvancedTimer::stepEnd("VisualModelImpl::computeTangents");
+            }
+        }
+    }
+    else if (modified && (!getVertices().empty() || useTopology))
     {
         if (useTopology)
         {
