@@ -37,7 +37,7 @@ namespace engine
 using namespace sofa::defaulttype;
 
 int SubsetTopologyClass = core::RegisterObject("Engine used to create subset topology given box, sphere, plan, ...")
-        .add< SubsetTopology<Vec3Types> >()
+        .add< SubsetTopology<Vec3Types> >(true)
         .add< SubsetTopology<Rigid3Types> >()
  
         ;
