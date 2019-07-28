@@ -127,6 +127,7 @@ public:
     void updateButtonStates(bool emitEvent);
     void initDevice(int cptInitPass = 0);
     void clearDevice();
+    void activateTool(bool value) { m_isActivated = value; }
     ForceFeedback::SPtr m_forceFeedback;
 
     /// variable pour affichage graphique
@@ -151,7 +152,7 @@ public:
     bool m_visuActive; ///< Internal boolean to detect activation switch of the draw
     bool m_initVisuDone; ///< Internal boolean activated only if visu initialization done without return
     int m_errorDevice; ///< Int detecting any error coming from device / detection
-    bool m_simulationStarted; /// <Boolean storing hte information if Sofa has started the simulation (changed by AnimateBeginEvent)
+    bool m_isActivated; /// <Boolean storing hte information if Sofa has started the simulation (changed by AnimateBeginEvent)
     bool m_isInContact;
 private:
     void handleEvent(core::objectmodel::Event *) override;

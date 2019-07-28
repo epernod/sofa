@@ -104,8 +104,8 @@ HDCallbackCode HDCALLBACK stateCallback(void * userData)
     HDErrorInfo error;
     GeomagicDriver * driver = (GeomagicDriver * ) userData;
 
-    if (!driver->m_simulationStarted)
-        return HD_CALLBACK_CONTINUE;
+//    if (!driver->m_isActivated)
+  //      return HD_CALLBACK_CONTINUE;
 
     hdMakeCurrentDevice(driver->m_hHD);
     if (HD_DEVICE_ERROR(error = hdGetError())) return HD_CALLBACK_CONTINUE;
@@ -169,7 +169,8 @@ HDCallbackCode HDCALLBACK stateCallback(void * userData)
     omni_force[1] = force_in_omni[1];
     omni_force[2] = force_in_omni[2];
 
-    hdSetDoublev(HD_CURRENT_FORCE, omni_force);
+    if (driver->m_isActivated)
+        hdSetDoublev(HD_CURRENT_FORCE, omni_force);
 
     hdEndFrame(driver->m_hHD);
 
@@ -198,7 +199,7 @@ GeomagicDriver::GeomagicDriver()
     , d_inputForceFeedback(initData(&d_inputForceFeedback, Vec3d(0,0,0), "inputForceFeedback","Input force feedback in case of no LCPForceFeedback is found (manual setting)"))
     , d_maxInputForceFeedback(initData(&d_maxInputForceFeedback, double(1.0), "maxInputForceFeedback","Maximum value of the normed input force feedback for device security"))
     , d_manualStart(initData(&d_manualStart, false, "manualStart", "If true, will not automatically initDevice at component init phase."))
-    , m_simulationStarted(false)
+    , m_isActivated(false)
     , m_errorDevice(0)
     , m_isInContact(false)
     , m_hHD(UINT_MAX)
@@ -573,6 +574,10 @@ void GeomagicDriver::updateButtonStates(bool emitEvent)
     d_button_1.setValue(buttons[0]);
     d_button_2.setValue(buttons[1]);
 
+    // first time activated
+    if (buttons[0] && !oldStates[0])
+        m_isActivated = true;
+
     // emit event if requested
     if (!emitEvent)
         return;
@@ -734,7 +739,6 @@ void GeomagicDriver::handleEvent(core::objectmodel::Event *event)
         if (m_hStateHandles.size() && m_hStateHandles[0] == HD_INVALID_HANDLE)
             return;
 
-        m_simulationStarted = true;
         updatePosition();
     }
 }
