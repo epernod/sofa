@@ -37,6 +37,9 @@
 #include <sofa/core/topology/TopologyChange.h>
 
 #include <sofa/simulation/Simulation.h>
+#include <sofa/helper/AdvancedTimer.h>
+
+using sofa::helper::ScopedAdvancedTimer;
 
 namespace sofa
 {
@@ -124,6 +127,7 @@ void TriangleCollisionModel<DataTypes>::init()
 template<class DataTypes>
 void TriangleCollisionModel<DataTypes>::updateNormals()
 {
+    ScopedAdvancedTimer bboxtimer("TriangleCollisionModel::updateNormals()");
     for (int i=0; i<size; i++)
     {
         Element t(this,i);
@@ -139,6 +143,7 @@ void TriangleCollisionModel<DataTypes>::updateNormals()
 template<class DataTypes>
 void TriangleCollisionModel<DataTypes>::updateFromTopology()
 {
+    ScopedAdvancedTimer bboxtimer("TriangleCollisionModel::updateFromTopology()");
     int revision = m_topology->getRevision();
     if (revision == m_topologyRevision)
         return;
@@ -290,11 +295,16 @@ bool TriangleCollisionModel<DataTypes>::canCollideWithElement(int index, Collisi
 template<class DataTypes>
 void TriangleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
 {
+    ScopedAdvancedTimer bboxtimer("TriangleCollisionModel::computeBoundingTree()");
     CubeModel* cubeModel = createPrevious<CubeModel>();
 
     // check first that topology didn't changed
     if (m_topology->getRevision() != m_topologyRevision)
         updateFromTopology();
+
+    if (!cubeModel->empty())
+        return;
+
 
     if (m_needsUpdate && !cubeModel->empty()) cubeModel->resize(0);
 
@@ -308,9 +318,12 @@ void TriangleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
 
     const bool calcNormals = d_computeNormals.getValue();
 
+    sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBoundingTree_1()");
     cubeModel->resize(size);  // size = number of triangles
+    sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBoundingTree_1()");
     if (!empty())
     {
+        sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBoundingTree_2()");
         const SReal distance = (SReal)this->proximity.getValue();
         for (int i=0; i<size; i++)
         {
@@ -339,7 +352,11 @@ void TriangleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
             }
             cubeModel->setParentOf(i, minElem, maxElem); // define the bounding box of the current triangle
         }
+        sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBoundingTree_2()");
+
+        sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBoundingTree_3()");
         cubeModel->computeBoundingTree(maxDepth);
+        sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBoundingTree_3()");
     }
 
 
@@ -352,6 +369,7 @@ void TriangleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
 template<class DataTypes>
 void TriangleCollisionModel<DataTypes>::computeContinuousBoundingTree(double dt, int maxDepth)
 {
+    ScopedAdvancedTimer bboxtimer("TriangleCollisionModel::computeContinuousBoundingTree()");
     CubeModel* cubeModel = createPrevious<CubeModel>();
 
     // check first that topology didn't changed
@@ -359,14 +377,17 @@ void TriangleCollisionModel<DataTypes>::computeContinuousBoundingTree(double dt,
         updateFromTopology();
 
     if (m_needsUpdate) cubeModel->resize(0);
-    if (!isMoving() && !cubeModel->empty() && !m_needsUpdate) return; // No need to recompute BBox if immobile nor if mesh didn't change.
+    if (!isMoving() && !cubeModel->empty() && !m_needsUpdate) 
+        return; // No need to recompute BBox if immobile nor if mesh didn't change.
 
     m_needsUpdate=false;
     defaulttype::Vector3 minElem, maxElem;
-
+    sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBoundingTree_1()");
     cubeModel->resize(size);
+    sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBoundingTree_1()");
     if (!empty())
     {
+        sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBoundingTree_2()");
         const SReal distance = (SReal)this->proximity.getValue();
         for (int i=0; i<size; i++)
         {
@@ -404,7 +425,11 @@ void TriangleCollisionModel<DataTypes>::computeContinuousBoundingTree(double dt,
 
             cubeModel->setParentOf(i, minElem, maxElem);
         }
+        sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBoundingTree_2()");
+
+        sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBoundingTree_3()");
         cubeModel->computeBoundingTree(maxDepth);
+        sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBoundingTree_3()");
     }
 }
 
@@ -458,10 +483,13 @@ template<class DataTypes>
 void TriangleCollisionModel<DataTypes>::computeBBox(const core::ExecParams* params, bool onlyVisible)
 {
     if( !onlyVisible ) return;
+    sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBBox()");
 
     // check first that topology didn't changed
     if (m_topology->getRevision() != m_topologyRevision)
         updateFromTopology();
+
+    sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBBox()");
 
     if (!m_needsUpdate && (!this->isMoving() || !this->isSimulated()))
         return;
@@ -470,7 +498,7 @@ void TriangleCollisionModel<DataTypes>::computeBBox(const core::ExecParams* para
     static const Real min_real = std::numeric_limits<Real>::lowest();
     Real maxBBox[3] = {min_real,min_real,min_real};
     Real minBBox[3] = {max_real,max_real,max_real};
-
+    sofa::helper::AdvancedTimer::stepBegin("computeBBox_1");
     for (int i=0; i<size; i++)
     {
         Element t(this,i);
@@ -490,8 +518,11 @@ void TriangleCollisionModel<DataTypes>::computeBBox(const core::ExecParams* para
             else if (pt3[c] < minBBox[c]) minBBox[c] = (Real)pt3[c];
         }
     }
+    sofa::helper::AdvancedTimer::stepEnd("computeBBox_1");
 
+    sofa::helper::AdvancedTimer::stepBegin("computeBBox_2");
     this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
+    sofa::helper::AdvancedTimer::stepEnd("computeBBox_2");
 }
 
 
