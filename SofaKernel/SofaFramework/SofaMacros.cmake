@@ -495,7 +495,9 @@ macro(sofa_install_targets package_name the_targets include_install_dir)
                 # TODO: add a real argument "include_source_dir" to this macro
                 set(include_source_dir "${ARGV3}")
             endif()
-            if(NOT EXISTS "${include_source_dir}" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${include_source_dir}")
+            if(NOT include_source_dir)
+                set(include_source_dir "${CMAKE_CURRENT_SOURCE_DIR}")
+            elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${include_source_dir}")
                 # will be true if include_source_dir is empty
                 set(include_source_dir "${CMAKE_CURRENT_SOURCE_DIR}/${include_source_dir}")
             endif()
@@ -847,3 +849,31 @@ INSTALL( CODE
 "
 )
 endmacro()
+
+
+function(debug_print_target_properties tgt)
+    execute_process(COMMAND cmake --help-property-list OUTPUT_VARIABLE CMAKE_PROPERTY_LIST)
+
+    # Convert command output into a CMake list
+    STRING(REGEX REPLACE ";" "\\\\;" CMAKE_PROPERTY_LIST "${CMAKE_PROPERTY_LIST}")
+    STRING(REGEX REPLACE "\n" ";" CMAKE_PROPERTY_LIST "${CMAKE_PROPERTY_LIST}")
+
+    if(NOT TARGET ${tgt})
+      message("There is no target named '${tgt}'")
+      return()
+    endif()
+
+    foreach(prop ${CMAKE_PROPERTY_LIST})
+        string(REPLACE "<CONFIG>" "${CMAKE_BUILD_TYPE}" prop ${prop})
+        # Fix https://stackoverflow.com/questions/32197663/how-can-i-remove-the-the-location-property-may-not-be-read-from-target-error-i
+        if(prop STREQUAL "LOCATION" OR prop MATCHES "^LOCATION_" OR prop MATCHES "_LOCATION$")
+            continue()
+        endif()
+        # message ("Checking ${prop}")
+        get_property(propval TARGET ${tgt} PROPERTY ${prop} SET)
+        if (propval)
+            get_target_property(propval ${tgt} ${prop})
+            message ("${tgt} ${prop} = ${propval}")
+        endif()
+    endforeach(prop)
+endfunction()
