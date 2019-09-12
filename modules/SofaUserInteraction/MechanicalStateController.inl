@@ -22,14 +22,6 @@
 //
 // C++ Models: MechanicalStateController
 //
-// Description:
-//
-//
-// Author: Pierre-Jean Bensoussan, Digital Trainers (2008)
-//
-// Copyright: See COPYING file that comes with this distribution
-//
-//
 
 #ifndef SOFA_COMPONENT_CONTROLLER_MECHANICALSTATECONTROLLER_INL
 #define SOFA_COMPONENT_CONTROLLER_MECHANICALSTATECONTROLLER_INL
@@ -47,6 +39,8 @@
 #include <sofa/simulation/UpdateMappingVisitor.h>
 #include <sofa/defaulttype/RigidTypes.h>
 #include <sofa/defaulttype/VecTypes.h>
+#include <sofa/core/objectmodel/KeypressedEvent.h>
+
 namespace sofa
 {
 
@@ -55,6 +49,8 @@ namespace component
 
 namespace controller
 {
+    using sofa::defaulttype::Quat;
+    using sofa::defaulttype::Vec;
 
 template <class DataTypes>
 MechanicalStateController<DataTypes>::MechanicalStateController()
@@ -62,7 +58,9 @@ MechanicalStateController<DataTypes>::MechanicalStateController()
     , onlyTranslation( initData(&onlyTranslation, false, "onlyTranslation", "Controlling the DOF only in translation") )
     , buttonDeviceState(initData(&buttonDeviceState, false, "buttonDeviceState", "state of ths device button"))
     , mainDirection( initData(&mainDirection, sofa::defaulttype::Vec<3,Real>((Real)0.0, (Real)0.0, (Real)-1.0), "mainDirection", "Main direction and orientation of the controlled DOF") )
+    , d_speedFactor(initData(&d_speedFactor, SReal(1.0), "speedFactor", "factor to increase/decrease the movements speed"))
 {
+    this->f_listening.setValue(true);
     mainDirection.beginEdit()->normalize();
     mainDirection.endEdit();
 }
@@ -73,17 +71,14 @@ void MechanicalStateController<DataTypes>::init()
     using core::behavior::MechanicalState;
     mState = dynamic_cast<MechanicalState<DataTypes> *> (this->getContext()->getMechanicalState());
     if (!mState)
-        serr << "MechanicalStateController has no binding MechanicalState" << sendl;
+        msg_error() << "MechanicalStateController has no binding MechanicalState";
     device = false;
 }
 
 
 template <class DataTypes>
 void MechanicalStateController<DataTypes>::applyController()
-{
-    using sofa::defaulttype::Quat;
-    using sofa::defaulttype::Vec;
-
+{    
     if(device)
     {
         if(mState)
@@ -95,8 +90,8 @@ void MechanicalStateController<DataTypes>::applyController()
                 xfree[0].getCenter() = position;
                 x[0].getCenter() = position;
 
-                xfree[0].getOrientation() = orientation;
-                x[0].getOrientation() = orientation;
+                xfree[0].getOrientation() = m_orientation;
+                x[0].getOrientation() = m_orientation;
             }
         }
         device = false;
@@ -190,24 +185,88 @@ void MechanicalStateController<DataTypes>::applyController()
 };
 
 
+template <class DataTypes>
+void MechanicalStateController<DataTypes>::applyTranslation(sofa::defaulttype::Vec3 translation)
+{
+    if (mState)
+    {
+        helper::WriteAccessor<Data<VecCoord> > x = *this->mState->write(core::VecCoordId::position());
 
-//template <class DataTypes>
-//void MechanicalStateController<DataTypes>::onHapticDeviceEvent(core::objectmodel::HapticDeviceEvent *oev)
-//{
-//	//sout << "void MechanicalStateController<DataTypes>::onHapticDeviceEvent()"<<sendl;
-//	//if (oev->getButton())
-//	//{
-//	//		sout<<" Button1 pressed"<<sendl;
-//
-//	//}
-//
-//	device = true;
-//	buttonDevice = oev->getButton();
-//	position = oev->getPosition();
-//	orientation = oev->getOrientation();
-//	applyController();
-//	device = false;
-//}
+        unsigned int i = index.getValue();
+        const SReal& factor = d_speedFactor.getValue();
+        x[i].getCenter() += translation * factor;
+    }
+}
+
+
+template <class DataTypes>
+bool MechanicalStateController<DataTypes>::worldToLocal(sofa::defaulttype::Vec3& vector)
+{
+    if (mState)
+    {
+        helper::WriteAccessor<Data<VecCoord> > x = *this->mState->write(core::VecCoordId::position());
+        unsigned int i = index.getValue();
+        m_orientation = x[i].getOrientation();
+        vector = m_orientation.rotate(vector);
+        return true;
+    }
+    return false;
+}
+
+template <class DataTypes>
+void MechanicalStateController<DataTypes>::moveUp()
+{
+    Vec3 vec(0, 1, 0);
+    worldToLocal(vec);
+    msg_info() << "(0, 1, 0)  -> " << vec;
+    applyTranslation(vec);
+}
+
+template <class DataTypes>
+void MechanicalStateController<DataTypes>::moveDown()
+{
+    Vec3 vec(0, -1, 0);
+    worldToLocal(vec);
+    msg_info() << "(0, -1, 0)  -> " << vec;
+    applyTranslation(vec);
+}
+
+template <class DataTypes>
+void MechanicalStateController<DataTypes>::moveLeft()
+{
+    Vec3 vec(-1, 0, 0);
+    worldToLocal(vec);
+    msg_info() << "(-1, 0, 0)  -> " << vec;
+    applyTranslation(vec);
+}
+
+template <class DataTypes>
+void MechanicalStateController<DataTypes>::moveRight()
+{
+    Vec3 vec(1, 0, 0);
+    worldToLocal(vec);
+    msg_info() << "(1, 0, 0)  -> " << vec;
+    applyTranslation(vec);
+}
+
+template <class DataTypes>
+void MechanicalStateController<DataTypes>::moveForward()
+{
+    Vec3 vec(0, 0, -1);
+    worldToLocal(vec);
+    msg_info() << "(1, 0, 0)  -> " << vec;
+    applyTranslation(vec);
+}
+
+template <class DataTypes>
+void MechanicalStateController<DataTypes>::moveBackward()
+{
+    Vec3 vec(0, 0, 1);
+    worldToLocal(vec);
+    msg_info() << "(-1, 0, 0)  -> " << vec;
+    applyTranslation(vec);
+}
+
 
 template <class DataTypes>
 void MechanicalStateController<DataTypes>::onBeginAnimationStep(const double /*dt*/)
@@ -272,10 +331,39 @@ void MechanicalStateController<DataTypes>::onMouseEvent(core::objectmodel::Mouse
 
 }
 
+template <class DataTypes>
+void MechanicalStateController<DataTypes>::handleEvent(sofa::core::objectmodel::Event* event)
+{
+    if (sofa::core::objectmodel::KeypressedEvent::checkEventType(event))
+    {
+        sofa::core::objectmodel::KeypressedEvent* ke = static_cast<sofa::core::objectmodel::KeypressedEvent*>(event);
+        msg_info() << "MechanicalStateController handleEvent gets character '" << ke->getKey() << "'. ";
+
+        if (ke->getKey() == '+')
+            moveForward();
+        else if (ke->getKey() == '-')
+            moveForward();
+        else if (ke->getKey() == '8')
+            moveUp();
+        else if (ke->getKey() == '2')
+            moveDown();
+        else if (ke->getKey() == '4')
+            moveLeft();
+        else if (ke->getKey() == '6')
+            moveRight();
+    }
+}
+
 
 
 template <>
 SOFA_USER_INTERACTION_API void MechanicalStateController<defaulttype::Vec1Types>::applyController();
+
+template <>
+SOFA_USER_INTERACTION_API void MechanicalStateController<defaulttype::Vec1Types>::applyTranslation(sofa::defaulttype::Vec3 translation);
+
+template <>
+SOFA_USER_INTERACTION_API bool MechanicalStateController<defaulttype::Vec1Types>::worldToLocal(sofa::defaulttype::Vec3& vector);
 
 template <>
 SOFA_USER_INTERACTION_API void MechanicalStateController<defaulttype::Vec1Types>::onMouseEvent(core::objectmodel::MouseEvent *mev);
