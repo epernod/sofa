@@ -105,9 +105,6 @@ HDCallbackCode HDCALLBACK stateCallback(void * userData)
     HDErrorInfo error;
     GeomagicDriver * driver = (GeomagicDriver * ) userData;
 
-//    if (!driver->m_isActivated)
-  //      return HD_CALLBACK_CONTINUE;
-
     hdMakeCurrentDevice(driver->m_hHD);
     if (HD_DEVICE_ERROR(error = hdGetError())) return HD_CALLBACK_CONTINUE;
 
@@ -122,13 +119,9 @@ HDCallbackCode HDCALLBACK stateCallback(void * userData)
     hdGetDoublev(HD_CURRENT_GIMBAL_ANGLES,driver->m_omniData.angle2);
 
     Vector3 currentForce;
+    double maxInputForceFeedback = driver->d_maxInputForceFeedback.getValue();
 
-    /*if (driver->d_freezeFFBack.getValue())
-    {
-        std::cout << "d_freezeFFBack!!!" << std::endl;
-        currentForce = Vector3(0, 0, 0);// driver->m_previousFFBack;
-    }*/
-    if (driver->m_forceFeedback && driver->m_forceFeedback->getContext()->getRootContext()->getAnimate())
+    if (driver->m_forceFeedback)
     {
         Vector3 pos(driver->m_omniData.transform[12+0]*0.1,driver->m_omniData.transform[12+1]*0.1,driver->m_omniData.transform[12+2]*0.1);
         Vector3 pos_in_world = driver->d_positionBase.getValue() + driver->d_orientationBase.getValue().rotate(pos*driver->d_scale.getValue());
@@ -150,11 +143,11 @@ HDCallbackCode HDCALLBACK stateCallback(void * userData)
         {
             auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
             double norm = currentForce.norm();
-            //std::cout << "forceFeedback: " << currentForce << " | " << pos_in_world << " -> " << norm << " -> duration: " << duration << std::endl;
-            if (norm > 14) {
-                std::cout << "###################################################" << std::endl;
-                std::cout << "forceFeedback: " << currentForce << " | " << pos_in_world << " -> " << norm << " -> duration: " << duration << std::endl;
-                //currentForce = driver->m_previousFFBack;
+            
+            if (norm > maxInputForceFeedback) 
+            {
+                msg_warning(driver) << "###################################################";
+                msg_warning(driver) << "forceFeedback: " << currentForce << " | " << pos_in_world << " -> " << norm << " -> duration: " << duration;
             }
         }
     }
@@ -162,7 +155,6 @@ HDCallbackCode HDCALLBACK stateCallback(void * userData)
     {
         Vector3 inputForceFeedback = driver->d_inputForceFeedback.getValue();
         double normValue = inputForceFeedback.norm();
-        double maxInputForceFeedback = driver->d_maxInputForceFeedback.getValue();
 
         if( maxInputForceFeedback > 0.0)
         {
@@ -185,13 +177,12 @@ HDCallbackCode HDCALLBACK stateCallback(void * userData)
     }
 
     Vector3 force_in_omni = driver->d_orientationBase.getValue().inverseRotate(currentForce)  * driver->d_forceScale.getValue();
-    driver->m_previousFFBack = currentForce;
     double omni_force[3];
     omni_force[0] = force_in_omni[0];
     omni_force[1] = force_in_omni[1];
     omni_force[2] = force_in_omni[2];
 
-    if (driver->m_isActivated && force_in_omni.norm() < 14)
+    if (driver->m_isActivated && force_in_omni.norm() < maxInputForceFeedback)
         hdSetDoublev(HD_CURRENT_FORCE, omni_force);
 
     hdEndFrame(driver->m_hHD);
@@ -214,14 +205,13 @@ GeomagicDriver::GeomagicDriver()
     , d_forceScale(initData(&d_forceScale, 1.0, "forceScale","Default forceScale applied to the force feedback. "))
     , d_frameVisu(initData(&d_frameVisu, false, "drawDeviceFrame", "Visualize the frame corresponding to the device tooltip"))
     , d_omniVisu(initData(&d_omniVisu, false, "drawDevice", "Visualize the Geomagic device in the virtual scene"))
-    , d_freezeFFBack(initData(&d_freezeFFBack, false, "freezeFFBack", "avoid computation while on"))
     , d_posDevice(initData(&d_posDevice, "positionDevice", "position of the base of the part of the device"))
     , d_button_1(initData(&d_button_1,"button1","Button state 1"))
     , d_button_2(initData(&d_button_2,"button2","Button state 2"))
     , d_toolNodeName(initData(&d_toolNodeName, "toolNodeName", "Node of the tool to activate deactivate"))
     , d_emitButtonEvent(initData(&d_emitButtonEvent, false, "emitButtonEvent", "If true, will send event through the graph when button are pushed/released"))
     , d_inputForceFeedback(initData(&d_inputForceFeedback, Vec3d(0,0,0), "inputForceFeedback","Input force feedback in case of no LCPForceFeedback is found (manual setting)"))
-    , d_maxInputForceFeedback(initData(&d_maxInputForceFeedback, double(1.0), "maxInputForceFeedback","Maximum value of the normed input force feedback for device security"))
+    , d_maxInputForceFeedback(initData(&d_maxInputForceFeedback, double(10.0), "maxInputForceFeedback","Maximum value of the normed input force feedback for device security"))
     , d_manualStart(initData(&d_manualStart, false, "manualStart", "If true, will not automatically initDevice at component init phase."))    
     , m_isActivated(false)
     , m_errorDevice(0)
@@ -271,7 +261,6 @@ bool GeomagicDriver::findNode(sofa::simulation::Node::SPtr node)
         m_toolNode = node;
         return true;
     }
-    std::cout << "node: " << node->name << std::endl;
 
     // check its children
     sofa::helper::vector<sofa::core::objectmodel::BaseNode* > childNodes = node->getChildren();
@@ -280,7 +269,6 @@ bool GeomagicDriver::findNode(sofa::simulation::Node::SPtr node)
         sofa::simulation::Node* node = dynamic_cast<sofa::simulation::Node*>(childNodes[i]);
         if (node->hasTag(sofa::core::objectmodel::Tag("toolCollision")))
         {
-            std::cout << "node FOUND: " << node->name << std::endl;
             m_toolNode = node;
             return true;
         }
@@ -314,9 +302,11 @@ void GeomagicDriver::bwdInit()
     }
 
     if (m_toolNode == nullptr)
-        msg_error() << "no tool node collision found";
+        msg_warning() << "no tool node collision found";
     else
-        activateTool(false);
+        msg_info() << "Found collision model with name: " << m_toolNode->getName();
+    
+    activateTool(false);
 
 
     if (d_manualStart.getValue() == false)

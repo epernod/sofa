@@ -104,14 +104,12 @@ public:
     Data<double> d_forceScale; ///< Default forceScale applied to the force feedback. 
     Data<bool> d_frameVisu; ///< Visualize the frame corresponding to the device tooltip
     Data<bool> d_omniVisu; ///< Visualize the frame of the interface in the virtual scene
-    Data<bool> d_freezeFFBack;
     Data< Coord > d_posDevice; ///< position of the base of the part of the device    
     
     Data<bool> d_button_1; ///< Button state 1
     Data<bool> d_button_2; ///< Button state 2
     Data<bool> d_emitButtonEvent; ///< Bool to send event through the graph when button are pushed/released
     Data<Vector3> d_inputForceFeedback; ///< Input force feedback in case of no LCPForceFeedback is found (manual setting)
-    Vector3 m_previousFFBack;
     Data<double> d_maxInputForceFeedback; ///< Maximum value of the normed input force feedback for device security
 
     Data<bool> d_manualStart; /// < Bool to unactive the automatic start of the device at init. initDevice need to be called manually. False by default.
