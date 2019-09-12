@@ -45,12 +45,9 @@
 #include <SofaSimulationTree/GNode.h>
 
 #include <math.h>
-//#include <wrapper.h>
-#include <HD/hd.h>
-#include <HD/hdDevice.h>
-#include <HD/hdDefines.h>
-#include <HD/hdExport.h>
-#include <HD/hdScheduler.h>
+
+#include <sofa/simulation/TaskScheduler.h>
+#include <sofa/simulation/InitTasks.h>
 
 //Visualization
 #include <SofaRigid/RigidMapping.h>
@@ -67,7 +64,25 @@ namespace controller
 {
 
 using namespace sofa::defaulttype;
+using namespace sofa::simulation;
 using core::objectmodel::Data;
+
+
+class GeomagicEmulator;
+
+class SOFA_GEOMAGIC_API GeomagicEmulatorTask : public CpuTask
+{
+public:
+    GeomagicEmulatorTask(GeomagicEmulator* ptr, CpuTask::Status* pStatus);
+
+    virtual ~GeomagicEmulatorTask() {}
+
+    virtual MemoryAlloc run() override final;
+
+private:
+    GeomagicEmulator * m_driver;
+};
+
 
 /**
 * Geomagic driver
@@ -86,7 +101,7 @@ public:
 
 
     Data< std::string > d_deviceName; ///< Name of device Configuration
-    Data<Vec3d> d_positionBase; ///< Position of the interface base in the scene world coordinates
+    Data<Vec3> d_positionBase; ///< Position of the interface base in the scene world coordinates
     Data<Quat> d_orientationTool; ///< Orientation of the tool
     Data<double> d_scale; ///< Default scale applied to the Phantom Coordinates
     Data<double> d_forceScale; ///< Default forceScale applied to the force feedback. 
@@ -96,6 +111,7 @@ public:
     Data<bool> d_button_2; ///< Button state 2
     Data<std::string> d_toolNodeName;
     Data <SReal> d_speedFactor; /// < factor to increase/decrease the movements speed
+    Data<double> d_maxInputForceFeedback; ///< Maximum value of the normed input force feedback for device security
     sofa::simulation::Node::SPtr m_toolNode;
 
     GeomagicEmulator();
@@ -146,13 +162,17 @@ private:
     void handleEvent(core::objectmodel::Event *) override;
 
     bool findNode(sofa::simulation::Node::SPtr node);
-    
-
+        
 
 public:
-    HHD m_hHD;
-    std::vector< HDSchedulerHandle > m_hStateHandles;
+    sofa::simulation::TaskScheduler* _taskScheduler;
+    sofa::simulation::CpuTask::Status _simStepStatus;
 
+    std::mutex lockPosition;
+
+    bool m_terminate;
+
+    Vec3 m_toolPosition;
 };
 
 } // namespace controller
