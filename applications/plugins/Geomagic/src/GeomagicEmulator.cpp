@@ -56,19 +56,18 @@ GeomagicEmulatorTask::GeomagicEmulatorTask(GeomagicEmulator* ptr, CpuTask::Statu
 
 GeomagicEmulatorTask::MemoryAlloc GeomagicEmulatorTask::run()
 {
-    //GeomagicEmulator * driver = (GeomagicEmulator * )m_ptr;
-
-    //hdMakeCurrentDevice(driver->m_hHD);
-
     Vector3 currentForce;
     Vector3 pos_in_world;
     bool contact = false;
-    std::cout << "passe la: GeomagicEmulatorTask::run()" << std::endl;
     long long duration;
+    
     if (m_driver->m_forceFeedback)
     {
         //Vector3 pos(driver->m_omniData.transform[12+0]*0.1,driver->m_omniData.transform[12+1]*0.1,driver->m_omniData.transform[12+2]*0.1);
+        m_driver->lockPosition.lock();
         pos_in_world = m_driver->d_positionBase.getValue();// +driver->d_orientationTool.getValue().rotate(pos*driver->d_scale.getValue());
+        m_driver->lockPosition.unlock();
+
         auto t1 = std::chrono::high_resolution_clock::now();
         m_driver->m_forceFeedback->computeForce(pos_in_world[0],pos_in_world[1],pos_in_world[2], 0, 0, 0, 0, currentForce[0], currentForce[1], currentForce[2]);
         auto t2 = std::chrono::high_resolution_clock::now();        
@@ -83,9 +82,8 @@ GeomagicEmulatorTask::MemoryAlloc GeomagicEmulatorTask::run()
             }
         }
     }
-
+    
     m_driver->lockPosition.lock();
-    m_driver->m_isInContact = contact;
     if (contact)
     {        
         double maxInputForceFeedback = m_driver->d_maxInputForceFeedback.getValue();
@@ -94,12 +92,14 @@ GeomagicEmulatorTask::MemoryAlloc GeomagicEmulatorTask::run()
         if (norm > maxInputForceFeedback) {
             msg_warning(m_driver) << "###################################################";
             msg_warning(m_driver) << "forceFeedback: " << currentForce << " | " << pos_in_world << " -> " << norm << " -> duration: " << duration;
-        }
-        else
-        {
-            m_driver->m_toolPosition = pos_in_world + currentForce;
-        }                
+            currentForce = Vector3(0, 0, 0);
+        }        
     }
+
+    m_driver->m_isInContact = contact;    
+    m_driver->m_toolPosition = m_driver->d_positionBase.getValue() + currentForce;
+//    std::cout << "# m_toolPosition: " << m_driver->m_toolPosition << " | " << m_driver->d_positionBase.getValue() << std::endl;
+
     m_driver->lockPosition.unlock();      
 
     if (m_driver->m_terminate == false)
@@ -128,7 +128,7 @@ GeomagicEmulator::GeomagicEmulator()
     , m_isInContact(false)
     , _taskScheduler(nullptr)
     , m_terminate(false)
-{
+ {
     this->f_listening.setValue(true);
     m_forceFeedback = NULL;
 
@@ -253,14 +253,19 @@ void GeomagicEmulator::updatePosition()
     // for the moment
     //posDevice = d_positionBase.getValue();
 
-    //msg_info() << "GeomagicEmulator::updatePosition: " << posDevice;
     // update button state
+
     updateButtonStates(true);
 
     lockPosition.lock();
 
-    posDevice = m_toolPosition;
-    d_positionBase.setValue(m_toolPosition);
+    posDevice[0] = m_toolPosition[0];
+    posDevice[1] = m_toolPosition[1];
+    posDevice[2] = m_toolPosition[2];
+    //std::cout << "GeomagicEmulator::updatePosition m_toolPosition: " << m_toolPosition << " | " << d_positionBase.getValue() << std::endl;
+
+//    d_positionBase.setValue(m_toolPosition);
+   // Sleep(100);
 
     lockPosition.unlock();
 
@@ -333,19 +338,18 @@ void GeomagicEmulator::updateButtonStates(bool emitEvent)
 
         oldStates[i] = buttons[i];
     }
-
-    
 }
 
 
 
 void GeomagicEmulator::applyTranslation(sofa::defaulttype::Vec3 translation)
 {
+    lockPosition.lock();
     Vec3d & posDevice = *d_positionBase.beginEdit();
     const SReal& factor = d_speedFactor.getValue();
     posDevice += translation * factor;
     d_positionBase.endEdit();    
-    updatePosition();
+    lockPosition.unlock();
 }
 
 
