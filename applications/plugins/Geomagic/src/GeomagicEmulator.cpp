@@ -330,7 +330,11 @@ void GeomagicEmulator::updateButtonStates(bool emitEvent)
             sofa::core::objectmodel::ScriptEvent eventS(static_cast<simulation::Node*>(this->getContext()), eventString.c_str());
             rootContext->propagateEvent(core::ExecParams::defaultInstance(), &eventS);
         }
-    }  
+
+        oldStates[i] = buttons[i];
+    }
+
+    
 }
 
 
@@ -356,7 +360,6 @@ void GeomagicEmulator::moveUp()
 {
     Vec3 vec(0, 1, 0);
     worldToLocal(vec);
-    msg_info() << "(0, 1, 0)  -> " << vec;
     applyTranslation(vec);
 }
 
@@ -365,7 +368,6 @@ void GeomagicEmulator::moveDown()
 {
     Vec3 vec(0, -1, 0);
     worldToLocal(vec);
-    msg_info() << "(0, -1, 0)  -> " << vec;
     applyTranslation(vec);
 }
 
@@ -374,7 +376,6 @@ void GeomagicEmulator::moveLeft()
 {
     Vec3 vec(-1, 0, 0);
     worldToLocal(vec);
-    msg_info() << "(-1, 0, 0)  -> " << vec;
     applyTranslation(vec);
 }
 
@@ -383,7 +384,6 @@ void GeomagicEmulator::moveRight()
 {
     Vec3 vec(1, 0, 0);
     worldToLocal(vec);
-    msg_info() << "(1, 0, 0)  -> " << vec;
     applyTranslation(vec);
 }
 
@@ -391,7 +391,6 @@ void GeomagicEmulator::moveForward()
 {
     Vec3 vec(0, 0, -1);
     worldToLocal(vec);
-    msg_info() << "(0, 0, -1)  -> " << vec;
     applyTranslation(vec);
 }
 
@@ -400,7 +399,6 @@ void GeomagicEmulator::moveBackward()
 {
     Vec3 vec(0, 0, 1);
     worldToLocal(vec);
-    msg_info() << "(0, 0, 1)  -> " << vec;
     applyTranslation(vec);
 }
 
@@ -419,7 +417,7 @@ void GeomagicEmulator::handleEvent(core::objectmodel::Event *event)
         if (ke->getKey() == '+')
             moveForward();
         else if (ke->getKey() == '-')
-            moveForward();
+            moveBackward();
         else if (ke->getKey() == '8')
             moveUp();
         else if (ke->getKey() == '2')
@@ -430,6 +428,8 @@ void GeomagicEmulator::handleEvent(core::objectmodel::Event *event)
             moveRight();
         else if (ke->getKey() == '5')
             activateTool(true);
+        else if (ke->getKey() == '0')
+            d_button_1.setValue(!d_button_1.getValue());
     }
 }
 
@@ -441,7 +441,7 @@ void GeomagicEmulator::onKeyPressedEvent(core::objectmodel::KeypressedEvent *kEv
     if (kEvent->getKey() == '+')
         moveForward();
     else if (kEvent->getKey() == '-')
-        moveForward();
+        moveBackward();
     else if (kEvent->getKey() == '8')
         moveUp();
     else if (kEvent->getKey() == '2')
