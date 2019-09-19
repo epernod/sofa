@@ -163,10 +163,12 @@ private:
 
     bool findNode(sofa::simulation::Node::SPtr node);
         
+    
 
 public:
     sofa::simulation::TaskScheduler* _taskScheduler;
     sofa::simulation::CpuTask::Status _simStepStatus;
+    sofa::defaulttype::Vector3 m_toolForceFeedBack;
 
     std::mutex lockPosition;
 

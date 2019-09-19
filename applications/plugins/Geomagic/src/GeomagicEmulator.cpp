@@ -96,8 +96,9 @@ GeomagicEmulatorTask::MemoryAlloc GeomagicEmulatorTask::run()
         }        
     }
 
+    m_driver->m_toolForceFeedBack = currentForce * m_driver->d_forceScale.getValue();
     m_driver->m_isInContact = contact;    
-    m_driver->m_toolPosition = m_driver->d_positionBase.getValue() + currentForce;
+    m_driver->m_toolPosition = m_driver->d_positionBase.getValue() + currentForce * m_driver->d_forceScale.getValue();
 //    std::cout << "# m_toolPosition: " << m_driver->m_toolPosition << " | " << m_driver->d_positionBase.getValue() << std::endl;
 
     m_driver->lockPosition.unlock();      
@@ -466,7 +467,8 @@ void GeomagicEmulator::onKeyReleasedEvent(core::objectmodel::KeyreleasedEvent *k
 
 void GeomagicEmulator::draw(const sofa::core::visual::VisualParams* vparams)
 {
-
+    vparams->drawTool()->drawSphere(m_toolPosition, 0.1f, defaulttype::Vec4f(1.0, 1.0, 1.0, 1.0));
+    vparams->drawTool()->drawLine(m_toolPosition, m_toolPosition + m_toolForceFeedBack, defaulttype::Vec4f(1.0, 0.0, 0.0f, 1.0));
 }
 
 
