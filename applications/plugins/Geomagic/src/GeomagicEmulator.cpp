@@ -63,11 +63,12 @@ GeomagicEmulatorTask::MemoryAlloc GeomagicEmulatorTask::run()
     
     if (m_driver->m_forceFeedback)
     {
-        //Vector3 pos(driver->m_omniData.transform[12+0]*0.1,driver->m_omniData.transform[12+1]*0.1,driver->m_omniData.transform[12+2]*0.1);
+        //Vector3 pos(driver->m_omniData.transform[12+0]*0.1,driver->m_omniData.transform[12+1]*0.1,driver->m_omniData.transform[12+2]*0.1);        
         m_driver->lockPosition.lock();
         pos_in_world = m_driver->d_positionBase.getValue();// +driver->d_orientationTool.getValue().rotate(pos*driver->d_scale.getValue());
         m_driver->lockPosition.unlock();
 
+       // msg_info(m_driver) << "computeForce start: ";
         auto t1 = std::chrono::high_resolution_clock::now();
         m_driver->m_forceFeedback->computeForce(pos_in_world[0],pos_in_world[1],pos_in_world[2], 0, 0, 0, 0, currentForce[0], currentForce[1], currentForce[2]);
         auto t2 = std::chrono::high_resolution_clock::now();        
@@ -89,9 +90,10 @@ GeomagicEmulatorTask::MemoryAlloc GeomagicEmulatorTask::run()
         double maxInputForceFeedback = m_driver->d_maxInputForceFeedback.getValue();
         double norm = currentForce.norm();        
         
+        msg_warning(m_driver) << "forceFeedback: " << currentForce << " | " << pos_in_world << " -> " << norm << " -> duration: " << duration;
         if (norm > maxInputForceFeedback) {
             msg_warning(m_driver) << "###################################################";
-            msg_warning(m_driver) << "forceFeedback: " << currentForce << " | " << pos_in_world << " -> " << norm << " -> duration: " << duration;
+            msg_warning(m_driver) << "BAD forceFeedback: " << currentForce << " | " << pos_in_world << " -> " << norm << " -> duration: " << duration;
             currentForce = Vector3(0, 0, 0);
         }        
     }
@@ -100,13 +102,13 @@ GeomagicEmulatorTask::MemoryAlloc GeomagicEmulatorTask::run()
     m_driver->m_isInContact = contact;    
     m_driver->m_toolPosition = m_driver->d_positionBase.getValue() + currentForce * m_driver->d_forceScale.getValue();
 //    std::cout << "# m_toolPosition: " << m_driver->m_toolPosition << " | " << m_driver->d_positionBase.getValue() << std::endl;
-
+    //msg_info(m_driver) << "computeForce end: ";
     m_driver->lockPosition.unlock();      
 
     if (m_driver->m_terminate == false)
     {
         TaskScheduler::getInstance()->addTask(new GeomagicEmulatorTask(m_driver, &m_driver->_simStepStatus));
-        Sleep(1);
+        Sleep(100);
     }
 
     return MemoryAlloc::Dynamic;
@@ -417,7 +419,7 @@ void GeomagicEmulator::handleEvent(core::objectmodel::Event *event)
     else if (sofa::core::objectmodel::KeypressedEvent::checkEventType(event))
     {
         sofa::core::objectmodel::KeypressedEvent* ke = static_cast<sofa::core::objectmodel::KeypressedEvent*>(event);
-        msg_info() << "GeomagicEmulator handleEvent gets character '" << ke->getKey() << "'. ";
+        //msg_info() << "GeomagicEmulator handleEvent gets character '" << ke->getKey() << "'. ";
 
         if (ke->getKey() == '+')
             moveForward();
@@ -441,7 +443,7 @@ void GeomagicEmulator::handleEvent(core::objectmodel::Event *event)
 
 void GeomagicEmulator::onKeyPressedEvent(core::objectmodel::KeypressedEvent *kEvent)
 {
-    msg_info() << "GeomagicEmulator onKeyPressedEvent gets character '" << kEvent->getKey() << "'. ";
+    //msg_info() << "GeomagicEmulator onKeyPressedEvent gets character '" << kEvent->getKey() << "'. ";
 
     if (kEvent->getKey() == '+')
         moveForward();
