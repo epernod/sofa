@@ -241,7 +241,7 @@ void CarvingManager::handleEvent(sofa::core::objectmodel::Event* event)
         if (eventS.find(d_activatorName.getValue()) != std::string::npos && eventS.find("released") != std::string::npos)
             d_active.setValue(false);
     }
-    else if (simulation::CollisionEndEvent::checkEventType(event))
+    else if (simulation::AnimateEndEvent::checkEventType(event))
     {
         if (d_active.getValue())
             doCarve();
