@@ -35,6 +35,7 @@
 #include <sofa/simulation/XMLPrintVisitor.h>
 #include <sofa/simulation/PropagateEventVisitor.h>
 #include <sofa/simulation/BehaviorUpdatePositionVisitor.h>
+#include <sofa/simulation/UpdateInternalDataVisitor.h>
 #include <sofa/simulation/AnimateBeginEvent.h>
 #include <sofa/simulation/AnimateEndEvent.h>
 #include <sofa/simulation/UpdateMappingEndEvent.h>
@@ -429,18 +430,18 @@ void Simulation::dumpState ( Node* root, std::ofstream& out )
 
 
 /// Load a scene from a file
-Node::SPtr Simulation::load ( const char *filename, bool reload )
+Node::SPtr Simulation::load ( const std::string& filename, bool reload, const std::vector<std::string>& sceneArgs )
 {
-    if( sofa::helper::system::SetDirectory::GetFileName(filename).empty() || // no filename
-            sofa::helper::system::SetDirectory::GetExtension(filename).empty() ) // filename with no extension
+    if( sofa::helper::system::SetDirectory::GetFileName(filename.c_str()).empty() || // no filename
+            sofa::helper::system::SetDirectory::GetExtension(filename.c_str()).empty() ) // filename with no extension
         return NULL;
 
     SceneLoader *loader = SceneLoaderFactory::getInstance()->getEntryFileName(filename);
 
-    if (loader) return loader->load(filename, reload);
+    if (loader) return loader->load(filename, reload, sceneArgs);
 
     // unable to load file
-    msg_error() << "extension ("<<sofa::helper::system::SetDirectory::GetExtension(filename)<<") not handled";
+    msg_error() << "extension ("<<sofa::helper::system::SetDirectory::GetExtension(filename.c_str())<<") not handled";
     return NULL;
 }
 

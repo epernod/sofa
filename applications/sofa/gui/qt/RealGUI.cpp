@@ -155,7 +155,11 @@ class QSOFAApplication : public QApplication
 public:
     QSOFAApplication(int &argc, char ** argv)
         : QApplication(argc,argv)
-    { }
+    {
+        QCoreApplication::setOrganizationName("Sofa Consortium");
+        QCoreApplication::setOrganizationDomain("sofa");
+        QCoreApplication::setApplicationName("runSofa");
+    }
 
 #if QT_VERSION < 0x050000
     static inline QString translate(const char * context, const char * key, const char * disambiguation,
@@ -211,6 +215,7 @@ public:
 
 BaseGUI* RealGUI::CreateGUI ( const char* name, sofa::simulation::Node::SPtr root, const char* filename )
 {
+
     CreateApplication();
 
     // create interface
@@ -435,7 +440,7 @@ RealGUI::RealGUI ( const char* viewername)
     createAdvanceTimerProfilerWindow();
 
     m_sofaMouseManager->hide();
-    SofaVideoRecorderManager::getInstance();
+    SofaVideoRecorderManager::getInstance()->hide();
 
     //Center the application
     const QRect screen = QApplication::desktop()->availableGeometry(QApplication::desktop()->primaryScreen());
@@ -742,7 +747,6 @@ int RealGUI::closeGUI()
     settings.beginGroup("viewer");
     settings.setValue("screenNumber", QApplication::desktop()->screenNumber(this));
     settings.endGroup();
-
     delete this;
     return 0;
 }
@@ -790,7 +794,10 @@ void RealGUI::fileOpen ( std::string filename, bool temporaryFile, bool reload )
     sofa::simulation::xml::numDefault = 0;
 
     if( currentSimulation() ) this->unloadScene();
-    mSimulation = simulation::getSimulation()->load ( filename.c_str() );
+
+    const std::vector<std::string> sceneArgs = sofa::helper::ArgumentParser::extra_args();
+    mSimulation = simulation::getSimulation()->load ( filename, reload, sceneArgs );
+
     simulation::getSimulation()->init ( mSimulation.get() );
     if ( mSimulation == NULL )
     {
