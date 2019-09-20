@@ -205,6 +205,9 @@ void FreeMotionAnimationLoop::step(const sofa::core::ExecParams* params, SReal d
         freePosEqPosPlusFreeVelDt.setMapped(true);
         getContext()->executeVisitor(&freePosEqPosPlusFreeVelDt);
     }
+
+    mop.projectPositionAndVelocity(freePos, freeVel); // apply projective constraints
+    mop.propagateXAndV(freePos, freeVel);
     dmsg_info() << " SolveVisitor for freeMotion performed" ;
 
     if (displayTime.getValue())
