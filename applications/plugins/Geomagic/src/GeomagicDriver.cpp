@@ -316,8 +316,18 @@ void GeomagicDriver::bwdInit()
 void GeomagicDriver::activateTool(bool value)
 {
      m_isActivated = value; 
-     if (m_toolNode)
-         m_toolNode->setActive(value);
+     if (m_toolNode) {
+         //m_toolNode->setActive(value);
+         sofa::core::CollisionModel* col = m_toolNode->get<core::CollisionModel>(core::objectmodel::Tag("CarvingTool"), core::objectmodel::BaseContext::SearchRoot);
+         std::set<int> ids; 
+
+         if(value)
+             ids.insert(10);
+         else
+             ids.insert(1);
+
+         col->setGroups(ids);
+     }
 }
 
 void GeomagicDriver::initDevice(int cptInitPass)
