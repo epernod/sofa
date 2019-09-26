@@ -571,12 +571,12 @@ function(sofa_set_install_relocatable target install_dir)
             COMMENT "${target}: Patching cmake_install.cmake"
             COMMAND
                 if not exist \"${target_binary_dir}/cmake_install.cmakepatch\"
-                echo set ( CMAKE_INSTALL_PREFIX_BACK \"\$$\{CMAKE_INSTALL_PREFIX\}\" )
+                echo set ( CMAKE_INSTALL_PREFIX_BACK \"\$\{CMAKE_INSTALL_PREFIX\}\" )
                     > "${target_binary_dir}/cmake_install.cmakepatch"
-                && echo set ( CMAKE_INSTALL_PREFIX \"\$$\{CMAKE_INSTALL_PREFIX\}/${install_dir}/${target}\" )
+                && echo set ( CMAKE_INSTALL_PREFIX \"\$\{CMAKE_INSTALL_PREFIX\}/${install_dir}/${target}\" )
                     >> "${target_binary_dir}/cmake_install.cmakepatch"
                 && type \"${target_binary_dir_windows}\\\\cmake_install.cmake\" >> \"${target_binary_dir_windows}\\\\cmake_install.cmakepatch\"
-                && echo set ( CMAKE_INSTALL_PREFIX \"\$$\{CMAKE_INSTALL_PREFIX_BACK\}\" )
+                && echo set ( CMAKE_INSTALL_PREFIX \"\$\{CMAKE_INSTALL_PREFIX_BACK\}\" )
                     >> "${target_binary_dir}/cmake_install.cmakepatch"
                 && ${CMAKE_COMMAND} -E copy ${target_binary_dir}/cmake_install.cmakepatch ${target_binary_dir}/cmake_install.cmake
             )
