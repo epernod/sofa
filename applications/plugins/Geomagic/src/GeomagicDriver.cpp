@@ -177,13 +177,22 @@ HDCallbackCode HDCALLBACK stateCallback(void * userData)
     }
 
     Vector3 force_in_omni = driver->d_orientationBase.getValue().inverseRotate(currentForce)  * driver->d_forceScale.getValue();
-    double omni_force[3];
-    omni_force[0] = force_in_omni[0];
-    omni_force[1] = force_in_omni[1];
-    omni_force[2] = force_in_omni[2];
+    double omni_force[3];    
 
     if (driver->m_isActivated && force_in_omni.norm() < maxInputForceFeedback)
-        hdSetDoublev(HD_CURRENT_FORCE, omni_force);
+    {
+        omni_force[0] = force_in_omni[0];
+        omni_force[1] = force_in_omni[1];
+        omni_force[2] = force_in_omni[2];
+    }
+    else
+    {
+        omni_force[0] = 0.0;
+        omni_force[1] = 0.0;
+        omni_force[2] = 0.0;
+    }
+
+    hdSetDoublev(HD_CURRENT_FORCE, omni_force);
 
     hdEndFrame(driver->m_hHD);
 
@@ -326,7 +335,8 @@ void GeomagicDriver::activateTool(bool value)
          else
              ids.insert(1);
 
-         col->setGroups(ids);
+         if (col)
+            col->setGroups(ids);
      }
 }
 
@@ -656,6 +666,10 @@ void GeomagicDriver::updateButtonStates(bool emitEvent)
     // first time activated
     if (buttons[0] && !oldStates[0]) {
         activateTool(true);
+    }
+
+    if (buttons[1] && !oldStates[1]) {
+        activateTool(!m_isActivated);
     }
 
     // emit event if requested
