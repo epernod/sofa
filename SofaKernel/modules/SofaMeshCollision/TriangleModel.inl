@@ -302,8 +302,8 @@ void TriangleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
     if (m_topology->getRevision() != m_topologyRevision)
         updateFromTopology();
 
-    if (!cubeModel->empty())
-        return;
+    //if (!cubeModel->empty())
+     //   return;
 
 
     if (m_needsUpdate && !cubeModel->empty()) cubeModel->resize(0);
@@ -491,7 +491,10 @@ void TriangleCollisionModel<DataTypes>::computeBBox(const core::ExecParams* para
 
     sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBBox()");
 
-    if (!m_needsUpdate && (!this->isMoving() || !this->isSimulated()))
+    if (!this->isMoving() || !this->isSimulated())
+        return;
+
+    if (!m_needsUpdate)
         return;
 
     static const Real max_real = std::numeric_limits<Real>::max();
