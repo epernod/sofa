@@ -114,7 +114,8 @@ public:
 
     Data<bool> d_manualStart; /// < Bool to unactive the automatic start of the device at init. initDevice need to be called manually. False by default.
     VecCoord m_posDeviceVisu; ///< position of the hpatic devices for rendering. first pos is equal to d_posDevice
-
+    Data<std::string> d_toolNodeName;
+    sofa::simulation::Node::SPtr m_toolNode;
     GeomagicDriver();
 
 	virtual ~GeomagicDriver();
@@ -127,6 +128,7 @@ public:
     void updateButtonStates(bool emitEvent);
     void initDevice(int cptInitPass = 0);
     void clearDevice();
+    void activateTool(bool value);
     ForceFeedback::SPtr m_forceFeedback;
 
     /// variable pour affichage graphique
@@ -151,12 +153,14 @@ public:
     bool m_visuActive; ///< Internal boolean to detect activation switch of the draw
     bool m_initVisuDone; ///< Internal boolean activated only if visu initialization done without return
     int m_errorDevice; ///< Int detecting any error coming from device / detection
-    bool m_simulationStarted; /// <Boolean storing hte information if Sofa has started the simulation (changed by AnimateBeginEvent)
+    bool m_isActivated; /// <Boolean storing hte information if Sofa has started the simulation (changed by AnimateBeginEvent)
     bool m_isInContact;
 private:
     void handleEvent(core::objectmodel::Event *) override;
     void computeBBox(const core::ExecParams*  params, bool onlyVisible=false ) override;
     void getMatrix( Mat<4,4, GLdouble> & M, int index, double teta);
+
+    bool findNode(sofa::simulation::Node::SPtr node);
 
     Mat<4,4, GLdouble> compute_dh_Matrix(double theta,double alpha, double a, double d);
     Mat<4,4, GLdouble> m_dh_matrices[NBJOINT];

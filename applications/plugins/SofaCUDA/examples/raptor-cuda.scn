@@ -1,5 +1,5 @@
 <Node name="root" dt="0.04">
-	<VisualStyle displayFlags="showBehaviorModels showForceFields" />
+	<VisualStyle displayFlags="showBehaviorModels hideForceFields" />
 	<RequiredPlugin name="CUDA computing" pluginName="SofaCUDA" />
 	
 	<Node name="M1">
@@ -34,13 +34,21 @@
 			<CudaVisualModel template="CudaVec3f" diffuse="0.2 0.8 0.1 1.0" computeNormals="true" />			
 			<BarycentricMapping output="@Visual" isMechanical="0" />
 		</Node>
-
-		<Node name="Surf">
-			<Mesh filename="mesh/raptorProps_25kp.obj"/>
-			<MechanicalObject name="Visual" template="CudaVec3f" />
-			<CudaVisualModel template="CudaVec3f" diffuse="0.2 0.2 0.2 1.0" computeNormals="true" />
-			<BarycentricMapping output="@Visual" isMechanical="0" />
+-->    
+ 
+        <Node name="Visu_body">
+            <MeshObjLoader name="loader" filename="mesh/raptor_35kp.obj" handleSeams="1"/>
+			<OglModel template="CudaVec3f" diffuse="0.2 0.8 0.2 1.0" computeNormals="true" src="@loader" />
+			<BarycentricMapping input="@.." output="@." />
 		</Node>
--->
+        
+        <Node name="Visu_eyes">
+            <MeshObjLoader name="loader" filename="mesh/raptorProps_25kp.obj" handleSeams="1"/>
+			<OglModel template="CudaVec3f" diffuse="0.2 0.2 0.2 1.0" computeNormals="true" src="@loader" />
+			<BarycentricMapping input="@.." output="@." />
+		</Node>
+        
+
+
   </Node>
 </Node>

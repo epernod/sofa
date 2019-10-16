@@ -107,7 +107,10 @@ public:
 
     /// computes the tetrahedron volume  of tetrahedron no i and returns it
     Real computeRestTetrahedronVolume(const TetraID i) const;
-    Real computeRestTetrahedronVolume(const Tetrahedron t) const;
+    Real computeRestTetrahedronVolume(const Tetrahedron& t) const;
+
+
+    Real computeDihedralAngle(const TetraID tetraId, const EdgeID edgeId) const;
 
     /// finds the indices of all tetrahedra in the ball of center ind_ta and of radius dist(ind_ta, ind_tb)
     void getTetraInBall(const TetraID ind_ta, const TetraID ind_tb,
@@ -131,9 +134,17 @@ public:
                                           sofa::defaulttype::Vec<3,Real>& c,
                                           sofa::defaulttype::Vec<3,Real>& normal,
                                           sofa::defaulttype::Vec<3,Real>& intersection);
+    
+    bool checkNodeSequence(const TetraID tetraId) const;
+    bool checkNodeSequence(const Tetrahedron& tetra) const;
+    bool checkTetrahedronDihedralAngles(const TetraID tetraId) const;
 
-    bool checkNodeSequence(Tetra& tetra);
+    bool isTetrahedronElongated(const TetraID tetraId) const;
+    bool checkTetrahedronValidity(const TetraID tetraId) const;
 
+    const sofa::helper::vector <TetraID>& computeBadTetrahedron();
+    const sofa::helper::vector <TetraID>& getBadTetrahedronIds();
+    
     /// return a pointer to the container of cubature points
     NumericalIntegrationDescriptor<Real,4> &getTetrahedronNumericalIntegrationDescriptor();
 
@@ -144,6 +155,8 @@ protected:
     Data<sofa::helper::types::RGBAColor> d_drawColorTetrahedra; ///< RGBA code color used to draw tetrahedra.
     /// include cubature points
     NumericalIntegrationDescriptor<Real,4> tetrahedronNumericalIntegration;
+
+    sofa::helper::vector <TetraID> m_badTetraIds;
 };
 
 #if !defined(SOFA_COMPONENT_TOPOLOGY_TETRAHEDRONSETGEOMETRYALGORITHMS_CPP)

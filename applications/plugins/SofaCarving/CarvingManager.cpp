@@ -62,6 +62,7 @@ CarvingManager::CarvingManager()
     , m_intersectionMethod(nullptr)
     , m_detectionNP(nullptr)
     , m_carvingReady(false)
+    , m_forceFeedback(nullptr)
 {
     this->f_listening.setValue(true);
 }
@@ -76,7 +77,6 @@ void CarvingManager::init()
 {
     // Search for collision model corresponding to the tool.
     if (d_toolModelPath.getValue().empty())
-    {
         m_toolCollisionModel = getContext()->get<core::CollisionModel>(core::objectmodel::Tag("CarvingTool"), core::objectmodel::BaseContext::SearchDown);
     }
     else
@@ -125,7 +125,15 @@ void CarvingManager::init()
     if (m_intersectionMethod == nullptr) { msg_error() << "m_intersectionMethod not found. Add an Intersection method in your scene."; m_carvingReady = false; }
     if (m_detectionNP == nullptr) { msg_error() << "NarrowPhaseDetection not found. Add a NarrowPhaseDetection method in your scene."; m_carvingReady = false; }
     
+
     if (m_carvingReady) { msg_info() << "CarvingManager: init OK."; }
+
+    // check if forcefeedback
+    m_forceFeedback = getContext()->get<sofa::component::controller::ForceFeedback>(this->getTags(), sofa::core::objectmodel::BaseContext::SearchRoot);
+    if (m_forceFeedback)
+        msg_info() << "Forcefeedback found: " << m_forceFeedback->getName();
+    else
+        msg_info() << "NO Forcefeedback found: ";
 }
 
 
@@ -146,6 +154,8 @@ void CarvingManager::doCarve()
         return;
 
     sofa::helper::ScopedAdvancedTimer("CarvingElems");
+    if (m_forceFeedback)
+        m_forceFeedback->setLock(true);
 
     // loop on the contact to get the one between the CarvingSurface and the CarvingTool collision model
     const ContactVector* contacts = NULL;
@@ -199,6 +209,9 @@ void CarvingManager::doCarve()
             nbelems += manager.removeItemsFromCollisionModel(targetModel, elemsToRemove);
         }
     }
+
+    if (m_forceFeedback)
+        m_forceFeedback->setLock(false);
 }
 
 void CarvingManager::handleEvent(sofa::core::objectmodel::Event* event)
@@ -253,7 +266,7 @@ void CarvingManager::handleEvent(sofa::core::objectmodel::Event* event)
             d_active.setValue(false);
         }
     }
-    else if (simulation::CollisionEndEvent::checkEventType(event))
+    else if (simulation::AnimateEndEvent::checkEventType(event))
     {
         if (d_active.getValue()) {
             doCarve();

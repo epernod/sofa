@@ -40,6 +40,7 @@
 #include <sofa/core/topology/BaseMeshTopology.h>
 
 #include <sofa/simulation/Simulation.h>
+#include <sofa/helper/AdvancedTimer.h>
 
 namespace sofa
 {
@@ -58,6 +59,7 @@ PointCollisionModel<DataTypes>::PointCollisionModel()
     , PointActiverPath(initData(&PointActiverPath,"PointActiverPath", "path of a component PointActiver that activate or deactivate collision point during execution") )
     , m_lmdFilter( nullptr )
     , m_displayFreePosition(initData(&m_displayFreePosition, false, "displayFreePosition", "Display Collision Model Points free position(in green)") )
+    , m_needsUpdate(false)
 {
     enum_type = POINT_TYPE;
 }
@@ -116,7 +118,6 @@ void PointCollisionModel<DataTypes>::init()
         myActiver = dynamic_cast<PointActiver *> (activer);
 
 
-
         if (myActiver == nullptr)
         {
             myActiver = PointActiver::getDefaultActiver();
@@ -172,6 +173,7 @@ bool PointCollisionModel<DataTypes>::canCollideWithElement(int index, CollisionM
 template<class DataTypes>
 void PointCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
 {
+    sofa::helper::ScopedAdvancedTimer bboxtimer("PointCollisionModel::computeBoundingTree()");
     CubeModel* cubeModel = createPrevious<CubeModel>();
     const int npoints = mstate->getSize();
     bool updated = false;
@@ -208,6 +210,7 @@ void PointCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
 template<class DataTypes>
 void PointCollisionModel<DataTypes>::computeContinuousBoundingTree(double dt, int maxDepth)
 {
+    sofa::helper::ScopedAdvancedTimer bboxtimer("PointCollisionModel::computeContinuousBoundingTree()");
     CubeModel* cubeModel = createPrevious<CubeModel>();
     const int npoints = mstate->getSize();
     bool updated = false;
@@ -252,6 +255,7 @@ void PointCollisionModel<DataTypes>::computeContinuousBoundingTree(double dt, in
 template<class DataTypes>
 void PointCollisionModel<DataTypes>::updateNormals()
 {
+    sofa::helper::ScopedAdvancedTimer bboxtimer("PointCollisionModel::updateNormals()");
     const VecCoord& x = this->mstate->read(core::ConstVecCoordId::position())->getValue();
     int n = x.size();
     normals.resize(n);
@@ -354,7 +358,7 @@ void PointCollisionModel<DataTypes>::updateNormals()
 template<class DataTypes>
 bool TPoint<DataTypes>::testLMD(const defaulttype::Vector3 &PQ, double &coneFactor, double &coneExtension)
 {
-
+    sofa::helper::ScopedAdvancedTimer bboxtimer("PointCollisionModel::testLMD()");
     defaulttype::Vector3 pt = p();
 
     sofa::core::topology::BaseMeshTopology* mesh = this->model->getMeshTopology();
@@ -425,10 +429,14 @@ void PointCollisionModel<DataTypes>::setFilter(PointLocalMinDistanceFilter *lmdF
 template<class DataTypes>
 void PointCollisionModel<DataTypes>::computeBBox(const core::ExecParams* params, bool onlyVisible)
 {
+    sofa::helper::ScopedAdvancedTimer bboxtimer("PointCollisionModel::computeBBox()");
     if( !onlyVisible ) return;
 
     const int npoints = mstate->getSize();
     if (npoints != size)
+        return;
+
+    if (!m_needsUpdate && (!this->isMoving() || !this->isSimulated()))
         return;
 
     static const Real max_real = std::numeric_limits<Real>::max();
