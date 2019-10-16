@@ -11,12 +11,14 @@ find_package(SofaOpenglVisual REQUIRED)
 
 set(HEADER_FILES
       src/GeomagicDriver.h
+	  src/GeomagicEmulator.h
       src/initPlugin.h
       src/config.h
 )
 
-set(SOURCE_FILES
+set(SOURCE_FILES	  
       src/GeomagicDriver.cpp
+	  src/GeomagicEmulator.cpp
       src/initPlugin.cpp
 )
 

@@ -14,13 +14,13 @@ set(SOURCE_FILES
 set(README_FILES SofaCarving.txt)
 
 find_package(SofaGeneral REQUIRED)
-
+find_package(SofaHaptics REQUIRED)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES} ${README_FILES})
 
-target_link_libraries(${PROJECT_NAME} SofaComponentGeneral)
+target_link_libraries(${PROJECT_NAME} SofaComponentGeneral SofaHaptics)
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>")
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>")
@@ -30,12 +30,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-DSOFA_BUILD_SOF
 set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${HEADER_FILES}")
 
 ## Install rules for the library and headers; CMake package configurations files
-sofa_generate_package(
-    NAME ${PROJECT_NAME}
-    TARGETS ${PROJECT_NAME}
-    VERSION ${PROJECT_VERSION}
-    RELOCATABLE "plugins"
-    )
+sofa_create_package(${PROJECT_NAME} 1.0 ${PROJECT_NAME} ${PROJECT_NAME})
 
 if(SOFA_BUILD_TESTS)
     find_package(SofaTest QUIET)

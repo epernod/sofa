@@ -37,6 +37,9 @@
 #include <sofa/core/topology/TopologyChange.h>
 
 #include <sofa/simulation/Simulation.h>
+#include <sofa/helper/AdvancedTimer.h>
+
+using sofa::helper::ScopedAdvancedTimer;
 
 namespace sofa
 {
@@ -124,6 +127,7 @@ void TriangleCollisionModel<DataTypes>::init()
 template<class DataTypes>
 void TriangleCollisionModel<DataTypes>::updateNormals()
 {
+    ScopedAdvancedTimer bboxtimer("TriangleCollisionModel::updateNormals()");
     for (int i=0; i<size; i++)
     {
         Element t(this,i);
@@ -139,6 +143,7 @@ void TriangleCollisionModel<DataTypes>::updateNormals()
 template<class DataTypes>
 void TriangleCollisionModel<DataTypes>::updateFromTopology()
 {
+    ScopedAdvancedTimer bboxtimer("TriangleCollisionModel::updateFromTopology()");
     int revision = m_topology->getRevision();
     if (revision == m_topologyRevision)
         return;
@@ -197,56 +202,10 @@ void TriangleCollisionModel<DataTypes>::updateFromTopology()
             ++index;
         }
     }
-    updateFlags();
     updateNormals();
 
     // topology has changed, force boudingTree recomputation
     m_needsUpdate = true;
-}
-
-template<class DataTypes>
-void TriangleCollisionModel<DataTypes>::updateFlags(int /*ntri*/)
-{
-#if 0
-    if (ntri < 0) ntri = m_triangles->size();
-    //VecCoord& x =m_mstate->read(core::ConstVecCoordId::position())->getValue();
-    //VecDeriv& v = m_mstate->read(core::ConstVecDerivId::velocity())->getValue();
-    vector<bool> pflags(m_mstate->getSize());
-    std::set<std::pair<int,int> > eflags;
-    for (unsigned i=0; i<m_triangles->size(); i++)
-    {
-        int f = 0;
-        topology::Triangle t = (*m_triangles)[i];
-        if (!pflags[t[0]])
-        {
-            f |= FLAG_P1;
-            pflags[t[0]] = true;
-        }
-        if (!pflags[t[1]])
-        {
-            f |= FLAG_P2;
-            pflags[t[1]] = true;
-        }
-        if (!pflags[t[2]])
-        {
-            f |= FLAG_P3;
-            pflags[t[2]] = true;
-        }
-        if (eflags.insert( (t[0]<t[1])?std::make_pair(t[0],t[1]):std::make_pair(t[1],t[0]) ).second)
-        {
-            f |= FLAG_E12;
-        }
-        if (i < (unsigned)ntri && eflags.insert( (t[1]<t[2])?std::make_pair(t[1],t[2]):std::make_pair(t[2],t[1]) ).second) // don't use the diagonal edge of quads
-        {
-            f |= FLAG_E23;
-        }
-        if (eflags.insert( (t[2]<t[0])?std::make_pair(t[2],t[0]):std::make_pair(t[0],t[2]) ).second)
-        {
-            f |= FLAG_E31;
-        }
-        elems[i].flags = f;
-    }
-#endif
 }
 
 
@@ -290,11 +249,16 @@ bool TriangleCollisionModel<DataTypes>::canCollideWithElement(int index, Collisi
 template<class DataTypes>
 void TriangleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
 {
+    ScopedAdvancedTimer bboxtimer("TriangleCollisionModel::computeBoundingTree()");
     CubeModel* cubeModel = createPrevious<CubeModel>();
 
     // check first that topology didn't changed
     if (m_topology->getRevision() != m_topologyRevision)
         updateFromTopology();
+
+    //if (!cubeModel->empty())
+     //   return;
+
 
     if (m_needsUpdate && !cubeModel->empty()) cubeModel->resize(0);
 
@@ -308,9 +272,12 @@ void TriangleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
 
     const bool calcNormals = d_computeNormals.getValue();
 
+    sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBoundingTree_1()");
     cubeModel->resize(size);  // size = number of triangles
+    sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBoundingTree_1()");
     if (!empty())
     {
+        sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBoundingTree_2()");
         const SReal distance = (SReal)this->proximity.getValue();
         for (int i=0; i<size; i++)
         {
@@ -339,7 +306,11 @@ void TriangleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
             }
             cubeModel->setParentOf(i, minElem, maxElem); // define the bounding box of the current triangle
         }
+        sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBoundingTree_2()");
+
+        sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBoundingTree_3()");
         cubeModel->computeBoundingTree(maxDepth);
+        sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBoundingTree_3()");
     }
 
 
@@ -352,6 +323,7 @@ void TriangleCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
 template<class DataTypes>
 void TriangleCollisionModel<DataTypes>::computeContinuousBoundingTree(double dt, int maxDepth)
 {
+    ScopedAdvancedTimer bboxtimer("TriangleCollisionModel::computeContinuousBoundingTree()");
     CubeModel* cubeModel = createPrevious<CubeModel>();
 
     // check first that topology didn't changed
@@ -359,14 +331,17 @@ void TriangleCollisionModel<DataTypes>::computeContinuousBoundingTree(double dt,
         updateFromTopology();
 
     if (m_needsUpdate) cubeModel->resize(0);
-    if (!isMoving() && !cubeModel->empty() && !m_needsUpdate) return; // No need to recompute BBox if immobile nor if mesh didn't change.
+    if (!isMoving() && !cubeModel->empty() && !m_needsUpdate) 
+        return; // No need to recompute BBox if immobile nor if mesh didn't change.
 
     m_needsUpdate=false;
     defaulttype::Vector3 minElem, maxElem;
-
+    sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBoundingTree_1()");
     cubeModel->resize(size);
+    sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBoundingTree_1()");
     if (!empty())
     {
+        sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBoundingTree_2()");
         const SReal distance = (SReal)this->proximity.getValue();
         for (int i=0; i<size; i++)
         {
@@ -404,7 +379,11 @@ void TriangleCollisionModel<DataTypes>::computeContinuousBoundingTree(double dt,
 
             cubeModel->setParentOf(i, minElem, maxElem);
         }
+        sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBoundingTree_2()");
+
+        sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBoundingTree_3()");
         cubeModel->computeBoundingTree(maxDepth);
+        sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBoundingTree_3()");
     }
 }
 
@@ -458,16 +437,25 @@ template<class DataTypes>
 void TriangleCollisionModel<DataTypes>::computeBBox(const core::ExecParams* params, bool onlyVisible)
 {
     if( !onlyVisible ) return;
+    sofa::helper::AdvancedTimer::stepBegin("TriangleCollisionModel::computeBBox()");
 
     // check first that topology didn't changed
     if (m_topology->getRevision() != m_topologyRevision)
         updateFromTopology();
 
+    sofa::helper::AdvancedTimer::stepEnd("TriangleCollisionModel::computeBBox()");
+
+    if (!this->isMoving() || !this->isSimulated())
+        return;
+
+    if (!m_needsUpdate)
+        return;
+
     static const Real max_real = std::numeric_limits<Real>::max();
     static const Real min_real = std::numeric_limits<Real>::lowest();
     Real maxBBox[3] = {min_real,min_real,min_real};
     Real minBBox[3] = {max_real,max_real,max_real};
-
+    sofa::helper::AdvancedTimer::stepBegin("computeBBox_1");
     for (int i=0; i<size; i++)
     {
         Element t(this,i);
@@ -487,8 +475,11 @@ void TriangleCollisionModel<DataTypes>::computeBBox(const core::ExecParams* para
             else if (pt3[c] < minBBox[c]) minBBox[c] = (Real)pt3[c];
         }
     }
+    sofa::helper::AdvancedTimer::stepEnd("computeBBox_1");
 
+    sofa::helper::AdvancedTimer::stepBegin("computeBBox_2");
     this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
+    sofa::helper::AdvancedTimer::stepEnd("computeBBox_2");
 }
 
 

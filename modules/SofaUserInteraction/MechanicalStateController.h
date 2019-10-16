@@ -37,6 +37,7 @@
 
 #include <SofaUserInteraction/Controller.h>
 #include <sofa/defaulttype/VecTypes.h>
+
 #include <sofa/defaulttype/RigidTypes.h>
 #include <sofa/core/behavior/MechanicalState.h>
 
@@ -48,7 +49,6 @@ namespace component
 
 namespace controller
 {
-
 
 
 /**
@@ -103,7 +103,11 @@ public:
      */
     void onBeginAnimationStep(const double dt) override;
 
+
     //@}
+
+    /// Method to handle various event like keyboard or omni.
+    void handleEvent(sofa::core::objectmodel::Event* event) override;
 
     /**
      * @name Accessors
@@ -147,6 +151,15 @@ public:
      */
     void applyController(void);
 
+    void applyTranslation(sofa::defaulttype::Vec3 translation);
+    bool worldToLocal(sofa::defaulttype::Vec3& vector);
+    void moveUp();
+    void moveDown();
+    void moveLeft();
+    void moveRight();
+    void moveForward();
+    void moveBackward();
+
     virtual std::string getTemplateName() const override
     {
         return templateName(this);
@@ -157,10 +170,14 @@ public:
         return DataTypes::Name();
     }
 protected:
+    
+
 
     Data< unsigned int > index; ///< Controlled DOF index.
     Data< bool > onlyTranslation; ///< Controlling the DOF only in translation
     Data< bool > buttonDeviceState; ///< state of ths device button
+    Data <SReal> d_speedFactor; /// < factor to increase/decrease the movements speed
+
 
     core::behavior::MechanicalState<DataTypes> *mState; ///< Controlled MechanicalState.
 
@@ -174,7 +191,7 @@ protected:
     double deviceX, deviceY, deviceZ;
     int mouseSavedPosX, mouseSavedPosY; ///< Last recorded mouse position
     sofa::defaulttype::Vector3 position;
-    sofa::defaulttype::Quat orientation;
+    sofa::defaulttype::Quat m_orientation;
     bool buttonDevice;
 };
 

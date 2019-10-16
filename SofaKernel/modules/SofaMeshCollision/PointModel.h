@@ -150,6 +150,7 @@ public:
 
     void computeBBox(const core::ExecParams* params, bool onlyVisible) override;
     void updateNormals();
+    bool m_needsUpdate; ///< parameter storing the info boundingTree has to be recomputed.
 
 protected:
 

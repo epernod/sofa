@@ -218,6 +218,9 @@ void FreeMotionAnimationLoop::step(const sofa::core::ExecParams* params, SReal d
         freePosEqPosPlusFreeVelDt.setMapped(true);
         getContext()->executeVisitor(&freePosEqPosPlusFreeVelDt);
     }
+
+    mop.projectPositionAndVelocity(freePos, freeVel); // apply projective constraints
+    mop.propagateXAndV(freePos, freeVel);
     dmsg_info() << " SolveVisitor for freeMotion performed" ;
 
     if (displayTime.getValue())
@@ -296,7 +299,7 @@ void FreeMotionAnimationLoop::step(const sofa::core::ExecParams* params, SReal d
     if (!SOFA_NO_UPDATE_BBOX)
     {
         ScopedAdvancedTimer timer("UpdateBBox");
-        gnode->execute<UpdateBoundingBoxVisitor>(params);
+        //gnode->execute<UpdateBoundingBoxVisitor>(params);
     }
 
 #ifdef SOFA_DUMP_VISITOR_INFO

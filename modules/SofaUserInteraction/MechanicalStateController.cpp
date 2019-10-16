@@ -127,6 +127,20 @@ void MechanicalStateController<Vec1Types>::applyController()
 };
 
 
+template <>
+void MechanicalStateController<Vec1Types>::applyTranslation(sofa::defaulttype::Vec3 translation)
+{
+   
+}
+
+
+template <>
+bool MechanicalStateController<Vec1Types>::worldToLocal(sofa::defaulttype::Vec3& vector)
+{
+  
+    return false;
+}
+
 
 template <>
 void MechanicalStateController<Vec1Types>::onMouseEvent(core::objectmodel::MouseEvent *mev)

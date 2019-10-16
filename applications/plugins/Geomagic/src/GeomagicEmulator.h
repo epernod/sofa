@@ -19,8 +19,8 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_GEOMAGIC_H
-#define SOFA_GEOMAGIC_H
+#ifndef SOFA_GEOMAGICEMULATOR_H
+#define SOFA_GEOMAGICEMULATOR_H
 
 //Geomagic include
 #include <sofa/helper/LCPcalc.h>
@@ -45,84 +45,81 @@
 #include <SofaSimulationTree/GNode.h>
 
 #include <math.h>
-//#include <wrapper.h>
-#include <HD/hd.h>
-#include <HD/hdDevice.h>
-#include <HD/hdDefines.h>
-#include <HD/hdExport.h>
-#include <HD/hdScheduler.h>
+
+#include <sofa/simulation/TaskScheduler.h>
+#include <sofa/simulation/InitTasks.h>
 
 //Visualization
 #include <SofaRigid/RigidMapping.h>
 #include <SofaBaseMechanics/MechanicalObject.h>
 
 
-namespace sofa {
+namespace sofa 
+{
 
-namespace component {
+namespace component 
+{
 
-namespace controller {
+namespace controller 
+{
 
 using namespace sofa::defaulttype;
+using namespace sofa::simulation;
 using core::objectmodel::Data;
 
-#define NBJOINT 6
+
+class GeomagicEmulator;
+
+class SOFA_GEOMAGIC_API GeomagicEmulatorTask : public CpuTask
+{
+public:
+    GeomagicEmulatorTask(GeomagicEmulator* ptr, CpuTask::Status* pStatus);
+
+    virtual ~GeomagicEmulatorTask() {}
+
+    virtual MemoryAlloc run() override final;
+
+private:
+    GeomagicEmulator * m_driver;
+};
+
 
 /**
 * Geomagic driver
 */
-class SOFA_GEOMAGIC_API GeomagicDriver : public Controller
+class SOFA_GEOMAGIC_API GeomagicEmulator : public Controller
 {
 
 public:
-    SOFA_CLASS(GeomagicDriver, Controller);
+    SOFA_CLASS(GeomagicEmulator, Controller);
     typedef RigidTypes::Coord Coord;
     typedef RigidTypes::VecCoord VecCoord;
     typedef SolidTypes<double>::Transform Transform;
 
     typedef defaulttype::Vec4f Vec4f;
     typedef defaulttype::Vector3 Vector3;
-    struct VisualComponent
-    {
-        simulation::Node::SPtr node;
-        sofa::component::visualmodel::OglModel::SPtr visu;
-        sofa::component::mapping::RigidMapping< Rigid3Types , ExtVec3Types  >::SPtr mapping;
-    };
+
 
     Data< std::string > d_deviceName; ///< Name of device Configuration
-    Data<Vec3d> d_positionBase; ///< Position of the interface base in the scene world coordinates
-    Data<Quat> d_orientationBase; ///< Orientation of the interface base in the scene world coordinates
+    Data<Vec3> d_positionBase; ///< Position of the interface base in the scene world coordinates
     Data<Quat> d_orientationTool; ///< Orientation of the tool
-
-    Data<Vector6> d_dh_theta; ///< Denavit theta
-    Data<Vector6> d_dh_alpha; ///< Denavit alpha
-    Data<Vector6> d_dh_d; ///< Denavit d
-    Data<Vector6> d_dh_a; ///< Denavit a
-
-    Data<Vector6> d_angle; ///< Angluar values of joint (rad)
     Data<double> d_scale; ///< Default scale applied to the Phantom Coordinates
     Data<double> d_forceScale; ///< Default forceScale applied to the force feedback. 
-    Data<bool> d_frameVisu; ///< Visualize the frame corresponding to the device tooltip
-    Data<bool> d_omniVisu; ///< Visualize the frame of the interface in the virtual scene
     Data< Coord > d_posDevice; ///< position of the base of the part of the device    
     
     Data<bool> d_button_1; ///< Button state 1
     Data<bool> d_button_2; ///< Button state 2
-    Data<bool> d_emitButtonEvent; ///< Bool to send event through the graph when button are pushed/released
-    Data<Vector3> d_inputForceFeedback; ///< Input force feedback in case of no LCPForceFeedback is found (manual setting)
-    Data<double> d_maxInputForceFeedback; ///< Maximum value of the normed input force feedback for device security
-
-    Data<bool> d_manualStart; /// < Bool to unactive the automatic start of the device at init. initDevice need to be called manually. False by default.
-    VecCoord m_posDeviceVisu; ///< position of the hpatic devices for rendering. first pos is equal to d_posDevice
     Data<std::string> d_toolNodeName;
+    Data <SReal> d_speedFactor; /// < factor to increase/decrease the movements speed
+    Data<double> d_maxInputForceFeedback; ///< Maximum value of the normed input force feedback for device security
     sofa::simulation::Node::SPtr m_toolNode;
-    GeomagicDriver();
 
-	virtual ~GeomagicDriver();
+    GeomagicEmulator();
+	virtual ~GeomagicEmulator();
 
     virtual void init() override;
     virtual void bwdInit() override;
-    virtual void reinit() override;
+
     virtual void draw(const sofa::core::visual::VisualParams* vparams) override;
     void updatePosition();
     void updateButtonStates(bool emitEvent);
@@ -131,55 +128,53 @@ public:
     void activateTool(bool value);
     ForceFeedback::SPtr m_forceFeedback;
 
-    /// variable pour affichage graphique
-    enum
-    {
-        VN_stylus = 0,
-        VN_joint2 = 1,
-        VN_joint1 = 2,
-        VN_arm2   = 3,
-        VN_arm1   = 4,
-        VN_joint0 = 5,
-        VN_base   = 6,
-        NVISUALNODE = 7
-    };
 
-    VisualComponent visualNode[NVISUALNODE];
-    static const char* visualNodeNames[NVISUALNODE];
-    static const char* visualNodeFiles[NVISUALNODE];
+    void applyTranslation(sofa::defaulttype::Vec3 translation);
+    void worldToLocal(sofa::defaulttype::Vec3& vector);
+    void moveUp();
+    void moveDown();
+    void moveLeft();
+    void moveRight();
+    void moveForward();
+    void moveBackward();
+
     simulation::Node::SPtr m_omniVisualNode;
     component::container::MechanicalObject<sofa::defaulttype::Rigid3dTypes>::SPtr rigidDOF;
 
-    bool m_visuActive; ///< Internal boolean to detect activation switch of the draw
-    bool m_initVisuDone; ///< Internal boolean activated only if visu initialization done without return
     int m_errorDevice; ///< Int detecting any error coming from device / detection
     bool m_isActivated; /// <Boolean storing hte information if Sofa has started the simulation (changed by AnimateBeginEvent)
     bool m_isInContact;
+
+    sofa::helper::fixed_array<bool, 2> oldStates;
+
+    /**
+    * @brief Key Press event callback.
+    */
+    void onKeyPressedEvent(core::objectmodel::KeypressedEvent *kEvent);
+
+    /**
+    * @brief Key Release event callback.
+    */
+    void onKeyReleasedEvent(core::objectmodel::KeyreleasedEvent *kEvent);
+
+
 private:
     void handleEvent(core::objectmodel::Event *) override;
-    void computeBBox(const core::ExecParams*  params, bool onlyVisible=false ) override;
-    void getMatrix( Mat<4,4, GLdouble> & M, int index, double teta);
 
     bool findNode(sofa::simulation::Node::SPtr node);
-
-    Mat<4,4, GLdouble> compute_dh_Matrix(double theta,double alpha, double a, double d);
-    Mat<4,4, GLdouble> m_dh_matrices[NBJOINT];
-
-    //These data are written by the omni they cnnot be accessed in the simulation loop
-    struct OmniData
-    {
-        HDdouble angle1[3];
-        HDdouble angle2[3];
-        HDdouble transform[16];
-        int buttonState;
-    };
+        
+    
 
 public:
-    OmniData m_omniData;
-    OmniData m_simuData;
-    HHD m_hHD;
-    std::vector< HDSchedulerHandle > m_hStateHandles;
+    sofa::simulation::TaskScheduler* _taskScheduler;
+    sofa::simulation::CpuTask::Status _simStepStatus;
+    sofa::defaulttype::Vector3 m_toolForceFeedBack;
 
+    std::mutex lockPosition;
+
+    bool m_terminate;
+
+    Vec3 m_toolPosition;
 };
 
 } // namespace controller
@@ -188,4 +183,4 @@ public:
 
 } // namespace sofa
 
-#endif // SOFA_GEOMAGIC_H
+#endif // SOFA_GEOMAGICEMULATOR_H

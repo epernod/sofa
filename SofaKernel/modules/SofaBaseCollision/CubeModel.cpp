@@ -26,6 +26,7 @@
 #include <sofa/core/ObjectFactory.h>
 #include <algorithm>
 #include <cmath>
+#include <sofa/helper/AdvancedTimer.h>
 
 namespace sofa
 {
@@ -96,16 +97,17 @@ void CubeModel::setLeafCube(int cubeIndex, std::pair<core::CollisionElementItera
 
 int CubeModel::addCube(Cube subcellsBegin, Cube subcellsEnd)
 {
-    int i = size;
-    this->core::CollisionModel::resize(size+1);
-    elems.resize(size+1);
-    //elems[i].subcells = std::make_pair(subcellsBegin, subcellsEnd);
-    elems[i].subcells.first = subcellsBegin;
-    elems[i].subcells.second = subcellsEnd;
-    elems[i].children.first = core::CollisionElementIterator();
-    elems[i].children.second = core::CollisionElementIterator();
-    updateCube(i);
-    return i;
+    int index = size;
+
+    this->core::CollisionModel::resize(index + 1);
+    elems.resize(index + 1);
+    
+    elems[index].subcells.first = subcellsBegin;
+    elems[index].subcells.second = subcellsEnd;
+    elems[index].children.first = core::CollisionElementIterator();
+    elems[index].children.second = core::CollisionElementIterator();
+    updateCube(index);
+    return index;
 }
 
 void CubeModel::updateCube(int index)
@@ -154,9 +156,9 @@ void CubeModel::draw(const core::visual::VisualParams* vparams)
     }
     Vec<4,float> c;
     if (isSimulated())
-        c=Vec<4,float>(1.0f, 1.0f, 1.0f, color);
+        c=Vec<4,float>(1.0f, 0.0f, 0.0f, color);
     else
-        c=Vec<4,float>(1.0f, 1.0f, 1.0f, color);
+        c=Vec<4,float>(1.0f, 0.0f, 0.0f, color);
 
     std::vector< Vector3 > points;
     for (int i=0; i<size; i++)
@@ -230,21 +232,23 @@ void CubeModel::computeBoundingTree(int maxDepth)
 {
 //    if(maxDepth <= 0)
 //        return;
+    sofa::helper::AdvancedTimer::stepBegin("CubeModel::computeBoundingTree_1()");
 
-    //sout << ">CubeModel::computeBoundingTree("<<maxDepth<<")"<<sendl;
     std::list<CubeModel*> levels;
     levels.push_front(createPrevious<CubeModel>());
     for (int i=0; i<maxDepth; i++)
         levels.push_front(levels.front()->createPrevious<CubeModel>());
     CubeModel* root = levels.front();
-    //if (isStatic() && root->getPrevious() == nullptr && !root->empty()) return; // No need to recompute BBox if immobile
 
+    //if (isStatic() && root->getPrevious() == NULL && !root->empty()) return; // No need to recompute BBox if immobile
+    sofa::helper::AdvancedTimer::stepEnd("CubeModel::computeBoundingTree_1()");
     if (root->empty() || root->getPrevious() != nullptr)
     {
         // Tree must be reconstructed
         //sout << "Building Tree with depth "<<maxDepth<<" from "<<size<<" elements."<<sendl;
         // First remove extra levels
-        while(root->getPrevious()!=nullptr)
+        sofa::helper::AdvancedTimer::stepBegin("CubeModel::computeBoundingTree_2()");
+        while(root->getPrevious() != nullptr)
         {
             core::CollisionModel::SPtr m = root->getPrevious();
             root->setPrevious(m->getPrevious());
@@ -252,6 +256,8 @@ void CubeModel::computeBoundingTree(int maxDepth)
             //delete m;
             m.reset();
         }
+        sofa::helper::AdvancedTimer::stepEnd("CubeModel::computeBoundingTree_2()");
+        sofa::helper::AdvancedTimer::stepBegin("CubeModel::computeBoundingTree_3()");
         // Then clear all existing levels
         {
             for (std::list<CubeModel*>::iterator it = levels.begin(); it != levels.end(); ++it)
@@ -265,6 +271,9 @@ void CubeModel::computeBoundingTree(int maxDepth)
         CubeModel* level = *it;
         ++it;
         int lvl = 0;
+        sofa::helper::AdvancedTimer::stepEnd("CubeModel::computeBoundingTree_3()");
+
+        sofa::helper::AdvancedTimer::stepBegin("CubeModel::computeBoundingTree_4()");
         while(it != levels.end())
         {
             //sout << "CubeModel: split level "<<lvl<<sendl;
@@ -293,21 +302,8 @@ void CubeModel::computeBoundingTree(int maxDepth)
                         splitAxis = 2;
 
                     // Separate cells on each side of the median cell
-
-#if defined(__GNUC__) && (__GNUC__ == 4)
-// && (__GNUC_MINOR__ == 1) && (__GNUC_PATCHLEVEL__ == 1)
-                    // there is apparently a bug in std::sort with GCC 4.x
-                    if (splitAxis == 0)
-                        qsort(&(elems[subcells.first.getIndex()]), subcells.second.getIndex()-subcells.first.getIndex(), sizeof(elems[0]), CubeSortPredicate::sortCube<0>);
-                    else if (splitAxis == 1)
-                        qsort(&(elems[subcells.first.getIndex()]), subcells.second.getIndex()-subcells.first.getIndex(), sizeof(elems[0]), CubeSortPredicate::sortCube<1>);
-                    else
-                        qsort(&(elems[subcells.first.getIndex()]), subcells.second.getIndex()-subcells.first.getIndex(), sizeof(elems[0]), CubeSortPredicate::sortCube<2>);
-#else
                     CubeSortPredicate sortpred(splitAxis);
-                    //std::nth_element(elems.begin()+subcells.first.getIndex(),elems.begin()+middle,elems.begin()+subcells.second.getIndex(), sortpred);
-                    std::sort(elems.begin()+subcells.first.getIndex(),elems.begin()+subcells.second.getIndex(), sortpred);
-#endif
+                    std::sort(elems.begin() + subcells.first.getIndex(), elems.begin() + subcells.second.getIndex(), sortpred);
 
                     // Create the two new subcells
                     Cube cmiddle(this, middle);
@@ -323,15 +319,20 @@ void CubeModel::computeBoundingTree(int maxDepth)
             level = clevel;
             ++lvl;
         }
+        sofa::helper::AdvancedTimer::stepEnd("CubeModel::computeBoundingTree_4()");
+
+        sofa::helper::AdvancedTimer::stepBegin("CubeModel::computeBoundingTree_5()");
         if (!parentOf.empty())
         {
             // Finally update parentOf to reflect new cell order
             for (int i=0; i<size; i++)
                 parentOf[elems[i].children.first.getIndex()] = i;
         }
+        sofa::helper::AdvancedTimer::stepEnd("CubeModel::computeBoundingTree_5()");
     }
     else
     {
+        sofa::helper::AdvancedTimer::stepBegin("CubeModel::computeBoundingTree_6()");
         // Simply update the existing tree, starting from the bottom
         int lvl = 0;
         for (std::list<CubeModel*>::reverse_iterator it = levels.rbegin(); it != levels.rend(); ++it)
@@ -340,6 +341,7 @@ void CubeModel::computeBoundingTree(int maxDepth)
             (*it)->updateCubes();
             ++lvl;
         }
+        sofa::helper::AdvancedTimer::stepEnd("CubeModel::computeBoundingTree_6()");
     }
     //sout << "<CubeModel::computeBoundingTree("<<maxDepth<<")"<<sendl;
 }
