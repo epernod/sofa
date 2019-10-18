@@ -20,3 +20,4 @@ sofa_add_application(SofaGuiGlut SofaGuiGlut OFF)
 sofa_add_application(runSofa runSofa ON)
 
 sofa_add_subdirectory_external(Regression Regression)
+sofa_add_application(SofaAdvancePhysicsAPI SofaAdvancePhysicsAPI ON)
