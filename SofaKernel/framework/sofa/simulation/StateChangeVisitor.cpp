@@ -23,6 +23,7 @@
 #include <sofa/simulation/StateChangeVisitor.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/core/topology/TopologicalMapping.h>
+#include <sofa/core/behavior/BaseMass.h>
 #include <sofa/core/BaseMapping.h>
 
 namespace sofa
@@ -61,12 +62,20 @@ Visitor::Result StateChangeVisitor::processNodeTopDown(simulation::Node* node)
     // search for mechanical mapping,
     for (simulation::Node::ObjectIterator it = node->object.begin(); it != node->object.end(); ++it)
     {
-        sofa::core::BaseMapping* obj = dynamic_cast<sofa::core::BaseMapping*>(it->get());
-        if (obj != nullptr)
+        sofa::core::BaseMapping* mapping = dynamic_cast<sofa::core::BaseMapping*>(it->get());
+        if (mapping != nullptr)
         {
-            ctime_t t0=begin(node,obj);
-            obj->handleTopologyChange(); // update the specific TopologicalMapping
-            end(node,obj,t0);
+            ctime_t t0=begin(node, mapping);
+            mapping->handleTopologyChange(); // update the specific TopologicalMapping
+            end(node, mapping, t0);
+        }
+
+        sofa::core::behavior::BaseMass* mass = dynamic_cast<sofa::core::behavior::BaseMass*>(it->get());
+        if (mass != nullptr)
+        {
+            ctime_t t0 = begin(node, mass);
+            mass->handleTopologyChange(); // update the specific TopologicalMapping
+            end(node, mass, t0);
         }
     }
 
