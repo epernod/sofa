@@ -62,7 +62,6 @@ CarvingManager::CarvingManager()
     , m_intersectionMethod(nullptr)
     , m_detectionNP(nullptr)
     , m_carvingReady(false)
-    , m_forceFeedback(nullptr)
 {
     this->f_listening.setValue(true);
 }
@@ -126,12 +125,6 @@ void CarvingManager::init()
     
     if (m_carvingReady) { msg_info() << "CarvingManager: init OK."; }
 
-    // check if forcefeedback
-    m_forceFeedback = getContext()->get<sofa::component::controller::ForceFeedback>(this->getTags(), sofa::core::objectmodel::BaseContext::SearchRoot);
-    if (m_forceFeedback)
-        msg_info() << "Forcefeedback found: " << m_forceFeedback->getName();
-    else
-        msg_info() << "NO Forcefeedback found: ";
 }
 
 
@@ -152,9 +145,6 @@ void CarvingManager::doCarve()
         return;
 
     sofa::helper::ScopedAdvancedTimer("CarvingElems");
-
-    if (m_forceFeedback)
-        m_forceFeedback->setLock(true);
 
     // loop on the contact to get the one between the CarvingSurface and the CarvingTool collision model
     const ContactVector* contacts = NULL;
@@ -209,8 +199,6 @@ void CarvingManager::doCarve()
         }
     }
 
-    if (m_forceFeedback)
-        m_forceFeedback->setLock(false);
 }
 
 void CarvingManager::handleEvent(sofa::core::objectmodel::Event* event)

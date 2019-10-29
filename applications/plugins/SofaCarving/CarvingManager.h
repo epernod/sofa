@@ -31,7 +31,6 @@
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/core/behavior/BaseController.h>
 #include <sofa/core/objectmodel/HapticDeviceEvent.h>
-#include <SofaHaptics/ForceFeedback.h>
 #include <fstream>
 
 namespace sofa
@@ -116,8 +115,6 @@ protected:
 
     // Bool to store the information if component has well be init and can be used.
     bool m_carvingReady;
-
-    sofa::component::controller::ForceFeedback::SPtr m_forceFeedback;
     
 };
 
