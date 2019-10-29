@@ -19,8 +19,8 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_COMPONENT_COLLISION_CARVINGMANAGER_H
-#define SOFA_COMPONENT_COLLISION_CARVINGMANAGER_H
+#ifndef SOFA_SOFACARVING_CARVINGMANAGER_H
+#define SOFA_SOFACARVING_CARVINGMANAGER_H
 
 #include <SofaCarving/config.h>
 #include <sofa/core/behavior/MechanicalState.h>
@@ -124,4 +124,4 @@ protected:
 
 } // namespace sofa
 
-#endif
+#endif // SOFA_SOFACARVING_CARVINGMANAGER_H
