@@ -31,7 +31,8 @@
 #include <sofa/core/objectmodel/MouseEvent.h>
 #include <sofa/helper/system/thread/CTime.h>
 #include <sofa/core/visual/VisualParams.h>
-
+#include <iostream>
+#include <chrono>
 
 namespace sofa
 {
@@ -104,9 +105,6 @@ HDCallbackCode HDCALLBACK stateCallback(void * userData)
     HDErrorInfo error;
     GeomagicDriver * driver = (GeomagicDriver * ) userData;
 
-    if (!driver->m_simulationStarted)
-        return HD_CALLBACK_CONTINUE;
-
     hdMakeCurrentDevice(driver->m_hHD);
     if (HD_DEVICE_ERROR(error = hdGetError())) return HD_CALLBACK_CONTINUE;
 
@@ -121,26 +119,42 @@ HDCallbackCode HDCALLBACK stateCallback(void * userData)
     hdGetDoublev(HD_CURRENT_GIMBAL_ANGLES,driver->m_omniData.angle2);
 
     Vector3 currentForce;
+    double maxInputForceFeedback = driver->d_maxInputForceFeedback.getValue();
 
     if (driver->m_forceFeedback)
     {
         Vector3 pos(driver->m_omniData.transform[12+0]*0.1,driver->m_omniData.transform[12+1]*0.1,driver->m_omniData.transform[12+2]*0.1);
         Vector3 pos_in_world = driver->d_positionBase.getValue() + driver->d_orientationBase.getValue().rotate(pos*driver->d_scale.getValue());
+        auto t1 = std::chrono::high_resolution_clock::now();
 
         driver->m_forceFeedback->computeForce(pos_in_world[0],pos_in_world[1],pos_in_world[2], 0, 0, 0, 0, currentForce[0], currentForce[1], currentForce[2]);
+
+        auto t2 = std::chrono::high_resolution_clock::now();
         driver->m_isInContact = false;
+        bool contact = false;
         for (int i=0; i<3; i++)
             if (currentForce[i] != 0.0)
             {
                 driver->m_isInContact = true;
+                contact = true;
                 break;
             }
+        if (contact)
+        {
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+            double norm = currentForce.norm();
+            
+            if (norm > maxInputForceFeedback) 
+            {
+                msg_warning(driver) << "###################################################";
+                msg_warning(driver) << "forceFeedback: " << currentForce << " | " << pos_in_world << " -> " << norm << " -> duration: " << duration;
+            }
+        }
     }
     else
     {
         Vector3 inputForceFeedback = driver->d_inputForceFeedback.getValue();
         double normValue = inputForceFeedback.norm();
-        double maxInputForceFeedback = driver->d_maxInputForceFeedback.getValue();
 
         if( maxInputForceFeedback > 0.0)
         {
@@ -163,11 +177,20 @@ HDCallbackCode HDCALLBACK stateCallback(void * userData)
     }
 
     Vector3 force_in_omni = driver->d_orientationBase.getValue().inverseRotate(currentForce)  * driver->d_forceScale.getValue();
+    double omni_force[3];    
 
-    double omni_force[3];
-    omni_force[0] = force_in_omni[0];
-    omni_force[1] = force_in_omni[1];
-    omni_force[2] = force_in_omni[2];
+    if (driver->m_isActivated && force_in_omni.norm() < maxInputForceFeedback)
+    {
+        omni_force[0] = force_in_omni[0];
+        omni_force[1] = force_in_omni[1];
+        omni_force[2] = force_in_omni[2];
+    }
+    else
+    {
+        omni_force[0] = 0.0;
+        omni_force[1] = 0.0;
+        omni_force[2] = 0.0;
+    }
 
     hdSetDoublev(HD_CURRENT_FORCE, omni_force);
 
@@ -194,11 +217,12 @@ GeomagicDriver::GeomagicDriver()
     , d_posDevice(initData(&d_posDevice, "positionDevice", "position of the base of the part of the device"))
     , d_button_1(initData(&d_button_1,"button1","Button state 1"))
     , d_button_2(initData(&d_button_2,"button2","Button state 2"))
+    , d_toolNodeName(initData(&d_toolNodeName, "toolNodeName", "Node of the tool to activate deactivate"))
     , d_emitButtonEvent(initData(&d_emitButtonEvent, false, "emitButtonEvent", "If true, will send event through the graph when button are pushed/released"))
     , d_inputForceFeedback(initData(&d_inputForceFeedback, Vec3d(0,0,0), "inputForceFeedback","Input force feedback in case of no LCPForceFeedback is found (manual setting)"))
-    , d_maxInputForceFeedback(initData(&d_maxInputForceFeedback, double(1.0), "maxInputForceFeedback","Maximum value of the normed input force feedback for device security"))
-    , d_manualStart(initData(&d_manualStart, false, "manualStart", "If true, will not automatically initDevice at component init phase."))
-    , m_simulationStarted(false)
+    , d_maxInputForceFeedback(initData(&d_maxInputForceFeedback, double(10.0), "maxInputForceFeedback","Maximum value of the normed input force feedback for device security"))
+    , d_manualStart(initData(&d_manualStart, false, "manualStart", "If true, will not automatically initDevice at component init phase."))    
+    , m_isActivated(false)
     , m_errorDevice(0)
     , m_isInContact(false)
     , m_hHD(UINT_MAX)
@@ -237,6 +261,34 @@ void GeomagicDriver::clearDevice()
     hdDisableDevice(m_hHD);
 }
 
+
+bool GeomagicDriver::findNode(sofa::simulation::Node::SPtr node)
+{
+    // check this node
+    if (node->hasTag(sofa::core::objectmodel::Tag("toolCollision")))
+    {
+        m_toolNode = node;
+        return true;
+    }
+
+    // check its children
+    sofa::helper::vector<sofa::core::objectmodel::BaseNode* > childNodes = node->getChildren();
+    for (int i = 0; i < childNodes.size(); ++i)
+    {
+        sofa::simulation::Node* node = dynamic_cast<sofa::simulation::Node*>(childNodes[i]);
+        if (node->hasTag(sofa::core::objectmodel::Tag("toolCollision")))
+        {
+            m_toolNode = node;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+
+
 void GeomagicDriver::bwdInit()
 {
     if(m_errorDevice != 0)
@@ -244,11 +296,49 @@ void GeomagicDriver::bwdInit()
 
     simulation::Node *context = dynamic_cast<simulation::Node *>(this->getContext()); // access to current node
     m_forceFeedback = context->get<ForceFeedback>(this->getTags(), sofa::core::objectmodel::BaseContext::SearchRoot);
+    
+
+    sofa::simulation::Node::SPtr rootNode = static_cast<simulation::Node*>(this->getContext()->getRootContext());
+    sofa::helper::vector<sofa::core::objectmodel::BaseNode* > childNodes = rootNode->getChildren();
+
+    for (int i = 0; i < childNodes.size(); ++i)
+    {
+        sofa::simulation::Node* node = dynamic_cast<sofa::simulation::Node*>(childNodes[i]);
+
+        bool res = findNode(node);
+        if (res == true)
+            break;
+    }
+
+    if (m_toolNode == nullptr)
+        msg_warning() << "no tool node collision found";
+    else
+        msg_info() << "Found collision model with name: " << m_toolNode->getName();
+    
+    activateTool(false);
+
 
     if (d_manualStart.getValue() == false)
         initDevice();
 }
 
+void GeomagicDriver::activateTool(bool value)
+{
+     m_isActivated = value; 
+     if (m_toolNode) {
+         //m_toolNode->setActive(value);
+         sofa::core::CollisionModel* col = m_toolNode->get<core::CollisionModel>(core::objectmodel::Tag("CarvingTool"), core::objectmodel::BaseContext::SearchRoot);
+         std::set<int> ids; 
+
+         if(value)
+             ids.insert(10);
+         else
+             ids.insert(1);
+
+         if (col)
+            col->setGroups(ids);
+     }
+}
 
 void GeomagicDriver::initDevice(int cptInitPass)
 {
@@ -573,6 +663,15 @@ void GeomagicDriver::updateButtonStates(bool emitEvent)
     d_button_1.setValue(buttons[0]);
     d_button_2.setValue(buttons[1]);
 
+    // first time activated
+    if (buttons[0] && !oldStates[0]) {
+        activateTool(true);
+    }
+
+    if (buttons[1] && !oldStates[1]) {
+        activateTool(!m_isActivated);
+    }
+
     // emit event if requested
     if (!emitEvent)
         return;
@@ -734,7 +833,6 @@ void GeomagicDriver::handleEvent(core::objectmodel::Event *event)
         if (m_hStateHandles.size() && m_hStateHandles[0] == HD_INVALID_HANDLE)
             return;
 
-        m_simulationStarted = true;
         updatePosition();
     }
 }
