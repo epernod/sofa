@@ -94,11 +94,11 @@ int TopologicalChangeManager::removeItemsFromTriangleModel(sofa::component::coll
     {
         //Quick HACK for Hexa2TetraMapping
         sofa::component::topology::Hexa2TetraTopologicalMapping* badMapping;
-        model->getContext()->get(badMapping, sofa::core::objectmodel::BaseContext::SearchRoot);
+        model->getContext()->get(badMapping, sofa::core::objectmodel::BaseContext::SearchDown);
         if(badMapping) //stop process
         {
             msg_warning("TopologicalChangeManager") << " Removing element is not handle by Hexa2TetraTopologicalMapping. Stopping process." ;
-            return 0;
+            //return 0;
         }
 
         int nbt = topo_curr->getNbTriangles();
