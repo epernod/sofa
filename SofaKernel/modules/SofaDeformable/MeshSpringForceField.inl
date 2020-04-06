@@ -261,7 +261,7 @@ void MeshSpringForceField<DataTypes>::draw(const core::visual::VisualParams* vpa
                 G = 1. - B;
             }
 
-            vparams->drawTool()->drawLines(points, drawSpringSize, sofa::defaulttype::Vec4f(R, G, B, 1.f));
+            vparams->drawTool()->drawLines(points, drawSpringSize, sofa::defaulttype::Vec4f(R, G, B, 0.1f));
         }
     }
 }
