@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -187,6 +187,7 @@ void LCPForceFeedback<DataTypes>::setLock(bool value)
     value == true ? lockForce.lock() : lockForce.unlock();
 }
 
+
 static std::mutex s_mtx;
 
 template <class DataTypes>
@@ -198,7 +199,7 @@ void LCPForceFeedback<DataTypes>::computeForce(const VecCoord& state,  VecDeriv&
     }
     updateStats();
     
-    lockForce.lock();    
+    lockForce.lock(); // check if computation has not been locked using setLock method.
     updateConstraintProblem();
     doComputeForce(state, forces);    
     lockForce.unlock();

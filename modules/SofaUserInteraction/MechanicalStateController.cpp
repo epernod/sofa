@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -19,17 +19,6 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-//
-// C++ Implementation : MechanicalStateController
-//
-// Description:
-//
-//
-// Author: Pierre-Jean Bensoussan, Digital Trainers (2008)
-//
-// Copyright: See COPYING file that comes with this distribution
-//
-//
 #define SOFA_COMPONENT_CONTROLLER_MECHANICALSTATECONTROLLER_CPP
 #include <SofaUserInteraction/MechanicalStateController.inl>
 
@@ -145,7 +134,6 @@ bool MechanicalStateController<Vec1Types>::worldToLocal(sofa::defaulttype::Vec3&
 template <>
 void MechanicalStateController<Vec1Types>::onMouseEvent(core::objectmodel::MouseEvent *mev)
 {
-    //sout<<"MouseEvent detected"<<sendl;
     eventX = mev->getPosX();
     eventY = mev->getPosY();
 
@@ -189,7 +177,6 @@ void MechanicalStateController<Vec1Types>::onMouseEvent(core::objectmodel::Mouse
 template <>
 void MechanicalStateController<Rigid3Types>::onMouseEvent(core::objectmodel::MouseEvent *mev)
 {
-    //sout<<"MouseEvent detected"<<sendl;
     eventX = mev->getPosX();
     eventY = mev->getPosY();
 

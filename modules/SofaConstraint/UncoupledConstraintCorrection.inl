@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -115,7 +115,8 @@ UncoupledConstraintCorrection<DataTypes>::UncoupledConstraintCorrection(sofa::co
     , f_verbose( initData(&f_verbose,false,"verbose","Dump the constraint matrix at each iteration") )
     , d_correctionVelocityFactor(initData(&d_correctionVelocityFactor, (Real)1.0, "correctionVelocityFactor", "Factor applied to the constraint forces when correcting the velocities"))
     , d_correctionPositionFactor(initData(&d_correctionPositionFactor, (Real)1.0, "correctionPositionFactor", "Factor applied to the constraint forces when correcting the positions"))
-    , d_useOdeSolverIntegrationFactors(initData(&d_useOdeSolverIntegrationFactors, false, "useOdeSolverIntegrationFactors", "Use odeSolver integration factors instead of correctionVelocityFactor and correctionPositionFactor"))
+    , d_useOdeSolverIntegrationFactors(initData(&d_useOdeSolverIntegrationFactors, true, "useOdeSolverIntegrationFactors", "Use odeSolver integration factors instead of correctionVelocityFactor and correctionPositionFactor"))
+    , l_topology(initLink("topology", "link to the topology container"))
     , m_pOdeSolver(nullptr)
 {
 }
@@ -160,7 +161,15 @@ void UncoupledConstraintCorrection<DataTypes>::init()
             compliance.setValue(UsedComp);
 
             // If compliance is a vector of value per dof, need to register it as a PointData to the current topology
-            sofa::core::topology::BaseMeshTopology* _topology = this->getContext()->getMeshTopology();
+            if (l_topology.empty())
+            {
+                msg_info() << "link to Topology container should be set to ensure right behavior. First Topology found in current context will be used.";
+                l_topology.set(this->getContext()->getMeshTopologyLink());
+            }
+
+            sofa::core::topology::BaseMeshTopology* _topology = l_topology.get();
+            msg_info() << "Topology path used: '" << l_topology.getLinkedPath() << "'";
+
             if (_topology != nullptr)
             {
                 compliance.createTopologicalEngine(_topology);
@@ -260,7 +269,7 @@ void UncoupledConstraintCorrection<DataTypes>::getComplianceWithConstraintMerge(
 template<class DataTypes>
 void UncoupledConstraintCorrection<DataTypes>::addComplianceInConstraintSpace(const sofa::core::ConstraintParams * cparams, sofa::defaulttype::BaseMatrix *W)
 {
-    const MatrixDeriv& constraints = cparams->readJ(this->mstate)->getValue(cparams) ;
+    const MatrixDeriv& constraints = cparams->readJ(this->mstate)->getValue() ;
     VecReal comp = compliance.getValue();
     Real comp0 = defaultCompliance.getValue();
     const bool verbose = f_verbose.getValue();

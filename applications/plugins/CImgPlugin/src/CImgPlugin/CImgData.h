@@ -85,14 +85,14 @@ public:
 
     cimg_library::CImg<T>& getCImg(const unsigned int t=0) {
         if (t>=img.size())   {
-            assert(img._data != NULL);
+            assert(img._data != nullptr);
             return *img._data;
         }
         return img(t);
     }
     const cimg_library::CImg<T>& getCImg(const unsigned int t=0) const {
         if (t>=img.size())   {
-            assert(img._data != NULL);
+            assert(img._data != nullptr);
             return *img._data;
         }
         return img(t);
@@ -246,7 +246,7 @@ public:
     // returns a binary image cutting through 3D input meshes, corresponding to a plane indexed by "coord" along "axis" and inside a bounding box
     // positions are in image coordinates
     template<typename Real>
-    cimg_library::CImg<bool> get_slicedModels(const unsigned int coord,const unsigned int axis,const Mat<2,3,unsigned int>& ROI,const ResizableExtVector<Vec<3,Real> >& position, const ResizableExtVector< component::visualmodel::VisualModelImpl::Triangle >& triangle, const ResizableExtVector< component::visualmodel::VisualModelImpl::Quad >& quad) const
+    cimg_library::CImg<bool> get_slicedModels(const unsigned int coord,const unsigned int axis,const Mat<2,3,unsigned int>& ROI,const helper::vector<Vec<3,Real> >& position, const helper::vector< component::visualmodel::VisualModelImpl::Triangle >& triangle, const helper::vector< component::visualmodel::VisualModelImpl::Quad >& quad) const
     {
         const unsigned int dim[3]= {ROI[1][0]-ROI[0][0]+1,ROI[1][1]-ROI[0][1]+1,ROI[1][2]-ROI[0][2]+1};
         cimg_library::CImg<bool> ret;
@@ -622,12 +622,12 @@ struct ImageTypeInfo
 
     static const void* getValuePtr(const DataType&)
     {
-        return NULL;
+        return nullptr;
     }
 
     static void* getValuePtr(DataType&)
     {
-        return NULL;
+        return nullptr;
     }
 };
 

@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -19,9 +19,6 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-// Author: François Faure, INRIA-UJF, (C) 2006
-//
-// Copyright: See COPYING file that comes with this distribution
 #ifndef SOFA_COMPONENT_INTERACTIONFORCEFIELD_SPRINGFORCEFIELD_INL
 #define SOFA_COMPONENT_INTERACTIONFORCEFIELD_SPRINGFORCEFIELD_INL
 
@@ -31,7 +28,6 @@
 #include <sofa/core/topology/TopologyChange.h>
 #include <sofa/simulation/Simulation.h>
 #include <sofa/helper/io/XspLoader.h>
-#include <sofa/helper/system/config.h>
 #include <cassert>
 #include <iostream>
 #include <fstream>
@@ -298,7 +294,7 @@ void SpringForceField<DataTypes>::handleTopologyChange(core::topology::Topology 
     {
         core::topology::BaseMeshTopology*	_topology = topo->toBaseMeshTopology();
 
-        if(_topology != NULL)
+        if(_topology != nullptr)
         {
             std::list<const core::topology::TopologyChange *>::const_iterator itBegin=_topology->beginChange();
             std::list<const core::topology::TopologyChange *>::const_iterator itEnd=_topology->endChange();
@@ -328,7 +324,7 @@ void SpringForceField<DataTypes>::handleTopologyChange(core::topology::Topology 
     {
         core::topology::BaseMeshTopology*	_topology = topo->toBaseMeshTopology();
 
-        if(_topology != NULL)
+        if(_topology != nullptr)
         {
             std::list<const core::topology::TopologyChange *>::const_iterator changeIt=_topology->beginChange();
             std::list<const core::topology::TopologyChange *>::const_iterator itEnd=_topology->endChange();
@@ -403,7 +399,7 @@ void SpringForceField<DataTypes>::initGnuplot(const std::string path)
 {
     if (!this->getName().empty())
     {
-        if (m_gnuplotFileEnergy != NULL)
+        if (m_gnuplotFileEnergy != nullptr)
         {
             m_gnuplotFileEnergy->close();
             delete m_gnuplotFileEnergy;
@@ -415,7 +411,7 @@ void SpringForceField<DataTypes>::initGnuplot(const std::string path)
 template<class DataTypes>
 void SpringForceField<DataTypes>::exportGnuplot(SReal time)
 {
-    if (m_gnuplotFileEnergy!=NULL)
+    if (m_gnuplotFileEnergy!=nullptr)
     {
         (*m_gnuplotFileEnergy) << time <<"\t"<< this->m_potentialEnergy << std::endl;
     }

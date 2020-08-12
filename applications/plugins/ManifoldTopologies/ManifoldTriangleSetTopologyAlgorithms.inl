@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -19,17 +19,13 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_COMPONENT_TOPOLOGY_MANIFOLDTRIANGLESETTOPOLOGYALGORITHMS_INL
-#define SOFA_COMPONENT_TOPOLOGY_MANIFOLDTRIANGLESETTOPOLOGYALGORITHMS_INL
-#include "ManifoldTriangleSetTopologyAlgorithms.h"
+#ifndef SOFA_MANIFOLD_TOPOLOGY_TRIANGLESETTOPOLOGYALGORITHMS_INL
+#define SOFA_MANIFOLD_TOPOLOGY_TRIANGLESETTOPOLOGYALGORITHMS_INL
 
-#include "ManifoldTriangleSetTopologyContainer.h"
-#include "ManifoldTriangleSetTopologyModifier.h"
-#include <sofa/core/visual/VisualParams.h>
+#include <ManifoldTopologies/ManifoldTriangleSetTopologyAlgorithms.h>
+#include <ManifoldTopologies/ManifoldTriangleSetTopologyContainer.h>
+#include <ManifoldTopologies/ManifoldTriangleSetTopologyModifier.h>
 #include <SofaBaseTopology/TriangleSetGeometryAlgorithms.h>
-
-#include <algorithm>
-#include <functional>
 
 namespace sofa
 {
@@ -194,8 +190,8 @@ bool ManifoldTriangleSetTopologyAlgorithms< DataTypes >::edgeSwap(const EdgeID& 
         ancestors[i].push_back (trianglesIndex2remove[0]); baryCoefs[i].push_back (0.5);
         ancestors[i].push_back (trianglesIndex2remove[1]); baryCoefs[i].push_back (0.5);
     }
-    triToAddID[0] = m_container->getNbTriangles();
-    triToAddID[1] = m_container->getNbTriangles()+1;
+    triToAddID[0] = TriangleID(m_container->getNbTriangles());
+    triToAddID[1] = TriangleID(m_container->getNbTriangles()+1);
 
     m_modifier->addRemoveTriangles (triToAdd.size(), triToAdd, triToAddID, ancestors, baryCoefs, trianglesIndex2remove);
 
@@ -254,10 +250,10 @@ void ManifoldTriangleSetTopologyAlgorithms< DataTypes >::swapRemeshing(sofa::hel
 
                 int sum = 0;
 
-                sum = (m_container->getTrianglesAroundVertexArray()[ listVertex[0] ]).size();
-                sum += (m_container->getTrianglesAroundVertexArray()[ listVertex[1] ]).size();
-                sum -= (m_container->getTrianglesAroundVertexArray()[ listVertex[2] ]).size();
-                sum -= (m_container->getTrianglesAroundVertexArray()[ listVertex[3] ]).size();
+                sum = int((m_container->getTrianglesAroundVertexArray()[ listVertex[0] ]).size());
+                sum += int((m_container->getTrianglesAroundVertexArray()[ listVertex[1] ]).size());
+                sum -= int((m_container->getTrianglesAroundVertexArray()[ listVertex[2] ]).size());
+                sum -= int((m_container->getTrianglesAroundVertexArray()[ listVertex[3] ]).size());
 
                 for (unsigned int i = 0; i <2; i++)
                 {
@@ -435,4 +431,4 @@ bool ManifoldTriangleSetTopologyAlgorithms< DataTypes >::InciseAlongEdgeList (co
 
 } // namespace sofa
 
-#endif // SOFA_COMPONENTS_MANIFOLDEDGESETTOPOLOGYALGORITHMS_INL
+#endif // SOFA_MANIFOLD_TOPOLOGY_TRIANGLESETTOPOLOGYALGORITHMS_INL

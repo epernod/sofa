@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -116,18 +116,6 @@ public:
 
     void getBlockDiagonalCompliance(defaulttype::BaseMatrix* W, int begin, int end) override;
 
-    /// Pre-construction check method called by ObjectFactory.
-#if 0
-    template<class T>
-    static bool canCreate(T*& obj, sofa::core::objectmodel::BaseContext* context, sofa::core::objectmodel::BaseObjectDescription* arg)
-    {
-        /*if (getOdeSolver(context) == NULL)
-            return false;
-        */
-        return Inherit::canCreate(obj, context, arg);
-    }
-#endif //
-
 protected:
 
     sofa::core::behavior::OdeSolver* odesolver;
@@ -147,7 +135,7 @@ protected:
     /// Bring inherited attributes and function in the current lookup context.
     /// otherwise any access to the base::attribute would require
     /// the "this->" approach.
-    using Inherit::m_componentstate ;
+    using Inherit::d_componentState ;
     using Inherit::mstate ;
     ////////////////////////////////////////////////////////////////////////////
 

@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -58,7 +58,7 @@ SOFA_CONSTRAINT_API void UncoupledConstraintCorrection< defaulttype::Rigid3Types
     {
         if (d_useOdeSolverIntegrationFactors.getValue() == true)
         {
-            serr << "Can't find any odeSolver" << sendl;
+            msg_error() << "Can't find any odeSolver";
             d_useOdeSolverIntegrationFactors.setValue(false);
         }
         d_useOdeSolverIntegrationFactors.setReadOnly(true);
@@ -84,7 +84,7 @@ SOFA_CONSTRAINT_API void UncoupledConstraintCorrection< defaulttype::Rigid3Types
         Rigid3Mass massValue;
 
         //Should use the BaseMatrix API to get the Mass
-        if (node != NULL)
+        if (node != nullptr)
         {
             core::behavior::BaseMass *m = node->mass;
             UniformMass< Rigid3Types, Rigid3Mass > *um = dynamic_cast< UniformMass< Rigid3Types, Rigid3Mass >* > (m);
@@ -92,11 +92,11 @@ SOFA_CONSTRAINT_API void UncoupledConstraintCorrection< defaulttype::Rigid3Types
             if (um)
                 massValue = um->getVertexMass();
             else
-                serr << "WARNING : no mass found" << sendl;
+                msg_warning() << "No mass found.";
         }
         else
         {
-            serr << "\n WARNING : node is not found => massValue could be incorrect in addComplianceInConstraintSpace function" << sendl;
+            msg_warning() << "Node is not found => massValue could be incorrect in addComplianceInConstraintSpace function.";
         }
         
 

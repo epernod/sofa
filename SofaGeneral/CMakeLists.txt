@@ -1,23 +1,10 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.12)
 project(SofaGeneral)
 
 # Send warnings when deprecated CMake project is activated
 option(CMAKE_WARN_DEPRECATED "Send warning when deprecated projects are found" ON)
 
-## Dependencies
-find_package(SofaCommon REQUIRED)
-find_package(Newmat)
-set(SOFA_HAVE_NEWMAT ${Newmat_FOUND})
-
-## Version
-set(SOFAGENERAL_VERSION ${SofaFramework_VERSION})
-
-## SofaGeneral/config.h
-configure_file(config.h.in "${CMAKE_BINARY_DIR}/include/${PROJECT_NAME}/config.h")
-install(FILES "${CMAKE_BINARY_DIR}/include/${PROJECT_NAME}/config.h" DESTINATION "include/${PROJECT_NAME}/${PROJECT_NAME}" COMPONENT headers)
-
-### Subdirectories
-
+# Subdirectories
 set(SOFAGENERAL_TARGETS
     SofaGeneralAnimationLoop
     SofaGeneralDeformable
@@ -32,29 +19,35 @@ set(SOFAGENERAL_TARGETS
     SofaGeneralTopology
     SofaGeneralVisual
     SofaBoundaryCondition
-    SofaComponentGeneral
     SofaConstraint
     SofaGeneralEngine
     SofaGraphComponent
     SofaTopologyMapping
     SofaUserInteraction
-    SofaValidation
 )
-
-if(SOFA_HAVE_NEWMAT)
-    list(APPEND SOFAGENERAL_TARGETS SofaDenseSolver)
-endif()
 
 foreach(TARGET ${SOFAGENERAL_TARGETS})
     add_subdirectory(../modules/${TARGET} ${CMAKE_CURRENT_BINARY_DIR}/${TARGET})
-    target_include_directories(${TARGET} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../modules>")
-    target_include_directories(${TARGET} PUBLIC "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>")
-    target_include_directories(${TARGET} PUBLIC "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
-    set_target_properties(${TARGET} PROPERTIES DEBUG_POSTFIX _d)
-    set_target_properties(${TARGET} PROPERTIES FOLDER SofaGeneral) # IDE folder
-    set_target_properties(${TARGET} PROPERTIES VERSION  ${SOFAGENERAL_VERSION})
 endforeach()
 
+set(SOFAGENERAL_SRC src/${PROJECT_NAME})
 
-## CMake package configurations files
-sofa_write_package_config_files(SofaGeneral ${SOFAGENERAL_VERSION})
+set(HEADER_FILES
+    ${SOFAGENERAL_SRC}/config.h.in
+    ${SOFAGENERAL_SRC}/initSofaGeneral.h
+    )
+
+set(SOURCE_FILES
+    ${SOFAGENERAL_SRC}/initSofaGeneral.cpp
+    )
+
+add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${SOFAGENERAL_TARGETS})
+
+sofa_create_package_with_targets(
+    PACKAGE_NAME ${PROJECT_NAME}
+    PACKAGE_VERSION ${Sofa_VERSION}
+    TARGETS ${PROJECT_NAME} AUTO_SET_TARGET_PROPERTIES
+    INCLUDE_SOURCE_DIR "src"
+    INCLUDE_INSTALL_DIR "${PROJECT_NAME}"
+    )

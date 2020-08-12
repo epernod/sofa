@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -88,7 +88,7 @@ sofa::simulation::Node::SPtr SceneLoaderPHP::doLoad(const std::string& filename,
     if (!fp.findFile(command,""))
     {
         msg_error("SceneLoaderPHP") << "Php not found in your PATH environment." ;
-        return NULL;
+        return nullptr;
     }
 
     sofa::helper::system::PipeProcess::executeProcess(command.c_str(), args,  newFilename, out, error);
@@ -97,7 +97,7 @@ sofa::simulation::Node::SPtr SceneLoaderPHP::doLoad(const std::string& filename,
     {
         msg_error("SceneLoaderPHP") << error ;
         if (out == "")
-            return NULL;
+            return nullptr;
     }
     root = SceneLoaderXML::loadFromMemory(filename.c_str(), out.c_str(), (unsigned int)out.size());
 

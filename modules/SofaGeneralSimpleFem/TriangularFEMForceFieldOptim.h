@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -277,7 +277,6 @@ public:
         TriangularFEMForceFieldOptim<DataTypes>* ff;
     };
 
-    sofa::core::topology::BaseMeshTopology* _topology;
     template<class MatrixWriter>
     void addKToMatrixT(const core::MechanicalParams* mparams, MatrixWriter m);
 
@@ -301,9 +300,14 @@ public:
     TFEMFFOTriangleInfoHandler* triangleInfoHandler;
     TFEMFFOTriangleStateHandler* triangleStateHandler;
 
+    /// Link to be set to the topology container in the component graph. 
+    SingleLink<TriangularFEMForceFieldOptim<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology;
+
 protected:
     Real drawPrevMaxStress;
 
+    /// Pointer to the topology container. Will be set by link @sa l_topology
+    sofa::core::topology::BaseMeshTopology* m_topology;
 };
 
 

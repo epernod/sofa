@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -19,7 +19,6 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include <sofa/helper/system/config.h>
 #include <sofa/helper/proximity.h>
 #include <sofa/defaulttype/Mat.h>
 #include <sofa/defaulttype/Vec.h>
@@ -33,7 +32,6 @@
 #include <SofaBaseCollision/CubeModel.h>
 #include <sofa/core/ObjectFactory.h>
 
-#include <sofa/core/topology/BaseMeshTopology.h>
 #include <sofa/simulation/Simulation.h>
 
 #include <sofa/core/objectmodel/BaseObject.h>
@@ -53,7 +51,7 @@ SphereCollisionModel<DataTypes>::SphereCollisionModel()
     : radius(initData(&radius, "listRadius","Radius of each sphere"))
     , defaultRadius(initData(&defaultRadius,(SReal)(1.0), "radius","Default Radius"))
     , d_showImpostors(initData(&d_showImpostors, true, "showImpostors", "Draw spheres as impostors instead of \"real\" spheres"))
-    , mstate(NULL)
+    , mstate(nullptr)
 {
     enum_type = SPHERE_TYPE;
 }
@@ -94,7 +92,7 @@ void SphereCollisionModel<DataTypes>::resize(int size)
 template<class DataTypes>
 void SphereCollisionModel<DataTypes>::init()
 {
-    if(m_componentstate==ComponentState::Valid){
+    if(d_componentState.getValue() == ComponentState::Valid){
         msg_warning(this) << "Calling an already fully initialized component. You should use reinit instead." ;
     }
 
@@ -107,7 +105,7 @@ void SphereCollisionModel<DataTypes>::init()
         msg_error(this) << "Missing a MechanicalObject with template '" << DataTypes::Name() << ". "
                            "This MechnicalObject stores the position of the spheres. When this one is missing the collision model is deactivated. \n"
                            "To remove this error message you can add to your scene a line <MechanicalObject template='"<< DataTypes::Name() << "'/>. ";
-        m_componentstate = ComponentState::Invalid ;
+        d_componentState.setValue(ComponentState::Invalid) ;
 
         return;
     }
@@ -115,14 +113,14 @@ void SphereCollisionModel<DataTypes>::init()
     const int npoints = mstate->getSize();
     resize(npoints);
 
-    m_componentstate = ComponentState::Valid ;
+    d_componentState.setValue(ComponentState::Valid) ;
 }
 
 
 template<class DataTypes>
 void SphereCollisionModel<DataTypes>::draw(const core::visual::VisualParams* vparams,int index)
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return ;
 
     TSphere<DataTypes> t(this,index);
@@ -134,7 +132,7 @@ void SphereCollisionModel<DataTypes>::draw(const core::visual::VisualParams* vpa
 template<class DataTypes>
 void SphereCollisionModel<DataTypes>::draw(const core::visual::VisualParams* vparams)
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return ;
 
     using namespace sofa::defaulttype;
@@ -154,9 +152,12 @@ void SphereCollisionModel<DataTypes>::draw(const core::visual::VisualParams* vpa
         for (int i=0; i<npoints; i++)
         {
             TSphere<DataTypes> t(this,i);
-            Vector3 p = t.p();
-            points.push_back(p);
-            radius.push_back((float)t.r());
+            if (t.isActive())
+            {
+                Vector3 p = t.p();
+                points.push_back(p);
+                radius.push_back((float)t.r());
+            }
         }
 
         vparams->drawTool()->setLightingEnabled(true); //Enable lightning
@@ -171,17 +172,17 @@ void SphereCollisionModel<DataTypes>::draw(const core::visual::VisualParams* vpa
     // restore current polygon mode
     vparams->drawTool()->setPolygonMode(0,vparams->displayFlags().getShowWireFrame());
 
-    if (getPrevious()!=NULL && vparams->displayFlags().getShowBoundingCollisionModels())
+    if (getPrevious()!=nullptr && vparams->displayFlags().getShowBoundingCollisionModels())
         getPrevious()->draw(vparams);
 }
 
 template <class DataTypes>
 void SphereCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return ;
 
-    CubeModel* cubeModel = createPrevious<CubeModel>();
+    CubeCollisionModel* cubeModel = createPrevious<CubeCollisionModel>();
     const int npoints = mstate->getSize();
     bool updated = false;
     if (npoints != size)
@@ -218,10 +219,10 @@ void SphereCollisionModel<DataTypes>::computeContinuousBoundingTree(SReal dt, in
 {
     using sofa::defaulttype::Vector3 ;
 
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return ;
 
-    CubeModel* cubeModel = createPrevious<CubeModel>();
+    CubeCollisionModel* cubeModel = createPrevious<CubeCollisionModel>();
     const int npoints = mstate->getSize();
     bool updated = false;
     if (npoints != size)
@@ -273,7 +274,9 @@ typename SphereCollisionModel<DataTypes>::Real SphereCollisionModel<DataTypes>::
 template<class DataTypes>
 void SphereCollisionModel<DataTypes>::computeBBox(const core::ExecParams* params, bool onlyVisible)
 {
-    if(m_componentstate!=ComponentState::Valid)
+    SOFA_UNUSED(params);
+
+    if(d_componentState.getValue() != ComponentState::Valid)
         return ;
 
     if( !onlyVisible )
@@ -298,7 +301,7 @@ void SphereCollisionModel<DataTypes>::computeBBox(const core::ExecParams* params
         }
     }
 
-    this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
+    this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<Real>(minBBox,maxBBox));
 }
 
 

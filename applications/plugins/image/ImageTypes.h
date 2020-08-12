@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -294,13 +294,13 @@ public:
             sofa::component::visualmodel::VisualStyle::SPtr ptr = visualModels[m]->template searchUp<sofa::component::visualmodel::VisualStyle>();
             if (ptr && !ptr->displayFlags.getValue().getShowVisualModels()) continue;
 
-            const ResizableExtVector<VisualModelTypes::Coord>& verts= visualModels[m]->getVertices();
+            const sofa::helper::vector<VisualModelTypes::Coord>& verts= visualModels[m]->getVertices();
 
-            ResizableExtVector<Coord> tposition; tposition.resize(verts.size());
-            unsigned int ind;
+            sofa::helper::vector<Coord> tposition;
+            tposition.resize(verts.size());
             for(unsigned int i=0; i<tposition.size(); i++)
             {
-                tposition[i]=transform->toImage(Coord((Real)verts[ind][0],(Real)verts[ind][1],(Real)verts[ind][2]));
+                tposition[i]=transform->toImage(Coord((Real)verts[i][0],(Real)verts[i][1],(Real)verts[i][2]));
             }
             helper::ReadAccessor<Data< core::loader::Material > > mat(visualModels[m]->material);
             const unsigned char color[3]= {(unsigned char)helper::round(mat->diffuse[0]*255.),(unsigned char)helper::round(mat->diffuse[1]*255.),(unsigned char)helper::round(mat->diffuse[2]*255.)};

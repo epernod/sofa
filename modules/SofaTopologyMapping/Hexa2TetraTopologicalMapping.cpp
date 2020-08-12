@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -99,7 +99,7 @@ void Hexa2TetraTopologicalMapping::init()
 
     if (!modelsOk)
     {
-        this->m_componentstate = sofa::core::objectmodel::ComponentState::Invalid;
+        this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
         return;
     }
 
@@ -124,7 +124,7 @@ void Hexa2TetraTopologicalMapping::init()
     //int nz = 1;
     {
         topology::GridTopology* grid = dynamic_cast<topology::GridTopology*>(fromModel.get());
-        if (grid != NULL)
+        if (grid != nullptr)
         {
             nx = grid->getNx()-1;
             ny = grid->getNy()-1;
@@ -199,7 +199,7 @@ void Hexa2TetraTopologicalMapping::init()
     // Need to fully init the target topology
     toModel->init();
 
-    this->m_componentstate = sofa::core::objectmodel::ComponentState::Valid;
+    this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Valid);
 }
 
 unsigned int Hexa2TetraTopologicalMapping::getFromIndex(unsigned int /*ind*/)

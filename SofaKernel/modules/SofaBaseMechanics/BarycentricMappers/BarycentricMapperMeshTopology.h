@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -88,8 +88,10 @@ public:
 
     sofa::helper::vector< MappingData3D > const* getMap3d() const { return &m_map3d; }
 
-    friend std::istream& operator >> ( std::istream& in, BarycentricMapperMeshTopology<In, Out> &b );
-    friend std::ostream& operator << ( std::ostream& out, const BarycentricMapperMeshTopology<In, Out> & b );
+    template<class I, class O>
+    friend std::istream& operator >> ( std::istream& in, BarycentricMapperMeshTopology<I, O> &b );
+    template<class I, class O>
+    friend std::ostream& operator << ( std::ostream& out, const BarycentricMapperMeshTopology<I, O> & b );
 
     ~BarycentricMapperMeshTopology() override ;
 

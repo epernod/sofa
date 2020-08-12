@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -47,7 +47,7 @@ namespace component
 namespace _meshexporter_
 {
 
-static int MeshExporterClass = core::RegisterObject("Export topology and positions into file. " msgendl
+int MeshExporterClass = core::RegisterObject("Export topology and positions into file. " msgendl
                                              "Supported format are: " msgendl
                                              "- vtkxml" msgendl
                                              "- vtk" msgendl
@@ -85,13 +85,13 @@ void MeshExporter::doReInit()
     if (!m_inputtopology)
     {
         msg_error() << "Error, no topology." << sendl;
-        m_componentstate = ComponentState::Invalid ;
+        d_componentState.setValue(ComponentState::Invalid) ;
         return;
     }
 
     if (!d_position.isSet() && m_inputmstate)
     {
-        sofa::core::objectmodel::BaseData* parent = NULL;
+        sofa::core::objectmodel::BaseData* parent = nullptr;
         if (!parent && m_inputmstate) parent = m_inputmstate->findData("position");
         if (!parent && m_inputtopology) parent = m_inputmstate->findData("topology");
         if (parent)
@@ -101,19 +101,19 @@ void MeshExporter::doReInit()
         }
     }
 
-    m_componentstate = ComponentState::Valid ;
+    d_componentState.setValue(ComponentState::Valid) ;
 }
 
 bool MeshExporter::write()
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return false;
     return writeMesh() ;
 }
 
 bool MeshExporter::writeMesh()
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return false;
 
     const unsigned int format = d_fileFormat.getValue().getSelectedId();
@@ -200,7 +200,7 @@ std::string MeshExporter::getMeshFilename(const char* ext)
 
 bool MeshExporter::writeMeshVTKXML()
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return false;
 
     std::string filename = getMeshFilename(".vtu");
@@ -361,7 +361,7 @@ bool MeshExporter::writeMeshVTKXML()
 
 bool MeshExporter::writeMeshVTK()
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return false;
 
     std::string filename = getMeshFilename(".vtk");
@@ -480,7 +480,7 @@ bool MeshExporter::writeMeshVTK()
 /// http://geuz.org/gmsh/doc/texinfo/gmsh.html#File-formats
 bool MeshExporter::writeMeshGmsh()
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return false;
 
     std::string filename = getMeshFilename(".gmsh");
@@ -597,7 +597,7 @@ bool MeshExporter::writeMeshGmsh()
 
 bool MeshExporter::writeMeshNetgen()
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return false;
 
     std::string filename = getMeshFilename(".mesh");
@@ -689,7 +689,7 @@ bool MeshExporter::writeMeshNetgen()
 /// http://tetgen.berlios.de/fformats.html
 bool MeshExporter::writeMeshTetgen()
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return false;
 
     std::string filename = getMeshFilename(".node");
@@ -719,7 +719,7 @@ bool MeshExporter::writeMeshTetgen()
     }
 
     outfile.close();
-    sout << filename << " written" << sendl;
+    msg_info() << filename << " written";
 
     //Write Volume Elements
 
@@ -744,7 +744,6 @@ bool MeshExporter::writeMeshTetgen()
                 // check tetra inversion
                 if (dot(pointsPos[t[1]]-pointsPos[t[0]],cross(pointsPos[t[2]]-pointsPos[t[0]],pointsPos[t[3]]-pointsPos[t[0]])) > 0)
                 {
-                    //sout << "Inverting tetra " << i << sendl;
                     unsigned int tmp = t[3]; t[3] = t[2]; t[2] = tmp;
                 }
 
@@ -755,7 +754,7 @@ bool MeshExporter::writeMeshTetgen()
             }
         }
         outfile.close();
-        sout << filename << " written" << sendl;
+        msg_info() << filename << " written";
     }
 
     //Write Surface Elements

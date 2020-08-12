@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -561,29 +561,29 @@ template<class DataTypes>
 typename DataTypes::Real TetrahedronSetGeometryAlgorithms<DataTypes>::computeDihedralAngle(const TetraID tetraId, const EdgeID edgeId) const
 {
     Real angle = 0.0;
-    const DataTypes::VecCoord& positions = (this->object->read(core::ConstVecCoordId::position())->getValue());
-    const Tetrahedron& tetra = m_topology->getTetrahedron(tetraId);
-    const EdgesInTetrahedron& edgeIds = m_topology->getEdgesInTetrahedron(tetraId);
-    const Edge& edge = m_topology->getEdge(edgeIds[edgeId]);
+    const typename DataTypes::VecCoord& positions = (this->object->read(core::ConstVecCoordId::position())->getValue());
+    const Tetrahedron& tetra = this->m_topology->getTetrahedron(tetraId);
+    const EdgesInTetrahedron& edgeIds = this->m_topology->getEdgesInTetrahedron(tetraId);
+    const Edge& edge = this->m_topology->getEdge(edgeIds[edgeId]);
 
     unsigned int idA = edge[0];
     unsigned int idB = edge[1];
 
-    unsigned int idC = InvalidID, idD = InvalidID;
+    unsigned int idC = sofa::defaulttype::InvalidID, idD = sofa::defaulttype::InvalidID;
     for (unsigned int i = 0; i < 4; i++)
     {
         if (tetra[i] != idA && tetra[i] != idB)
         {
-            if (idC == InvalidID)
+            if (idC == sofa::defaulttype::InvalidID)
                 idC = tetra[i];
             else
                 idD = tetra[i];
         }
     }
 
-    DataTypes::Coord pAB = positions[idB] - positions[idA];
-    DataTypes::Coord pAC = positions[idC] - positions[idA];
-    DataTypes::Coord pAD = positions[idD] - positions[idA];
+    typename DataTypes::Coord pAB = positions[idB] - positions[idA];
+    typename DataTypes::Coord pAC = positions[idC] - positions[idA];
+    typename DataTypes::Coord pAD = positions[idD] - positions[idA];
 
     sofa::defaulttype::Vec<3, Real> AB = sofa::defaulttype::Vec<3, Real>(pAB);
     sofa::defaulttype::Vec<3, Real> AC = sofa::defaulttype::Vec<3, Real>(pAC);
@@ -900,12 +900,12 @@ bool TetrahedronSetGeometryAlgorithms<DataTypes>::checkNodeSequence(const Tetrah
 
 
 template< class DataTypes>
-bool TetrahedronSetGeometryAlgorithms< DataTypes >::isTetrahedronElongated(const TetraID tetraId) const
+bool TetrahedronSetGeometryAlgorithms< DataTypes >::isTetrahedronElongated(const TetraID tetraId, SReal factorLength) const
 {
-    const VecCoord& coords = (this->object->read(core::ConstVecCoordId::position())->getValue());
-    const Tetrahedron& tetra = m_topology->getTetrahedron(tetraId);    
+    const typename DataTypes::VecCoord& coords = (this->object->read(core::ConstVecCoordId::position())->getValue());
+    const Tetrahedron& tetra = this->m_topology->getTetrahedron(tetraId);    
 
-    VecCoord points;
+    typename DataTypes::VecCoord points;
     points.resize(4);
     for (unsigned int i = 0; i < 4; i++) {
         points[i] = coords[ tetra[i] ];
@@ -929,7 +929,7 @@ bool TetrahedronSetGeometryAlgorithms< DataTypes >::isTetrahedronElongated(const
         }
     }
 
-    if (minLength*10 < maxLength) {
+    if (minLength*factorLength < maxLength) {
         return true;
     }
     else
@@ -938,17 +938,17 @@ bool TetrahedronSetGeometryAlgorithms< DataTypes >::isTetrahedronElongated(const
 
 
 template< class DataTypes>
-bool TetrahedronSetGeometryAlgorithms< DataTypes >::checkTetrahedronDihedralAngles(const TetraID tetraId) const
+bool TetrahedronSetGeometryAlgorithms< DataTypes >::checkTetrahedronDihedralAngles(const TetraID tetraId, SReal minAngle, SReal maxAngle) const
 {
     bool badAngle = false;
     for (unsigned int eId = 0; eId < 6; eId++)
     {
         Real angle = computeDihedralAngle(tetraId, eId);
-        if (angle < 20) {
+        if (angle < minAngle) {
             badAngle = true;
             break;
         }
-        else if (angle > 160) {
+        else if (angle > maxAngle) {
             badAngle = true;
             break;
         }
@@ -959,7 +959,7 @@ bool TetrahedronSetGeometryAlgorithms< DataTypes >::checkTetrahedronDihedralAngl
 
 
 template< class DataTypes>
-bool TetrahedronSetGeometryAlgorithms< DataTypes >::checkTetrahedronValidity(const TetraID tetraId) const
+bool TetrahedronSetGeometryAlgorithms< DataTypes >::checkTetrahedronValidity(const TetraID tetraId, SReal minAngle, SReal maxAngle, SReal factorLength) const
 {
     // test orientation first
     if (checkNodeSequence(tetraId) == false) {
@@ -967,12 +967,12 @@ bool TetrahedronSetGeometryAlgorithms< DataTypes >::checkTetrahedronValidity(con
     }
 
     // test elongated shape
-    if (isTetrahedronElongated(tetraId) == true) {
+    if (isTetrahedronElongated(tetraId, factorLength) == true) {
         return false;
     }
 
     // test dihedral angles
-    if (checkTetrahedronDihedralAngles(tetraId) == false)
+    if (checkTetrahedronDihedralAngles(tetraId, minAngle, maxAngle) == false)
     {
         return false;
     }
@@ -982,7 +982,7 @@ bool TetrahedronSetGeometryAlgorithms< DataTypes >::checkTetrahedronValidity(con
 
 
 template <typename DataTypes>
-const sofa::helper::vector <BaseMeshTopology::TetraID>& TetrahedronSetGeometryAlgorithms<DataTypes>::computeBadTetrahedron()
+const sofa::helper::vector <BaseMeshTopology::TetraID>& TetrahedronSetGeometryAlgorithms<DataTypes>::computeBadTetrahedron(SReal minAngle, SReal maxAngle, SReal factorLength)
 {
     m_badTetraIds.clear();
     for (size_t i = 0; i < this->m_topology->getNbTetrahedra(); ++i)
@@ -995,14 +995,14 @@ const sofa::helper::vector <BaseMeshTopology::TetraID>& TetrahedronSetGeometryAl
         }
 
         // test elongated shape
-        if (isTetrahedronElongated(i) == true)
+        if (isTetrahedronElongated(i, factorLength) == true)
         {
             m_badTetraIds.push_back(i);
             continue;
         }
 
         // test dihedral angles
-        if (checkTetrahedronDihedralAngles(i) == false)
+        if (checkTetrahedronDihedralAngles(i, minAngle, maxAngle) == false)
         {
             m_badTetraIds.push_back(i);
             continue;
@@ -1065,7 +1065,7 @@ void TetrahedronSetGeometryAlgorithms<DataTypes>::writeMSHfile(const char *filen
 template<class DataTypes>
 void TetrahedronSetGeometryAlgorithms<DataTypes>::draw(const core::visual::VisualParams* vparams)
 {
-    if(this->m_componentstate == ComponentState::Invalid)
+    if(this->d_componentState.getValue() == ComponentState::Invalid)
         return;
 
     TriangleSetGeometryAlgorithms<DataTypes>::draw(vparams);

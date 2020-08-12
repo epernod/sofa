@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -20,11 +20,10 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 #include <image/config.h>
-#include <sofa/helper/system/config.h>
 #include <sofa/helper/system/PluginManager.h>
 #include <sofa/helper/logging/Messaging.h>
 
-#ifdef SOFA_HAVE_SOFAPYTHON
+#if IMAGE_HAVE_SOFAPYTHON
     #include <SofaPython/PythonFactory.h>
     #include "python/Binding_ImageData.h"
 #endif
@@ -54,7 +53,7 @@ void initExternalModule()
     {
         first = false;
 
-#ifdef SOFA_HAVE_SOFAPYTHON
+#if IMAGE_HAVE_SOFAPYTHON
         if( PythonFactory::s_sofaPythonModule ) // add the module only if the Sofa module exists (SofaPython is loaded)
         {
             simulation::PythonEnvironment::gil lock(__func__);
@@ -116,8 +115,3 @@ const char* getModuleComponentList()
 
 } // namespace sofa
 
-////////// BEGIN CLASS LIST //////////
-#ifndef SOFA_NO_OPENGL
-#endif /* SOFA_NO_OPENGL */
-#ifdef SOFA_HAVE_LIBFREENECT
-#endif

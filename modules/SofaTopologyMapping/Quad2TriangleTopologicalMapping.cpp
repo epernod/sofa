@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -113,7 +113,7 @@ void Quad2TriangleTopologicalMapping::init()
 
     if (!modelsOk)
     {
-        this->m_componentstate = sofa::core::objectmodel::ComponentState::Invalid;
+        this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
         return;
     }
 
@@ -152,7 +152,7 @@ void Quad2TriangleTopologicalMapping::init()
     if (nx == 0 && ny == 0)
     {
         msg_error() << "Input topology is only 1D, this topology can't be mapped into a triangulation.";
-        this->m_componentstate = sofa::core::objectmodel::ComponentState::Invalid;
+        this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
         return;
     }
 
@@ -188,7 +188,7 @@ void Quad2TriangleTopologicalMapping::init()
     //to_tstm->propagateTopologicalChanges();
     Loc2GlobDataVec.endEdit();
 
-    this->m_componentstate = sofa::core::objectmodel::ComponentState::Valid;
+    this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Valid);
 }
 
 unsigned int Quad2TriangleTopologicalMapping::getFromIndex(unsigned int ind)
@@ -199,7 +199,7 @@ unsigned int Quad2TriangleTopologicalMapping::getFromIndex(unsigned int ind)
 void Quad2TriangleTopologicalMapping::updateTopologicalMappingTopDown()
 {
 
-    if (this->m_componentstate != sofa::core::objectmodel::ComponentState::Valid)
+    if (this->d_componentState.getValue() != sofa::core::objectmodel::ComponentState::Valid)
         return;
 
     sofa::helper::AdvancedTimer::stepBegin("Update Quad2TriangleTopologicalMapping");
@@ -283,8 +283,6 @@ void Quad2TriangleTopologicalMapping::updateTopologicalMappingTopDown()
 
             for (unsigned int i = 0; i < tab.size(); ++i)
             {
-                //sout << "INFO_print : Quad2TriangleTopologicalMapping - remove quad " << tab[i] << sendl;
-
                 unsigned int k = tab[i];
                 sofa::helper::vector<unsigned int> ind_k;
 
@@ -326,7 +324,7 @@ void Quad2TriangleTopologicalMapping::updateTopologicalMappingTopDown()
                     }
                     else
                     {
-                        sout << "INFO_print : Quad2TriangleTopologicalMapping - In2OutMap should have the quad " << last << sendl;
+                        msg_warning() << "Quad2TriangleTopologicalMapping - In2OutMap should have the quad " << last;
                     }
 
                     if (ind_k[1] != ind_last)

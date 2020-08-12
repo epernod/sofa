@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -75,8 +75,10 @@ public:
     void draw(const VisualParams*,const typename Out::VecCoord& out, const typename In::VecCoord& in) override;
     void resize( core::State<Out>* toModel ) override;
 
-    inline friend std::istream& operator >> ( std::istream& in, BarycentricMapperSparseGridTopology<In, Out> &b );
-    inline friend std::ostream& operator << ( std::ostream& out, const BarycentricMapperSparseGridTopology<In, Out> & b );
+    template<class I, class O>
+    friend std::istream& operator >> ( std::istream& in, BarycentricMapperSparseGridTopology<I, O> &b );
+    template<class I, class O>
+    friend std::ostream& operator << ( std::ostream& out, const BarycentricMapperSparseGridTopology<I, O> & b );
 
 protected:
     BarycentricMapperSparseGridTopology(topology::SparseGridTopology* fromTopology,

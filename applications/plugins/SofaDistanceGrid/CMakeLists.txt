@@ -1,14 +1,11 @@
-cmake_minimum_required(VERSION 3.1)
-project(SofaDistanceGrid)
-
-set(SOFADISTANCEGRID_VERSION 1.0)
-set(SOFA_HAVE_SOFADISTANCEGRID 1)
+cmake_minimum_required(VERSION 3.12)
+project(SofaDistanceGrid VERSION 1.0)
 
 find_package(SofaMiscCollision REQUIRED)
+sofa_find_package(MiniFlowVR QUIET)
 
 set(HEADER_FILES
-    config.h
-    initSofaDistanceGrid.h
+    config.h.in
     DistanceGrid.h
     components/collision/FFDDistanceGridDiscreteIntersection.h
     components/collision/FFDDistanceGridDiscreteIntersection.inl
@@ -40,25 +37,15 @@ set(EXTRA_FILES
     )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES} ${EXTRA_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC SofaMeshCollision SofaMiscCollision ${SOFAADVANCED_DEPENDENCY_LINK})
+target_link_libraries(${PROJECT_NAME} PUBLIC SofaMeshCollision SofaMiscCollision)
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaUserInteraction)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-DSOFA_HAVE_SOFADISTANCEGRID")
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${HEADER_FILES}")
-
-find_package(MiniFlowVR QUIET)
 if(MiniFlowVR_FOUND)
-    set(SOFADISTANCEGRID_WITH_MINIFLOWVR TRUE)
-    add_definitions("-DSOFA_HAVE_MINIFLOWVR")
-    target_link_libraries(${PROJECT_NAME} PUBLIC miniFlowVR)
-    message(STATUS "SofaDistanceGrid: MiniFlowVR enabled.")
+    target_link_libraries(${PROJECT_NAME} PRIVATE miniFlowVR) # Private because not exported in API
+    message(STATUS "SofaDistanceGrid: MiniFlowVR found.")
 else()
-    message(STATUS "SofaDistanceGrid: MiniFlowVR disabled. therefore some features will not be compiled.")
+    message(STATUS "SofaDistanceGrid: MiniFlowVR not found, some features will not be compiled.")
 endif()
-
-
-target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>")
-target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include>")
 
 if(SOFA_BUILD_TESTS)
     find_package(SofaTest QUIET)
@@ -68,9 +55,9 @@ if(SOFA_BUILD_TESTS)
 endif()
 
 ## Install rules for the library and headers; CMake package configurations files
-sofa_generate_package(
-    NAME ${PROJECT_NAME}
-    TARGETS ${PROJECT_NAME}
-    VERSION ${SOFADISTANCEGRID_VERSION}
+sofa_create_package_with_targets(
+    PACKAGE_NAME ${PROJECT_NAME}
+    PACKAGE_VERSION ${PROJECT_VERSION}
+    TARGETS ${PROJECT_NAME} AUTO_SET_TARGET_PROPERTIES
     RELOCATABLE "plugins"
     )

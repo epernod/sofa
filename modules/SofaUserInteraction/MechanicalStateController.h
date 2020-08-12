@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -19,25 +19,12 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-//
-// C++ Interface: MechanicalStateController
-//
-// Description:
-//
-//
-// Author: Pierre-Jean Bensoussan, Digital Trainers (2008)
-//
-// Copyright: See COPYING file that comes with this distribution
-//
-//
-
 #ifndef SOFA_COMPONENT_CONTROLLER_MECHANICALSTATECONTROLLER_H
 #define SOFA_COMPONENT_CONTROLLER_MECHANICALSTATECONTROLLER_H
 #include "config.h"
 
 #include <SofaUserInteraction/Controller.h>
 #include <sofa/defaulttype/VecTypes.h>
-
 #include <sofa/defaulttype/RigidTypes.h>
 #include <sofa/core/behavior/MechanicalState.h>
 
@@ -49,6 +36,7 @@ namespace component
 
 namespace controller
 {
+
 
 
 /**
@@ -103,11 +91,7 @@ public:
      */
     void onBeginAnimationStep(const double dt) override;
 
-
     //@}
-
-    /// Method to handle various event like keyboard or omni.
-    void handleEvent(sofa::core::objectmodel::Event* event) override;
 
     /**
      * @name Accessors
@@ -150,34 +134,11 @@ public:
      * @brief Apply the controller modifications to the controlled MechanicalState.
      */
     void applyController(void);
-
-    void applyTranslation(sofa::defaulttype::Vec3 translation);
-    bool worldToLocal(sofa::defaulttype::Vec3& vector);
-    void moveUp();
-    void moveDown();
-    void moveLeft();
-    void moveRight();
-    void moveForward();
-    void moveBackward();
-
-    virtual std::string getTemplateName() const override
-    {
-        return templateName(this);
-    }
-
-    static std::string templateName(const MechanicalStateController<DataTypes>* = NULL)
-    {
-        return DataTypes::Name();
-    }
 protected:
-    
-
 
     Data< unsigned int > index; ///< Controlled DOF index.
     Data< bool > onlyTranslation; ///< Controlling the DOF only in translation
     Data< bool > buttonDeviceState; ///< state of ths device button
-    Data <SReal> d_speedFactor; /// < factor to increase/decrease the movements speed
-
 
     core::behavior::MechanicalState<DataTypes> *mState; ///< Controlled MechanicalState.
 
@@ -191,18 +152,13 @@ protected:
     double deviceX, deviceY, deviceZ;
     int mouseSavedPosX, mouseSavedPosY; ///< Last recorded mouse position
     sofa::defaulttype::Vector3 position;
-    sofa::defaulttype::Quat m_orientation;
+    sofa::defaulttype::Quat orientation;
     bool buttonDevice;
 };
 
 #if  !defined(SOFA_COMPONENT_CONTROLLER_MECHANICALSTATECONTROLLER_CPP)
-//extern template class SOFA_USER_INTERACTION_API MechanicalStateController<defaulttype::Vec3Types>;
-//extern template class SOFA_USER_INTERACTION_API MechanicalStateController<defaulttype::Vec2Types>;
 extern template class SOFA_USER_INTERACTION_API MechanicalStateController<defaulttype::Vec1Types>;
-//extern template class SOFA_USER_INTERACTION_API MechanicalStateController<defaulttype::Vec6Types>;
 extern template class SOFA_USER_INTERACTION_API MechanicalStateController<defaulttype::Rigid3Types>;
-//extern template class SOFA_USER_INTERACTION_API MechanicalStateController<defaulttype::Rigid2Types>;
-
 #endif
 
 } // namespace controller

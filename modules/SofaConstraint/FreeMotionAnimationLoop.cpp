@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -308,7 +308,7 @@ void FreeMotionAnimationLoop::step(const sofa::core::ExecParams* params, SReal d
 
 }
 
-static int FreeMotionAnimationLoopClass = core::RegisterObject(R"(
+int FreeMotionAnimationLoopClass = core::RegisterObject(R"(
 The animation loop to use with constraints.
 You must add this loop at the beginning of the scene if you are using constraints.")")
         .add< FreeMotionAnimationLoop >()

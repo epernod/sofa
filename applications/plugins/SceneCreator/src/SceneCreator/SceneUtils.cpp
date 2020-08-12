@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU General Public License as published by the Free  *
@@ -30,8 +30,6 @@
 #include <sofa/defaulttype/VecTypes.h>
 using sofa::defaulttype::Vec3Types ;
 
-#include <SofaDeformable/StiffSpringForceField.h>
-
 #include <SofaBaseMechanics/MechanicalObject.h>
 typedef sofa::component::container::MechanicalObject<Vec3Types> MechanicalObject3;
 
@@ -41,19 +39,10 @@ using sofa::helper::system::DataRepository ;
 #include <sofa/core/ObjectFactory.h>
 using sofa::core::ObjectFactory ;
 
-#ifdef SOFA_HAVE_METIS
-#define ARE_METIS_FEATURE_ENABLED true
-#else
-#define ARE_METIS_FEATURE_ENABLED false
-#endif //
-
 namespace sofa
 {
 namespace modeling {
 using sofa::defaulttype::Vec3Types;
-
-using sofa::component::interactionforcefield::StiffSpringForceField ;
-typedef StiffSpringForceField<Vec3Types>   StiffSpringForceField3;
 
 
 /////////////////// IMPORTING THE DEPENDENCIES INTO THE NAMESPACE ///////////////////////////

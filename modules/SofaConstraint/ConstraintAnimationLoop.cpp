@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -39,7 +39,6 @@
 #include <sofa/helper/system/thread/CTime.h>
 #include <sofa/helper/LCPcalc.h>
 
-
 #include <sofa/core/ConstraintParams.h>
 #include <sofa/core/ObjectFactory.h>
 
@@ -52,6 +51,8 @@
 #include <string>
 #include <sstream>
 
+#include <chrono>
+#include <thread>
 
 
 /// Change that to true if you want to print extra message on this component.
@@ -158,10 +159,10 @@ ConstraintProblem::~ConstraintProblem()
     // if not null delete the old constraintProblem
     for(int i=0; i<_dim; i++)
     {
-        if (_constraintsResolutions[i] != NULL)
+        if (_constraintsResolutions[i] != nullptr)
         {
             delete _constraintsResolutions[i];
-            _constraintsResolutions[i] = NULL;
+            _constraintsResolutions[i] = nullptr;
         }
     }
     _constraintsResolutions.clear(); // _constraintsResolutions.clear();
@@ -173,10 +174,10 @@ void ConstraintProblem::clear(int dim, const double &tol)
     // if not null delete the old constraintProblem
     for(int i=0; i<_dim; i++)
     {
-        if (_constraintsResolutions[i] != NULL)
+        if (_constraintsResolutions[i] != nullptr)
         {
             delete _constraintsResolutions[i];
-            _constraintsResolutions[i] = NULL;
+            _constraintsResolutions[i] = nullptr;
         }
     }
     _dFree.clear();
@@ -612,7 +613,7 @@ void ConstraintAnimationLoop::step ( const core::ExecParams* params, SReal dt )
             msg_info() << "Total time = " << iterationTimeDiff ;
             int toSleep = (int)floor(dt*1000000-compTimeDiff);
             if (toSleep > 0)
-                usleep(toSleep);
+                std::this_thread::sleep_for(std::chrono::microseconds(toSleep));
             else
                 msg_error() << "Cannot achieve frequency for dt = " << dt ;
             compTime = (SReal)timer->getTime();
@@ -771,7 +772,7 @@ void ConstraintAnimationLoop::computePredictiveForce(int dim, double* force, std
 }
 
 void ConstraintAnimationLoop::gaussSeidelConstraint(int dim, double* dfree, double** w, double* force,
-        double* d, std::vector<ConstraintResolution*>& res, double* df=NULL)
+        double* d, std::vector<ConstraintResolution*>& res, double* df=nullptr)
 {
     if(!dim)
         return;

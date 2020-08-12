@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -66,7 +66,11 @@ public:
 
     visualmodel::OglColorMap *colorMap;
     core::State<DataTypes> *state;
-    core::topology::BaseMeshTopology* topology;
+    core::topology::BaseMeshTopology* m_topology;
+
+    /// Link to be set to the topology container in the component graph.
+    SingleLink <DataDisplay, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology;
+
     Real oldMin, oldMax;
 
     void init() override;

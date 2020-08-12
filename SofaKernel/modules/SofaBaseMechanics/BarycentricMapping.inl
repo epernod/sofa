@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -50,7 +50,6 @@
 #include<SofaBaseMechanics/BarycentricMappers/BarycentricMapperHexahedronSetTopology.h>
 
 #include <sofa/helper/vector.h>
-#include <sofa/helper/system/config.h>
 
 #include <sofa/simulation/Simulation.h>
 
@@ -183,21 +182,26 @@ void BarycentricMapping<TIn, TOut>::createMapperFromTopology ()
     // Regular Grid Topology
     if (is_a<RegularGridTopology>(input_topology_container) ) {
         rgt = dynamic_cast<RegularGridTopology*>(input_topology_container);
-        if (rgt->hasVolume())
+        if (rgt->hasVolume()) {
+            msg_info() << "Creating RegularGridMapper";
             d_mapper = sofa::core::objectmodel::New<RegularGridMapper>(rgt, output_topology_container);
+        }
         goto end;
     }
 
     // Sparse Grid Topology
     if (is_a<SparseGridTopology>(input_topology_container) ) {
         sgt = dynamic_cast<SparseGridTopology*>(input_topology_container);
-        if (sgt->hasVolume())
+        if (sgt->hasVolume()) {
+            msg_info() << "Creating SparseGridMapper";
             d_mapper = sofa::core::objectmodel::New<SparseGridMapper>(sgt, output_topology_container);
+        }
         goto end;
     }
 
     // Hexahedron Topology
     if (is_a<HexahedronSetTopologyContainer>(input_topology_container)) {
+        msg_info() << "Creating HexahedronSetMapper";
         d_mapper = sofa::core::objectmodel::New<HexahedronSetMapper>(
             dynamic_cast<HexahedronSetTopologyContainer*>(input_topology_container), output_topology_container);
         goto end;
@@ -205,6 +209,7 @@ void BarycentricMapping<TIn, TOut>::createMapperFromTopology ()
 
     // Tetrahedron Topology
     if (is_a<TetrahedronSetTopologyContainer>(input_topology_container)) {
+        msg_info() << "Creating TetrahedronSetMapper";
         d_mapper = sofa::core::objectmodel::New<TetrahedronSetMapper >(
             dynamic_cast<TetrahedronSetTopologyContainer*>(input_topology_container), output_topology_container);
         goto end;
@@ -212,6 +217,7 @@ void BarycentricMapping<TIn, TOut>::createMapperFromTopology ()
 
     // Quad Topology
     if (is_a<QuadSetTopologyContainer>(input_topology_container)) {
+        msg_info() << "Creating QuadSetMapper";
         d_mapper = sofa::core::objectmodel::New<QuadSetMapper >(
             dynamic_cast<QuadSetTopologyContainer*>(input_topology_container), output_topology_container);
         goto end;
@@ -219,6 +225,7 @@ void BarycentricMapping<TIn, TOut>::createMapperFromTopology ()
 
     // Triangle Topology
     if (is_a<TriangleSetTopologyContainer>(input_topology_container)) {
+        msg_info() << "Creating TriangleSetMapper";
         d_mapper = sofa::core::objectmodel::New<TriangleSetMapper >(
             dynamic_cast<TriangleSetTopologyContainer*>(input_topology_container), output_topology_container);
         goto end;
@@ -226,6 +233,7 @@ void BarycentricMapping<TIn, TOut>::createMapperFromTopology ()
 
     // Edge Topology
     if (is_a<EdgeSetTopologyContainer>(input_topology_container)) {
+        msg_info() << "Creating EdgeSetMapper";
         d_mapper = sofa::core::objectmodel::New<EdgeSetMapper >(
             dynamic_cast<EdgeSetTopologyContainer*>(input_topology_container), output_topology_container);
         goto end;
@@ -245,18 +253,18 @@ end:
 template <class TIn, class TOut>
 void BarycentricMapping<TIn, TOut>::init()
 {
-    this->m_componentstate = ComponentState::Invalid ;
+    this->d_componentState.setValue(ComponentState::Invalid) ;
 
     Inherit1::init();
 
     populateTopologies();
 
-    if ( d_mapper == NULL ) // try to create a mapper according to the topology of the In model
+    if ( d_mapper == nullptr ) // try to create a mapper according to the topology of the In model
     {
         createMapperFromTopology ( );
     }
 
-    if ( d_mapper == NULL)
+    if ( d_mapper == nullptr)
     {
         if (d_input_topology.get()) {
             msg_error() << "No compatible input topology found. Make sure the input topology ('" << d_input_topology.getPath()
@@ -274,13 +282,13 @@ void BarycentricMapping<TIn, TOut>::init()
     else
         d_mapper->init (((const core::State<Out> *)this->toModel)->read(core::ConstVecCoordId::position())->getValue(), ((const core::State<In> *)this->fromModel)->read(core::ConstVecCoordId::position())->getValue() );
 
-    this->m_componentstate = ComponentState::Valid ;
+    this->d_componentState.setValue(ComponentState::Valid) ;
 }
 
 template <class TIn, class TOut>
 void BarycentricMapping<TIn, TOut>::reinit()
 {
-    if ( d_mapper != NULL )
+    if ( d_mapper != nullptr )
     {
         d_mapper->clear();
         d_mapper->init (((const core::State<Out> *)this->toModel)->read(core::ConstVecCoordId::position())->getValue(), ((const core::State<In> *)this->fromModel)->read(core::ConstVecCoordId::position())->getValue() );
@@ -293,7 +301,7 @@ void BarycentricMapping<TIn, TOut>::apply(const core::MechanicalParams * mparams
 {
     SOFA_UNUSED(mparams);
 
-    if (d_mapper != NULL)
+    if (d_mapper != nullptr)
     {
         d_mapper->resize( this->toModel );
         d_mapper->apply(*out.beginWriteOnly(), in.getValue());
@@ -307,7 +315,7 @@ void BarycentricMapping<TIn, TOut>::applyJ (const core::MechanicalParams * mpara
     SOFA_UNUSED(mparams);
 
     typename Out::VecDeriv* out = _out.beginEdit();
-    if (d_mapper != NULL)
+    if (d_mapper != nullptr)
     {
         d_mapper->applyJ(*out, in.getValue());
     }
@@ -320,7 +328,7 @@ void BarycentricMapping<TIn, TOut>::applyJT (const core::MechanicalParams * mpar
 {
     SOFA_UNUSED(mparams);
 
-    if (d_mapper != NULL)
+    if (d_mapper != nullptr)
     {
         d_mapper->applyJT(*out.beginEdit(), in.getValue());
         out.endEdit();
@@ -331,7 +339,7 @@ void BarycentricMapping<TIn, TOut>::applyJT (const core::MechanicalParams * mpar
 template <class TIn, class TOut>
 const sofa::defaulttype::BaseMatrix* BarycentricMapping<TIn, TOut>::getJ()
 {
-    if (d_mapper!=NULL )
+    if (d_mapper!=nullptr )
     {
         const size_t outStateSize = this->toModel->getSize();
         const size_t inStateSize = this->fromModel->getSize();
@@ -349,7 +357,7 @@ template <class TIn, class TOut>
 void BarycentricMapping<TIn, TOut>::draw(const core::visual::VisualParams* vparams)
 {
     if ( !vparams->displayFlags().getShowMappings() ) return;
-    if (this->m_componentstate != ComponentState::Valid ) return;
+    if (this->d_componentState.getValue() != ComponentState::Valid ) return;
 
     // Draw model (out) points
     const OutVecCoord& out = this->toModel->read(core::ConstVecCoordId::position())->getValue();
@@ -362,7 +370,7 @@ void BarycentricMapping<TIn, TOut>::draw(const core::visual::VisualParams* vpara
 
     // Draw mapping line between models
     const InVecCoord& in = this->fromModel->read(core::ConstVecCoordId::position())->getValue();
-    if ( d_mapper!=NULL )
+    if ( d_mapper!=nullptr )
         d_mapper->draw(vparams,out,in);
 
 }
@@ -373,7 +381,7 @@ void BarycentricMapping<TIn, TOut>::applyJT(const core::ConstraintParams * cpara
 {
     SOFA_UNUSED(cparams);
 
-    if (d_mapper!=NULL )
+    if (d_mapper!=nullptr )
     {
         d_mapper->applyJT(*out.beginEdit(), in.getValue());
         out.endEdit();
@@ -384,8 +392,12 @@ void BarycentricMapping<TIn, TOut>::applyJT(const core::ConstraintParams * cpara
 template <class TIn, class TOut>
 void BarycentricMapping<TIn, TOut>::handleTopologyChange ( core::topology::Topology* t )
 {
-    SOFA_UNUSED(t);
-    reinit(); // we now recompute the entire mapping when there is a topologychange
+    //foward topological modifications to the mapper
+    if (this->d_mapper.get()){
+        this->d_mapper->processTopologicalChanges(((const core::State<Out> *)this->toModel)->read(core::ConstVecCoordId::position())->getValue(),
+                                                  ((const core::State<In> *)this->fromModel)->read(core::ConstVecCoordId::position())->getValue(),
+                                                  t);
+    }
 }
 
 #ifdef BARYCENTRIC_MAPPER_TOPOCHANGE_REINIT
@@ -402,13 +414,13 @@ void BarycentricMapperTriangleSetTopology<In,Out>::handleTopologyChange(core::to
     if ( input_topology->beginChange() == input_topology->endChange() )
         return;
 
-    MechanicalState< In >* mStateFrom = NULL;
-    MechanicalState< Out >* mStateTo = NULL;
+    MechanicalState< In >* mStateFrom = nullptr;
+    MechanicalState< Out >* mStateTo = nullptr;
 
     input_topology->getContext()->get(mStateFrom);
     output_topology->getContext()->get(mStateTo);
 
-    if ((mStateFrom == NULL) || (mStateTo == NULL))
+    if ((mStateFrom == nullptr) || (mStateTo == nullptr))
         return;
 
     const typename MechanicalState< In >::VecCoord& in = *(mStateFrom->getX0());

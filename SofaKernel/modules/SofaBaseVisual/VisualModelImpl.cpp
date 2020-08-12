@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -215,6 +215,7 @@ VisualModelImpl::VisualModelImpl() //const std::string &name, std::string filena
     , srgbTexturing		(initData	(&srgbTexturing, (bool) false, "srgbTexturing", "When sRGB rendering is enabled, is the texture in sRGB colorspace?"))
     , materials			(initData	(&materials, "materials", "List of materials"))
     , groups			(initData	(&groups, "groups", "Groups of triangles and quads using a given material"))
+    , l_topology        (initLink   ("topology", "link to the topology container"))
     , xformsModified(false)
 {
     m_topology = nullptr;
@@ -838,7 +839,16 @@ void VisualModelImpl::addTopoHandler(topology::PointData<VecType>* data, int alg
 
 void VisualModelImpl::init()
 {
-    m_topology = getContext()->getMeshTopology();
+    if (l_topology.empty())
+    {
+        msg_info() << "link to Topology container should be set to ensure right behavior. First Topology found in current context will be used.";
+        l_topology.set(this->getContext()->getMeshTopologyLink());
+    }
+
+    m_topology = l_topology.get();
+    msg_info() << "Topology path used: '" << l_topology.getLinkedPath() << "'";
+
+
     if (m_vertPosIdx.getValue().size() > 0 && m_vertices2.getValue().empty())
     { // handle case where vertPosIdx was initialized through a loader
         m_vertices2.setValue(m_positions.getValue());
@@ -867,7 +877,7 @@ void VisualModelImpl::init()
 
     load(fileMesh.getFullPath(), "", texturename.getFullPath());
 
-    if (m_topology == 0 || (m_positions.getValue().size()!=0 && m_positions.getValue().size() != (unsigned int)m_topology->getNbPoints()))
+    if (m_topology == nullptr || (m_positions.getValue().size()!=0 && m_positions.getValue().size() != (unsigned int)m_topology->getNbPoints()))
     {
         // Fixes bug when neither an .obj file nor a topology is present in the VisualModel Node.
         // Thus nothing will be displayed.
@@ -1123,9 +1133,9 @@ void VisualModelImpl::computeTangents()
     m_vbitangents.endEdit();
 }
 
-void VisualModelImpl::computeBBox(const core::ExecParams* params, bool)
+void VisualModelImpl::computeBBox(const core::ExecParams*, bool)
 {
-    const VecCoord& x = getVertices(); //m_vertices.getValue(params);
+    const VecCoord& x = getVertices(); //m_vertices.getValue();
 
     SReal minBBox[3] = {std::numeric_limits<Real>::max(),std::numeric_limits<Real>::max(),std::numeric_limits<Real>::max()};
     SReal maxBBox[3] = {-std::numeric_limits<Real>::max(),-std::numeric_limits<Real>::max(),-std::numeric_limits<Real>::max()};
@@ -1138,7 +1148,7 @@ void VisualModelImpl::computeBBox(const core::ExecParams* params, bool)
             if (p[c] < minBBox[c]) minBBox[c] = p[c];
         }
     }
-    this->f_bbox.setValue(params,sofa::defaulttype::TBoundingBox<SReal>(minBBox,maxBBox));
+    this->f_bbox.setValue(sofa::defaulttype::TBoundingBox<SReal>(minBBox,maxBBox));
 }
 
 
@@ -1283,7 +1293,7 @@ void VisualModelImpl::updateVisual()
     {
         if (useTopology)
         {
-            sofa:helper::ScopedAdvancedTimer timer("VisualModelImpl::updateMesh");
+            sofa::helper::ScopedAdvancedTimer timer("VisualModelImpl::updateMesh");
             /** HD : build also a Ogl description from main Topology. But it needs to be build only once since the topology update
             is taken care of by the handleTopologyChange() routine */
 

@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -25,7 +25,6 @@
 #include "MechanicalMatrixMapper.h"
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/helper/gl/template.h>
-#include <sofa/helper/system/config.h>
 #include <sofa/helper/rmath.h>
 
 // accumulate jacobian
@@ -66,23 +65,23 @@ MechanicalMatrixMapper<DataTypes1, DataTypes2>::MechanicalMatrixMapper()
 template<class DataTypes1, class DataTypes2>
 void MechanicalMatrixMapper<DataTypes1, DataTypes2>::init()
 {
-    if(m_componentstate==ComponentState::Valid){
+    if(this->d_componentState.getValue() == ComponentState::Valid){
         msg_warning() << "Calling an already fully initialized component. You should use reinit instead." ;
     }
 
-    if(l_nodeToParse.get() == NULL)
+    if(l_nodeToParse.get() == nullptr)
     {
         msg_error() << " failed to initialized -> missing/wrong link " << l_nodeToParse.getName() << " : " << l_nodeToParse.getLinkedPath() << sendl;
-        m_componentstate = ComponentState::Invalid ;
+        this->d_componentState.setValue(ComponentState::Invalid) ;
         return;
     }
 
     sofa::core::behavior::BaseInteractionForceField::init();
 
-    if (mstate1.get() == NULL || mstate2.get() == NULL)
+    if (mstate1.get() == nullptr || mstate2.get() == nullptr)
     {
         msg_error() << " failed to initialized -> missing/wrong link " << mstate1.getName() << " or " << mstate2.getName() << sendl;
-        m_componentstate = ComponentState::Invalid ;
+        this->d_componentState.setValue(ComponentState::Invalid) ;
         return;
     }
 
@@ -103,7 +102,7 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::init()
     else
     {
         msg_error() << ": no mechanical object to link to for this node path: " << l_nodeToParse.getPath();
-        m_componentstate = ComponentState::Invalid ;
+        this->d_componentState.setValue(ComponentState::Invalid) ;
         return;
     }
 
@@ -116,7 +115,7 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::init()
         msg_warning() << ": no forcefield to link to for this node path: " << l_nodeToParse.getPath();
     }
 
-    m_componentstate = ComponentState::Valid ;
+    this->d_componentState.setValue(ComponentState::Valid) ;
 }
 
 template<class DataTypes1, class DataTypes2>
@@ -259,7 +258,7 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::optimizeAndCopyMappingJacob
 template<class DataTypes1, class DataTypes2>
 void MechanicalMatrixMapper<DataTypes1, DataTypes2>::addMassToSystem(const MechanicalParams* mparams, const DefaultMultiMatrixAccessor* KAccessor)
 {
-    if (l_mappedMass != NULL)
+    if (l_mappedMass != nullptr)
     {
         l_mappedMass->addMToMatrix(mparams, KAccessor);
     }
@@ -282,7 +281,7 @@ template<class DataTypes1, class DataTypes2>
 void MechanicalMatrixMapper<DataTypes1, DataTypes2>::addKToMatrix(const MechanicalParams* mparams,
                                                                         const MultiMatrixAccessor* matrix)
 {
-    if(m_componentstate != ComponentState::Valid)
+    if(this->d_componentState.getValue() != ComponentState::Valid)
         return ;
 
     sofa::helper::system::thread::CTime *timer = new sofa::helper::system::thread::CTime();

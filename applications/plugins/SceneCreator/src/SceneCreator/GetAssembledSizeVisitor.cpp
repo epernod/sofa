@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -53,7 +53,7 @@ void GetAssembledSizeVisitor::setIndependentOnly(bool b){ independentOnly=b; }
 
 Visitor::Result GetAssembledSizeVisitor::processNodeTopDown( simulation::Node* gnode )
 {
-    if (gnode->mechanicalState != NULL && ( gnode->mechanicalMapping ==NULL || independentOnly==false) )
+    if (gnode->mechanicalState != nullptr && ( gnode->mechanicalMapping ==nullptr || independentOnly==false) )
     {
         xsize += gnode->mechanicalState->getSize() * gnode->mechanicalState->getCoordDimension();
         vsize += gnode->mechanicalState->getMatrixSize();

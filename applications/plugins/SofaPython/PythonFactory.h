@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -200,7 +200,7 @@ public:
     static PyObject* toPython(sofa::core::DataEngine* obj) ;
 
     /// to convert a sofa::core::objectmodel::BaseData to its corresponding pyObject
-    /// returns NULL if the data does not correpond to any special type
+    /// returns nullptr if the data does not correpond to any special type
     static PyObject* toPython(sofa::core::objectmodel::BaseData* data)  ;
 
 private:

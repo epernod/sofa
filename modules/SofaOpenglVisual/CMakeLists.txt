@@ -1,5 +1,9 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.12)
 project(SofaOpenglVisual VERSION 1.0 LANGUAGES CXX)
+
+if(SOFA_NO_OPENGL)
+    message(FATAL_ERROR "SOFA_NO_OPENGL flag prevents from using the SofaOpenglVisual plugin")
+endif()
 
 find_package(SofaBase REQUIRED)
 find_package(SofaSimulation REQUIRED)
@@ -80,23 +84,20 @@ set(EXTRA_FILES
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES} ${EXTRA_FILES})
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaBaseVisual SofaSimulationCommon)
-target_compile_definitions(${PROJECT_NAME} PRIVATE "-DSOFA_BUILD_SOFAOPENGLVISUAL")
-target_compile_definitions(${PROJECT_NAME} PUBLIC "-DSOFA_HAVE_SOFAOPENGLVISUAL")
-target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>")
-target_include_directories(${PROJECT_NAME} PUBLIC "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>")
 
-sofa_generate_package(
-    NAME ${PROJECT_NAME}
-    VERSION ${PROJECT_VERSION}
-    TARGETS ${PROJECT_NAME}
-    INCLUDE_SOURCE_DIR "src/SofaOpenglVisual"
-    INCLUDE_INSTALL_DIR "SofaOpenglVisual/SofaOpenglVisual"
+sofa_create_package_with_targets(
+    PACKAGE_NAME ${PROJECT_NAME}
+    PACKAGE_VERSION ${PROJECT_VERSION}
+    TARGETS ${PROJECT_NAME} AUTO_SET_TARGET_PROPERTIES
+    INCLUDE_SOURCE_DIR "src"
+    INCLUDE_INSTALL_DIR "SofaOpenglVisual"
+    RELOCATABLE "plugins"
     )
 
-# Enable tests if SofaTest found
-# Will pass only in out-of-SOFA builds
-# See modules/tests/CMakeLists.txt if building through SOFA
-find_package(SofaTest QUIET)
-if(SofaTest_FOUND)
+# Tests
+# If SOFA_BUILD_TESTS exists and is OFF, then these tests will be auto-disabled
+cmake_dependent_option(SOFAOPENGLVISUAL_BUILD_TESTS "Compile the automatic tests" ON "SOFA_BUILD_TESTS OR NOT DEFINED SOFA_BUILD_TESTS" OFF)
+if(SOFAOPENGLVISUAL_BUILD_TESTS)
+    enable_testing()
     add_subdirectory(SofaOpenglVisual_test)
 endif()

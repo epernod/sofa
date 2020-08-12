@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -25,7 +25,6 @@
 #include <SofaMiscForceField/GearSpringForceField.h>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
-#include <sofa/helper/system/config.h>
 #include <sofa/defaulttype/RGBAColor.h>
 
 #include <cassert>
@@ -111,9 +110,9 @@ void GearSpringForceField<DataTypes>::init()
         outfile = new std::ofstream(filename.c_str());
         if( !outfile->is_open() )
         {
-            serr << "Error creating file "<<filename<<sendl;
+            msg_error() << "Creating file " << filename << " failed.";
             delete outfile;
-            outfile = NULL;
+            outfile = nullptr;
         }
     }
 

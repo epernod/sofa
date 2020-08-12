@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -22,6 +22,8 @@
 #ifndef SOFA_COMPONENT_ANIMATIONLOOP_MECHANICALMATRIXMAPPER_H
 #define SOFA_COMPONENT_ANIMATIONLOOP_MECHANICALMATRIXMAPPER_H
 
+#include <SofaGeneralAnimationLoop/config.h>
+
 #include <sofa/core/behavior/MixedInteractionForceField.h>
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/core/objectmodel/Data.h>
@@ -29,7 +31,6 @@
 #include <sofa/core/MechanicalParams.h>
 #include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
-#include <SofaMiscMapping/config.h>
 
 #include <sofa/core/topology/BaseMeshTopology.h>
 
@@ -268,7 +269,6 @@ protected:
     using MixedInteractionForceField<TDataTypes1, TDataTypes2>::mstate1 ;
     using MixedInteractionForceField<TDataTypes1, TDataTypes2>::mstate2 ;
     using MixedInteractionForceField<TDataTypes1, TDataTypes2>::getContext ;
-    using BaseObject::m_componentstate ;
     ////////////////////////////////////////////////////////////////////////////
 
 };

@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -50,7 +50,7 @@ LinearSolverConstraintCorrection<DataTypes>::LinearSolverConstraintCorrection(so
 : Inherit(mm)
 , wire_optimization(initData(&wire_optimization, false, "wire_optimization", "constraints are reordered along a wire-like topology (from tip to base)"))
 , solverName( initData(&solverName, "solverName", "search for the following names upward the scene graph") )
-, odesolver(NULL)
+, odesolver(nullptr)
 {
 }
 
@@ -88,39 +88,39 @@ void LinearSolverConstraintCorrection<DataTypes>::init()
     {
         for (unsigned int i=0; i<solverNames.size(); ++i)
         {
-            sofa::core::behavior::LinearSolver* s = NULL;
+            sofa::core::behavior::LinearSolver* s = nullptr;
             c->get(s, solverNames[i]);
             if (s) linearsolvers.push_back(s);
             else tmp << "- searching for solver \'" << solverNames[i] << "\' but cannot find it upward in the scene graph." << msgendl ;
         }
     }
 
-    if (odesolver == NULL)
+    if (odesolver == nullptr)
     {
         msg_error() << "No OdeSolver found (component is disabled)." ;
-        m_componentstate = ComponentState::Invalid ;
+        d_componentState.setValue(ComponentState::Invalid) ;
         return;
     }
     if (linearsolvers.size()==0)
     {
         msg_error() << "No LinearSolver found (component is disabled)." << tmp.str() ;
-        m_componentstate = ComponentState::Invalid ;
+        d_componentState.setValue(ComponentState::Invalid) ;
         return;
     }
 
     if(mstate==nullptr)
     {
-        m_componentstate = ComponentState::Invalid ;
+        d_componentState.setValue(ComponentState::Invalid) ;
         return;
     }
 
-    m_componentstate = ComponentState::Valid ;
+    d_componentState.setValue(ComponentState::Valid) ;
 }
 
 template<class TDataTypes>
 void LinearSolverConstraintCorrection<TDataTypes>::computeJ(sofa::defaulttype::BaseMatrix* W, const MatrixDeriv& c)
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return ;
 
     const unsigned int numDOFs = mstate->getSize();
@@ -152,46 +152,9 @@ void LinearSolverConstraintCorrection<TDataTypes>::computeJ(sofa::defaulttype::B
 }
 
 template<class DataTypes>
-void LinearSolverConstraintCorrection<DataTypes>::computeComplianceInConstraintSpace(const sofa::core::ConstraintParams *cparams, sofa::defaulttype::BaseMatrix* W)
-{
-    if (m_componentstate != ComponentState::Valid)
-        return;
-
-    // use the OdeSolver to get the position integration factor
-    double factor = 1.0;
-
-    switch (cparams->constOrder())
-    {
-    case core::ConstraintParams::POS_AND_VEL:
-    case core::ConstraintParams::POS:
-        factor = odesolver->getPositionIntegrationFactor();
-        break;
-
-    case core::ConstraintParams::ACC:
-    case core::ConstraintParams::VEL:
-        factor = odesolver->getVelocityIntegrationFactor();
-        break;
-
-    default:
-        break;
-    }
-
-    // Compute J
-    this->computeJ(W, cparams->readJ(this->mstate)->getValue(cparams));
-
-    // use the Linear solver to compute J*inv(M)*Jt, where M is the mechanical linear system matrix
-    for (unsigned i = 0; i < linearsolvers.size(); i++)
-    {
-        linearsolvers[i]->setSystemLHVector(sofa::core::MultiVecDerivId::null());
-        linearsolvers[i]->computeJMInvJt(&J, factor);
-    }
-}
-
-
-template<class DataTypes>
 void LinearSolverConstraintCorrection<DataTypes>::addComplianceInConstraintSpace(const sofa::core::ConstraintParams *cparams, sofa::defaulttype::BaseMatrix* W)
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return ;
 
     // use the OdeSolver to get the position integration factor
@@ -213,9 +176,13 @@ void LinearSolverConstraintCorrection<DataTypes>::addComplianceInConstraintSpace
         break;
     }
 
+    // Compute J
+    this->computeJ(W, cparams->readJ(this->mstate)->getValue());
+
     // use the Linear solver to compute J*inv(M)*Jt, where M is the mechanical linear system matrix
     for (unsigned i = 0; i < linearsolvers.size(); i++)
     {
+        linearsolvers[i]->setSystemLHVector(sofa::core::MultiVecDerivId::null());
         linearsolvers[i]->addJMInvJt(W, &J, factor);
     }
 }
@@ -233,7 +200,7 @@ void LinearSolverConstraintCorrection<DataTypes>::rebuildSystem(double massFacto
 template<class DataTypes>
 void LinearSolverConstraintCorrection<DataTypes>::getComplianceMatrix(defaulttype::BaseMatrix* Minv) const
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return ;
 
     const double factor = odesolver->getPositionIntegrationFactor();
@@ -277,7 +244,7 @@ void LinearSolverConstraintCorrection< DataTypes >::applyMotionCorrection(const 
         auto v = sofa::helper::write(v_d, cparams);
         auto dx = sofa::helper::write(dx_d, cparams);
 
-        const VecDeriv& correction = correction_d.getValue(cparams);
+        const VecDeriv& correction = correction_d.getValue();
         const VecCoord& x_free = cparams->readX(mstate)->getValue();
         const VecDeriv& v_free = cparams->readV(mstate)->getValue();
 
@@ -305,7 +272,7 @@ void LinearSolverConstraintCorrection< DataTypes >::applyPositionCorrection(cons
         auto x  = sofa::helper::write(x_d, cparams);
         auto dx = sofa::helper::write(dx_d, cparams);
 
-        const VecDeriv& correction = correction_d.getValue(cparams);
+        const VecDeriv& correction = correction_d.getValue();
         const VecCoord& x_free = cparams->readX(mstate)->getValue();
 
         const double positionFactor = odesolver->getPositionIntegrationFactor();
@@ -329,7 +296,7 @@ void LinearSolverConstraintCorrection< DataTypes >::applyVelocityCorrection(cons
         auto v  = sofa::helper::write(v_d,cparams);
         auto dv = sofa::helper::write(dv_d, cparams); 
 
-        const VecDeriv& correction = correction_d.getValue(cparams);
+        const VecDeriv& correction = correction_d.getValue();
         const VecDeriv& v_free = cparams->readV(mstate)->getValue();
 
         const double velocityFactor = odesolver->getVelocityIntegrationFactor();
@@ -685,7 +652,7 @@ void LinearSolverConstraintCorrection<DataTypes>::setConstraintDForce(double *df
 template<class DataTypes>
 void LinearSolverConstraintCorrection<DataTypes>::getBlockDiagonalCompliance(defaulttype::BaseMatrix* W, int begin, int end)
 {
-    if(m_componentstate!=ComponentState::Valid)
+    if(d_componentState.getValue() != ComponentState::Valid)
         return ;
 
     // use the OdeSolver to get the position integration factor

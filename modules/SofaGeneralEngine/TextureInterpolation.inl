@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -124,13 +124,13 @@ void TextureInterpolation<DataTypes>::doUpdate()
     // Check min and max values:
     if(_changeScale.getValue())
     {
-        if( _minVal.getValue() < _maxVal.getValue() )
+        if (_minVal.getValue() < _maxVal.getValue())
         {
             minVal = _minVal.getValue();
             maxVal = _maxVal.getValue();
         }
         else
-            serr << "Error: in scale for TextureInterpolation, min_value is not smaller than max_value." << sendl;
+            msg_error() << "In scale for TextureInterpolation, min_value is not smaller than max_value.";
     }
     else
     {

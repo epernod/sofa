@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -56,7 +56,7 @@ int Triangle2EdgeTopologicalMappingClass = core::RegisterObject("Special case of
 
 Triangle2EdgeTopologicalMapping::Triangle2EdgeTopologicalMapping()
     : sofa::core::topology::TopologicalMapping()
-    , m_outTopoModifier(NULL)
+    , m_outTopoModifier(nullptr)
 {
 }
 
@@ -95,7 +95,7 @@ void Triangle2EdgeTopologicalMapping::init()
 
     if (!modelsOk)
     {
-        this->m_componentstate = sofa::core::objectmodel::ComponentState::Invalid;
+        this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
         return;
     }
 
@@ -130,7 +130,7 @@ void Triangle2EdgeTopologicalMapping::init()
     // Need to fully init the target topology
     toModel->init();
 
-    this->m_componentstate = sofa::core::objectmodel::ComponentState::Valid;
+    this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Valid);
 }
 
 
@@ -148,7 +148,7 @@ unsigned int Triangle2EdgeTopologicalMapping::getFromIndex(unsigned int ind)
 
 void Triangle2EdgeTopologicalMapping::updateTopologicalMappingTopDown()
 {
-    if (this->m_componentstate != sofa::core::objectmodel::ComponentState::Valid)
+    if (this->d_componentState.getValue() != sofa::core::objectmodel::ComponentState::Valid)
         return;
 
     sofa::helper::AdvancedTimer::stepBegin("Update Triangle2EdgeTopologicalMapping");

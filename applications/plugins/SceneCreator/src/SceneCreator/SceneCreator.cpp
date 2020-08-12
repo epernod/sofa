@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2019 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU General Public License as published by the Free  *
@@ -20,7 +20,7 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 #include "SceneCreator.h"
-#include <SofaGeneral/config.h>
+#include <SceneCreator/config.h>
 
 #include <sofa/simulation/Simulation.h>
 #include <SofaSimulationGraph/DAGSimulation.h>
@@ -37,12 +37,6 @@ using sofa::helper::system::DataRepository ;
 using sofa::simpleapi::str ;
 using sofa::simpleapi::createObject ;
 using sofa::simpleapi::createChild ;
-
-#ifdef SOFA_HAVE_METIS
-#define ARE_METIS_FEATURE_ENABLED true
-#else
-#define ARE_METIS_FEATURE_ENABLED false
-#endif //
 
 namespace sofa
 {
@@ -65,7 +59,7 @@ using sofa::core::objectmodel::New ;
 
 using sofa::helper::system::DataRepository ;
 
-static sofa::simulation::Node::SPtr root = NULL;
+static sofa::simulation::Node::SPtr root = nullptr;
 
 using sofa::core::objectmodel::BaseObject ;
 
@@ -113,7 +107,7 @@ Node::SPtr  createEulerSolverNode(Node::SPtr parent, const std::string& name, co
 
     if (scheme == "Implicit_SparseLDL")
     {
-        if(ARE_METIS_FEATURE_ENABLED)
+        if(SCENECREATOR_HAVE_SOFASPARSESOLVER)
         {
             simpleapi::createObject(node, "EulerImplicitSolver", {{"name","Euler Implicit"},
                                                                   {"rayleighStiffness","0.01"},
@@ -156,25 +150,25 @@ Node::SPtr createObstacle(Node::SPtr  parent, const std::string &filenameCollisi
                                 {"rotation", str(rotation)}
                             });
 
-    simpleapi::createObject(nodeFixed, "TriangleModel", {
+    simpleapi::createObject(nodeFixed, "TriangleCollisionModel", {
                                 {"name", "Collision Fixed"},
                                 {"simulated", "false"},
                                 {"moving", "false"},
                             });
 
-    simpleapi::createObject(nodeFixed, "LineModel", {
+    simpleapi::createObject(nodeFixed, "LineCollisionModel", {
                                 {"name", "Collision Fixed"},
                                 {"simulated", "false"},
                                 {"moving", "false"},
                             });
 
-    simpleapi::createObject(nodeFixed, "PointModel", {
+    simpleapi::createObject(nodeFixed, "PointCollisionModel", {
                                 {"name", "Collision Fixed"},
                                 {"simulated", "false"},
                                 {"moving", "false"},
                             });
 
-    simpleapi::createObject(nodeFixed, "LineModel", {
+    simpleapi::createObject(nodeFixed, "LineCollisionModel", {
                                 {"name", "Collision Fixed"},
                                 {"simulated", "false"},
                                 {"moving", "false"},
@@ -255,7 +249,7 @@ simulation::Node::SPtr createVisualNodeVec3(simulation::Node::SPtr  parent,
 
     simpleapi::createObject(node, mappingType, {
                                 {"name", nameVisual},
-                                {"template", "Vec3,ExtVec3"},
+                                {"template", "Vec3,Vec3"},
                                 {"input", refDof},
                                 {"output", refVisual}});
 
@@ -327,12 +321,12 @@ Node::SPtr createVisualNodeRigid(Node::SPtr  parent, BaseObject::SPtr  dofRigid,
 void addCollisionModels(Node::SPtr parent, const std::vector<std::string> &elements)
 {
     std::map<std::string, std::string> alias = {
-        {"Triangle", "TriangleModel"},
-        {"Line", "LineModel"},
-        {"Point", "PointModel"},
-        {"Sphere", "SphereModel"},
-        {"Capsule", "CapsuleModel"},
-        {"OBB", "OBBModel"}};
+        {"Triangle", "TriangleCollisionModel"},
+        {"Line", "LineCollisionModel"},
+        {"Point", "PointCollisionModel"},
+        {"Sphere", "SphereCollisionModel"},
+        {"Capsule", "CapsuleCollisionModel"},
+        {"OBB", "OBBCollisionModel"}};
 
     for (auto& element : elements)
     {
@@ -386,15 +380,15 @@ simulation::Node::SPtr addCube(simulation::Node::SPtr parent, const std::string&
 {
     //TODO(dmarchal): It is unclear to me if this message should be a msg_ (for end user)
     // or dmsg_ for developpers.
-    if (parent == NULL){
-        msg_warning("SceneCreator") << "Parent node is NULL. Returning Null Pointer." ;
-        return NULL;
+    if (parent == nullptr){
+        msg_warning("SceneCreator") << "Parent node is nullptr. Returning Null Pointer." ;
+        return nullptr;
     }
 
     // TODO: epernod: this should be tested in the regularGrid code to avoid crash.
     if (gridSize[0] < 1 || gridSize[1] < 1 || gridSize[2] < 1){
         msg_warning("SceneCreator") << "Grid Size has a non positive value. Returning Null Pointer." ;
-        return NULL;
+        return nullptr;
     }
 
     // Check rigid
@@ -459,15 +453,15 @@ simulation::Node::SPtr addCylinder(simulation::Node::SPtr parent, const std::str
 {
     //TODO(dmarchal): It is unclear to me if this message should be a msg_ (for end user)
     // or dmsg_ for developpers.
-    if (parent == NULL){
-        msg_warning("SceneCreator") << "Warning: parent node is NULL. Returning Null Pointer." ;
-        return NULL;
+    if (parent == nullptr){
+        msg_warning("SceneCreator") << "Warning: parent node is nullptr. Returning Null Pointer." ;
+        return nullptr;
     }
 
     // TODO: epernod: this should be tested in the regularGrid code to avoid crash.
     if (gridSize[0] < 1 || gridSize[1] < 1 || gridSize[2] < 1){
         msg_warning("SceneCreator") << "Warning: Grid Size has a non positive value. Returning Null Pointer." ;
-        return NULL;
+        return nullptr;
     }
 
     // Check rigid
@@ -523,15 +517,15 @@ simulation::Node::SPtr addSphere(simulation::Node::SPtr parent, const std::strin
 {
     //TODO(dmarchal): It is unclear to me if this message should be a msg_ (for end user)
     // or dmsg_ for developpers.
-    if (parent == NULL){
-        msg_warning("SceneCreator") << "Warning: parent node is NULL. Returning Null Pointer." ;
-        return NULL;
+    if (parent == nullptr){
+        msg_warning("SceneCreator") << "Warning: parent node is nullptr. Returning Null Pointer." ;
+        return nullptr;
     }
 
     // TODO: epernod: this should be tested in the regularGrid code to avoid crash.
     if (gridSize[0] < 1 || gridSize[1] < 1 || gridSize[2] < 1){
         msg_warning("SceneCreator") << "Warning: Grid Size has a non positive value. Returning Null Pointer." ;
-        return NULL;
+        return nullptr;
     }
 
     // Check rigid
@@ -583,15 +577,15 @@ simulation::Node::SPtr addPlane(simulation::Node::SPtr parent, const std::string
 {
     //TODO(dmarchal): It is unclear to me if this message should be a msg_ (for end user)
     // or dmsg_ for developpers.
-    if (parent == NULL){
-        msg_warning("SceneCreator") << " Parent node is NULL. Returning Null Pointer." ;
-        return NULL;
+    if (parent == nullptr){
+        msg_warning("SceneCreator") << " Parent node is nullptr. Returning Null Pointer." ;
+        return nullptr;
     }
 
     // TODO: epernod: this should be tested in the regularGrid code to avoid crash.
     if (gridSize[0] < 1 || gridSize[1] < 1 || gridSize[2] < 1){
         msg_warning("SceneCreator") << " Grid Size has a non positive value. Returning Null Pointer." ;
-        return NULL;
+        return nullptr;
     }
 
     // Check rigid
