@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2017 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -27,7 +27,7 @@
 #include "PythonFactory.h"
 #include "PythonToSofa.inl"
 
-#include <sofa/defaulttype/Vec3Types.h>
+#include <sofa/defaulttype/VecTypes.h>
 using namespace sofa::defaulttype;
 
 #include <sofa/core/ObjectFactory.h>
@@ -50,7 +50,7 @@ static PyObject * BaseContext_setGravity(PyObject *self, PyObject * args)
     BaseContext* obj = get_basecontext( self );
     PyPtr<Vector3>* pyVec;
     if (!PyArg_ParseTuple(args, "O",&pyVec)) {
-        return NULL;
+        return nullptr;
     }
 
     obj->setGravity(*pyVec->object);
@@ -81,85 +81,6 @@ static PyObject * BaseContext_getRootContext(PyObject *self, PyObject * /*args*/
     return sofa::PythonFactory::toPython(obj->getRootContext());
 }
 
-
-/// This function converts an PyObject into a sofa string.
-/// string that can be safely parsed in helper::vector<int> or helper::vector<double>
-static std::ostream& pythonToSofaDataString(PyObject* value, std::ostream& out)
-{
-    /// String are just returned as string.
-    if (PyString_Check(value))
-    {
-        return out << PyString_AsString(value) ;
-    }
-
-    /// Unicode are converted to string.
-    if(PyUnicode_Check(value))
-    {
-        PyObject* tmpstr = PyUnicode_AsUTF8String(value);
-        out << PyString_AsString(tmpstr) ;
-        Py_DECREF(tmpstr);
-
-        return out;
-    }
-
-    if( PySequence_Check(value) )
-    {
-        if(!PyList_Check(value))
-        {
-            msg_warning("SofaPython") << "A sequence which is not a list will be convert to a sofa string.";
-        }
-        /// It is a sequence...so we can iterate over it.
-        PyObject *iterator = PyObject_GetIter(value);
-        if(iterator)
-        {
-            bool first = true;
-            while(PyObject* next = PyIter_Next(iterator))
-            {
-                if(first) first = false;
-                else out << ' ';
-
-                pythonToSofaDataString(next, out);
-                Py_DECREF(next);
-            }
-            Py_DECREF(iterator);
-
-            if (PyErr_Occurred())
-            {
-                msg_error("SofaPython") << "error while iterating." << msgendl
-                                        << PythonEnvironment::getStackAsString() ;
-            }
-            return out;
-        }
-    }
-
-
-    /// Check if the object has an explicit conversion to a Sofa path. If this is the case
-    /// we use it.
-    if( PyObject_HasAttrString(value, "getAsACreateObjectParameter") ){
-        PyObject* retvalue = PyObject_CallMethod(value, (char*)"getAsACreateObjectParameter", nullptr) ;
-        return pythonToSofaDataString(retvalue, out);
-    }
-
-    /// Default conversion for standard type:
-    if( !(PyInt_Check(value) || PyLong_Check(value) || PyFloat_Check(value) || PyBool_Check(value) ))
-    {
-        msg_warning("SofaPython") << "You are trying to convert a non primitive type to Sofa using the 'str' operator." << msgendl
-                                  << "Automatic conversion is provided for: String, Integer, Long, Float and Bool and Sequences." << msgendl
-                                  << "Other objects should implement the method getAsACreateObjectParameter(). " << msgendl
-                                  << "This function should return a string usable as a parameter in createObject()." << msgendl
-                                  << "So to remove this message you must add a method getAsCreateObjectParameter(self) "
-                                     "to the object you are passing the createObject function." << msgendl
-                                  << PythonEnvironment::getStackAsString() ;
-    }
-
-
-    PyObject* tmpstr=PyObject_Repr(value);
-    out << PyString_AsString(tmpstr) ;
-    Py_DECREF(tmpstr) ;
-    return out ;
-}
-
-
 /// object factory
 static PyObject * BaseContext_createObject_Impl(PyObject * self, PyObject * args, PyObject * kw, bool printWarnings)
 {
@@ -168,7 +89,7 @@ static PyObject * BaseContext_createObject_Impl(PyObject * self, PyObject * args
     char *type;
     if (!PyArg_ParseTuple(args, "s",&type))
     {
-        return NULL;
+        return nullptr;
     }
 
     /// temporarily, the name is set to the type name.
@@ -194,24 +115,53 @@ static PyObject * BaseContext_createObject_Impl(PyObject * self, PyObject * args
             {
                 std::stringstream s;
                 pythonToSofaDataString(value, s) ;
-                desc.setAttribute(PyString_AsString(key),s.str().c_str());
+                desc.setAttribute(PyString_AsString(key),s.str());
             }
         }
         Py_DecRef(keys);
         Py_DecRef(values);
     }
 
-    BaseObject::SPtr obj = ObjectFactory::getInstance()->createObject(context,&desc);
-    if (obj==0)
+    // Same system as in ElementNameHelper (XML parser)
+    static std::map<std::string, int> instanceCounter;
+
+    if (std::string(desc.getAttribute("name")).empty())
     {
-        std::stringstream msg;
-        msg << "createObject: component '" << desc.getName() << "' of type '" << desc.getAttribute("type","")<< "' in node '"<<context->getName()<<"'" ;
-        for (std::vector< std::string >::const_iterator it = desc.getErrors().begin(); it != desc.getErrors().end(); ++it)
-            msg << " " << *it << msgendl ;
-        PyErr_SetString(PyExc_RuntimeError, msg.str().c_str()) ;
-        return NULL;
+        std::string type = desc.getAttribute("type");
+        std::string shortName = sofa::core::ObjectFactory::ShortName(type);
+        if (instanceCounter.find(shortName) != instanceCounter.end())
+            shortName += std::to_string(instanceCounter[shortName]++);
+        else
+            instanceCounter[shortName] = 1;
+        msg_error("createObject") << "Empty string given to property 'name': Forcefully setting an empty name is forbidden.\n"
+                                      "Renaming to " + shortName +" to avoid unexpected behaviors.";
+        desc.setAttribute("name", shortName);
     }
 
+    BaseObject::SPtr obj = ObjectFactory::getInstance()->createObject(context,&desc);
+    if (obj == nullptr)
+    {
+        std::stringstream msg;
+        msg << "Unable to create '" << desc.getName() << "' of type '" << desc.getAttribute("type","")<< "' in node '"<<context->getName()<<"'." ;
+        for (std::vector< std::string >::const_iterator it = desc.getErrors().begin(); it != desc.getErrors().end(); ++it)
+            msg << " " << *it << msgendl ;
+
+        //todo(STC6) do it or remove it ?
+        //todo(dmarchal 2018/10/01) I don't like that because it is weird to have error reporting
+        //strategy into the createObject implementation instead of into a dedicated exception.
+        //in addition this is the first time we are not using the macro from msg_*
+        BaseObjectDescription desc("InfoComponent", "InfoComponent") ;
+        BaseObject::SPtr obj = ObjectFactory::getInstance()->createObject(context,&desc) ;
+        obj->setName( "Not created ("+std::string(type)+")" ) ;
+        sofa::helper::logging::Message m(sofa::helper::logging::Message::Runtime,
+                                         sofa::helper::logging::Message::Error) ;
+        m << msg.str() ;
+        obj->addMessage(  m ) ;
+        //todo(STC6) end of do it or remove it.
+
+        PyErr_SetString(PyExc_RuntimeError, msg.str().c_str()) ;
+        return nullptr;
+    }
 
     if( warning )
     {
@@ -227,7 +177,9 @@ static PyObject * BaseContext_createObject_Impl(PyObject * self, PyObject * args
         if (node && node->isInitialized())
             msg_warning(node) << "Sofa.Node.createObject("<<type<<") called on a node("<<node->getName()<<") that is already initialized";
     }
-
+    auto fileinfo = PythonEnvironment::getPythonCallingPointAsFileInfo();
+    obj->setInstanciationSourceFilePos(fileinfo->line);
+    obj->setInstanciationSourceFileName(fileinfo->filename);
     return sofa::PythonFactory::toPython(obj.get());
 }
 
@@ -253,10 +205,11 @@ static PyObject * BaseContext_getObject(PyObject * self, PyObject * args, PyObje
     char *path;
     if (!PyArg_ParseTuple(args, "s",&path))
     {
-        return NULL;
+        return nullptr;
     }
 
     bool emitWarningMessage = true;
+
     if (kw && PyDict_Size(kw)>0)
     {
         PyObject* keys = PyDict_Keys(kw);
@@ -279,13 +232,15 @@ static PyObject * BaseContext_getObject(PyObject * self, PyObject * args, PyObje
     if (!context || !path)
     {
         PyErr_BadArgument();
-        return NULL;
+        return nullptr;
     }
     BaseObject::SPtr sptr;
     context->get<BaseObject>(sptr,path);
     if (!sptr)
     {
-        return NULL;
+        if( emitWarningMessage )
+            msg_error(context) << "Unable to find : " << path ;
+        Py_RETURN_NONE ;
     }
 
     return sofa::PythonFactory::toPython(sptr.get());
@@ -303,12 +258,12 @@ static PyObject * BaseContext_getObject_noWarning(PyObject * self, PyObject * ar
     char *path;
     if (!PyArg_ParseTuple(args, "s",&path))
     {
-        return NULL;
+        return nullptr;
     }
     if (!context || !path)
     {
         PyErr_BadArgument();
-        return NULL;
+        return nullptr;
     }
     BaseObject::SPtr sptr;
     context->get<BaseObject>(sptr,path);
@@ -322,17 +277,17 @@ static PyObject * BaseContext_getObject_noWarning(PyObject * self, PyObject * ar
 static PyObject * BaseContext_getObjects(PyObject * self, PyObject * args)
 {
     BaseContext* context = get_basecontext( self );
-    char* search_direction= NULL;
-    char* type_name= NULL;
-    char* name= NULL;
+    char* search_direction= nullptr;
+    char* type_name= nullptr;
+    char* name= nullptr;
     if ( !PyArg_ParseTuple ( args, "|sss", &search_direction, &type_name, &name ) ) {
-        return NULL;
+        return nullptr;
     }
 
     if (!context)
     {
         PyErr_BadArgument();
-        return NULL;
+        return nullptr;
     }
 
     sofa::core::objectmodel::BaseContext::SearchDirection search_direction_enum= sofa::core::objectmodel::BaseContext::Local;
@@ -365,7 +320,7 @@ static PyObject * BaseContext_getObjects(PyObject * self, PyObject * args)
         }
     }
 
-    sofa::helper::vector< boost::intrusive_ptr<BaseObject> > list;
+    sofa::helper::vector< BaseObject::SPtr > list;
     context->get<BaseObject>(&list,search_direction_enum);
 
     PyObject *pyList = PyList_New(0);
@@ -431,7 +386,8 @@ SP_CLASS_METHOD_KW_DOC(BaseContext,createObject_noWarning,   // deprecated
                "   object = node.createObject_noWarning('MechanicalObject',name='mObject',dx='x',dy='y',dz='z')"
                )
 SP_CLASS_METHOD_KW_DOC(BaseContext,getObject,
-                "Returns the object by its path. Can be in this node or another, in function of the path... \n"
+                "Returns the object by its path. Can be in this node or another, in function of the path.\n"
+                "Returns None if no object with the given name can be found.                            \n"
                 "examples:\n"
                 "   mecanicalState = node.getObject('DOFs')\n"
                 "   mesh = node.getObject('visuNode/OglModel')"

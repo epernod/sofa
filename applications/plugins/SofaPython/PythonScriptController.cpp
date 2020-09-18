@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2017 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -81,14 +81,18 @@ public:
         m_controller = psc ;
     }
 
-    virtual ~MyFileEventListener(){}
+    ~MyFileEventListener() override{}
 
-    virtual void fileHasChanged(const std::string& filepath){
+    virtual void fileHasChanged(const std::string& filepath) override
+    {
+        PythonEnvironment::gil lock {__func__} ;
+
         /// This function is called when the file has changed. Two cases have
         /// to be considered if the script was already loaded once or not.
         if(!m_controller->scriptControllerInstance()){
             m_controller->doLoadScript();
         }else{
+            PythonEnvironment::gil state {__func__ } ;
             std::string file=filepath;
             SP_CALL_FILEFUNC(const_cast<char*>("onReimpAFile"),
                              const_cast<char*>("s"),
@@ -105,8 +109,6 @@ int PythonScriptControllerClass = core::RegisterObject("A Sofa controller script
         .add< PythonScriptController >()
         ;
 
-SOFA_DECL_CLASS(PythonScriptController)
-
 PythonScriptController::PythonScriptController()
     : ScriptController()
     , m_filename(initData(&m_filename, "filename",
@@ -122,8 +124,8 @@ PythonScriptController::PythonScriptController()
     , m_doAutoReload( initData( &m_doAutoReload, false, "autoreload",
                                 "Automatically reload the file when the source code is changed. "
                                 "Default value is set to false" ) )
-    , m_ScriptControllerClass(0)
-    , m_ScriptControllerInstance(0)
+    , m_ScriptControllerClass(nullptr)
+    , m_ScriptControllerInstance(nullptr)
 {
     m_filelistener = new MyFileEventListener(this) ;
 }
@@ -139,6 +141,8 @@ PythonScriptController::~PythonScriptController()
 
 
 void PythonScriptController::setInstance(PyObject* instance) {
+    PythonEnvironment::gil lock(__func__);
+    
     // "trust me i'm an engineer"
     if( m_ScriptControllerInstance ) {
         Py_DECREF( m_ScriptControllerInstance );
@@ -164,6 +168,7 @@ void PythonScriptController::refreshBinding()
             BIND_OBJECT_METHOD(bwdInitGraph)
             BIND_OBJECT_METHOD(onKeyPressed)
             BIND_OBJECT_METHOD(onKeyReleased)
+            BIND_OBJECT_METHOD(onMouseMove)
             BIND_OBJECT_METHOD(onMouseButtonLeft)
             BIND_OBJECT_METHOD(onMouseButtonRight)
             BIND_OBJECT_METHOD(onMouseButtonMiddle)
@@ -181,6 +186,7 @@ void PythonScriptController::refreshBinding()
 
 bool PythonScriptController::isDerivedFrom(const std::string& name, const std::string& module)
 {
+    PythonEnvironment::gil lock(__func__);    
     PyObject* moduleDict = PyModule_GetDict(PyImport_AddModule(module.c_str()));
     PyObject* controllerClass = PyDict_GetItemString(moduleDict, name.c_str());
 
@@ -189,6 +195,7 @@ bool PythonScriptController::isDerivedFrom(const std::string& name, const std::s
 
 void PythonScriptController::loadScript()
 {
+    PythonEnvironment::gil lock(__func__);        
     if(m_doAutoReload.getValue())
     {
         FileMonitor::addFile(m_filename.getFullPath(), m_filelistener) ;
@@ -240,7 +247,10 @@ void PythonScriptController::script_onIdleEvent(const IdleEvent* /*event*/)
 {
     FileMonitor::updates(0);
 
-    SP_CALL_MODULEFUNC_NOPARAM(m_Func_onIdle) ;
+    {
+        PythonEnvironment::gil lock(__func__);
+        SP_CALL_MODULEFUNC_NOPARAM(m_Func_onIdle) ;
+    }
 
     /// Flush the console to avoid the sys.stdout.flush() in each script function.
     std::cout.flush() ;
@@ -249,116 +259,155 @@ void PythonScriptController::script_onIdleEvent(const IdleEvent* /*event*/)
 
 void PythonScriptController::script_onLoaded(Node *node)
 {
+    PythonEnvironment::gil lock(__func__);    
     SP_CALL_MODULEFUNC(m_Func_onLoaded, "(O)", sofa::PythonFactory::toPython(node))
 }
 
 void PythonScriptController::script_createGraph(Node *node)
 {
+    PythonEnvironment::gil lock(__func__);    
     SP_CALL_MODULEFUNC(m_Func_createGraph, "(O)", sofa::PythonFactory::toPython(node))
 }
 
 void PythonScriptController::script_initGraph(Node *node)
 {
+    PythonEnvironment::gil lock(__func__);    
     SP_CALL_MODULEFUNC(m_Func_initGraph, "(O)", sofa::PythonFactory::toPython(node))
 }
 
 void PythonScriptController::script_bwdInitGraph(Node *node)
 {
+    PythonEnvironment::gil lock(__func__);    
     SP_CALL_MODULEFUNC(m_Func_bwdInitGraph, "(O)", sofa::PythonFactory::toPython(node))
 }
 
 bool PythonScriptController::script_onKeyPressed(const char c)
 {
-    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), "PythonScriptController_onKeyPressed", this);
+    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), 
+                                               "PythonScriptController_onKeyPressed", this);
     bool b = false;
-    SP_CALL_MODULEBOOLFUNC(m_Func_onKeyPressed,"(c)", c)
-            return b;
+    PythonEnvironment::gil lock(__func__);    
+    SP_CALL_MODULEBOOLFUNC(m_Func_onKeyPressed,"(c)", c);
+    return b;
 }
 
 bool PythonScriptController::script_onKeyReleased(const char c)
 {
-    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), "PythonScriptController_onKeyReleased", this);
+
+    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(),
+                                               "PythonScriptController_onKeyReleased", this);
     bool b = false;
-    SP_CALL_MODULEBOOLFUNC(m_Func_onKeyReleased,"(c)", c)
-            return b;
+    PythonEnvironment::gil lock(__func__);    
+    SP_CALL_MODULEBOOLFUNC(m_Func_onKeyReleased,"(c)", c);
+    return b;
+}
+
+void PythonScriptController::script_onMouseMove(const int posX,const int posY)
+{
+     ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(),
+                                                "PythonScriptController_onMouseMove",this);
+
+     PythonEnvironment::gil lock(__func__);
+     SP_CALL_MODULEFUNC(m_Func_onMouseMove, "(ii)", posX, posY);
 }
 
 void PythonScriptController::script_onMouseButtonLeft(const int posX,const int posY,const bool pressed)
 {
-    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), "PythonScriptController_onMouseButtonLeft",this);
+    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), 
+                                               "PythonScriptController_onMouseButtonLeft",this);
+    PythonEnvironment::gil lock(__func__);    
     PyObject *pyPressed = pressed? Py_True : Py_False;
     SP_CALL_MODULEFUNC(m_Func_onMouseButtonLeft, "(iiO)", posX,posY,pyPressed)
 }
 
 void PythonScriptController::script_onMouseButtonRight(const int posX,const int posY,const bool pressed)
 {
-    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), "PythonScriptController_onMouseButtonRight", this);
+    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), 
+                                               "PythonScriptController_onMouseButtonRight", this);
+    PythonEnvironment::gil lock(__func__);
     PyObject *pyPressed = pressed? Py_True : Py_False;
     SP_CALL_MODULEFUNC(m_Func_onMouseButtonRight, "(iiO)", posX,posY,pyPressed)
 }
 
 void PythonScriptController::script_onMouseButtonMiddle(const int posX,const int posY,const bool pressed)
 {
-    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), "PythonScriptController_onMouseButtonMiddle", this);
+    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), 
+                                               "PythonScriptController_onMouseButtonMiddle", this);
+    PythonEnvironment::gil lock(__func__);
     PyObject *pyPressed = pressed? Py_True : Py_False;
     SP_CALL_MODULEFUNC(m_Func_onMouseButtonMiddle, "(iiO)", posX,posY,pyPressed)
 }
 
 void PythonScriptController::script_onMouseWheel(const int posX,const int posY,const int delta)
 {
-    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), "PythonScriptController_onMouseWheel", this);
+    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(),
+                                               "PythonScriptController_onMouseWheel", this);
+    PythonEnvironment::gil lock(__func__);
     SP_CALL_MODULEFUNC(m_Func_onMouseWheel, "(iii)", posX,posY,delta)
 }
 
 
 void PythonScriptController::script_onBeginAnimationStep(const double dt)
 {
-    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), "PythonScriptController_onBeginAnimationStep", this);
+    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(),
+                                               "PythonScriptController_onBeginAnimationStep", this);
+    PythonEnvironment::gil lock(__func__);
     SP_CALL_MODULEFUNC(m_Func_onBeginAnimationStep, "(d)", dt)
 }
 
 void PythonScriptController::script_onEndAnimationStep(const double dt)
 {
-    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), "PythonScriptController_onEndAnimationStep", this);
+    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(),
+                                               "PythonScriptController_onEndAnimationStep", this);
+    PythonEnvironment::gil lock(__func__);    
     SP_CALL_MODULEFUNC(m_Func_onEndAnimationStep, "(d)", dt)
 }
 
 void PythonScriptController::script_storeResetState()
 {
+    PythonEnvironment::gil lock(__func__);
     SP_CALL_MODULEFUNC_NOPARAM(m_Func_storeResetState)
 }
 
 void PythonScriptController::script_reset()
 {
+    PythonEnvironment::gil lock(__func__);    
     SP_CALL_MODULEFUNC_NOPARAM(m_Func_reset)
 }
 
 void PythonScriptController::script_cleanup()
 {
+    PythonEnvironment::gil lock(__func__);    
     SP_CALL_MODULEFUNC_NOPARAM(m_Func_cleanup)
 }
 
 void PythonScriptController::script_onGUIEvent(const char* controlID, const char* valueName, const char* value)
 {
-    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), "PythonScriptController_onGUIEvent", this);
+    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(),
+                                               "PythonScriptController_onGUIEvent", this);
+    PythonEnvironment::gil lock(__func__);
     SP_CALL_MODULEFUNC(m_Func_onGUIEvent,"(sss)",controlID,valueName,value);
 }
 
 void PythonScriptController::script_onScriptEvent(core::objectmodel::ScriptEvent* event)
 {
-    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), "PythonScriptController_onScriptEvent", this);
-
+    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), 
+                                               "PythonScriptController_onScriptEvent", this);
+    PythonEnvironment::gil lock(__func__);
     PythonScriptEvent *pyEvent = static_cast<PythonScriptEvent*>(event);
-    SP_CALL_MODULEFUNC(m_Func_onScriptEvent,"(OsO)",sofa::PythonFactory::toPython(pyEvent->getSender().get()),pyEvent->getEventName().c_str(),pyEvent->getUserData())
+    SP_CALL_MODULEFUNC(m_Func_onScriptEvent,"(OsO)",
+                       sofa::PythonFactory::toPython(pyEvent->getSender().get()),
+                       pyEvent->getEventName().c_str(),pyEvent->getUserData());
 }
 
 
 
 void PythonScriptController::script_draw(const core::visual::VisualParams*)
 {
-    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), "PythonScriptController_draw", this);
-
-    SP_CALL_MODULEFUNC_NOPARAM(m_Func_draw)
+    ActivableScopedAdvancedTimer advancedTimer(m_timingEnabled.getValue(), 
+                                               "PythonScriptController_draw", this);
+    PythonEnvironment::gil lock(__func__);
+    SP_CALL_MODULEFUNC_NOPARAM(m_Func_draw);
 }
 
 void PythonScriptController::handleEvent(core::objectmodel::Event *event)

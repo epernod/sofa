@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2017 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -28,40 +28,39 @@
 #include <map>
 
 #include <sofa/simulation/Visitor.h>
+#include "SceneCheck.h"
 
 namespace sofa
 {
 namespace simulation
 {
-typedef std::function<void(sofa::core::objectmodel::Base*)> ChangeSetHookFunction ;
+namespace _scenechecking_
+{
 
 class SOFA_GRAPH_COMPONENT_API SceneCheckerVisitor : public Visitor
 {
 public:
-    SceneCheckerVisitor(const sofa::core::ExecParams* params) ;
-    virtual ~SceneCheckerVisitor() ;
+    SceneCheckerVisitor(const sofa::core::ExecParams* params = sofa::core::ExecParams::defaultInstance()) ;
+    ~SceneCheckerVisitor() override;
 
     void validate(Node* node) ;
+    Result processNodeTopDown(Node* node) override ;
 
-    void enableValidationAPIVersion(Node *node) ;
-    void enableValidationRequiredPlugins(Node* node) ;
+    void addCheck(SceneCheck::SPtr check) ;
+    void removeCheck(SceneCheck::SPtr check) ;
 
-    virtual Result processNodeTopDown(Node* node) override ;
-
-    void installChangeSets() ;
-    void addHookInChangeSet(const std::string& version, ChangeSetHookFunction fct) ;
 private:
-    std::map<std::string,bool> m_requiredPlugins ;
-    bool m_isRequiredPluginValidationEnabled {true} ;
-    bool m_isAPIVersionValidationEnabled {true} ;
-    std::string m_currentApiLevel;
-    std::string m_selectedApiLevel {"17.06"} ;
-
-    std::map<std::string, std::vector<ChangeSetHookFunction>> m_changesets ;
+    std::vector<SceneCheck::SPtr> m_checkset ;
 };
 
-} // namespace simulation
+} // namespace _scenechecking_
 
+namespace scenechecking
+{
+    using _scenechecking_::SceneCheckerVisitor;
+}
+
+} // namespace simulation
 } // namespace sofa
 
 #endif

@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2017 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -27,7 +27,7 @@
 #include <sofa/config.h>
 
 #include "PythonCommon.h"
-#include <boost/intrusive_ptr.hpp>
+#include <sofa/core/sptr.h>
 
 #include <sofa/core/objectmodel/Base.h>
 #include <sofa/core/objectmodel/BaseObject.h>
@@ -40,6 +40,9 @@
 #include <SofaPython/config.h>
 #include <SofaPython/PythonEnvironment.h>
 
+/// This function converts an PyObject into a sofa string.
+/// string that can be safely parsed in helper::vector<int> or helper::vector<double>
+SOFA_SOFAPYTHON_API std::ostream& pythonToSofaDataString(PyObject* value, std::ostream& out) ;
 
 // =============================================================================
 // Python structures names in sofa...
@@ -60,16 +63,18 @@
 
 
 // =============================================================================
-// Module declarations & methods
+// Module declarations & methods + docstring creation
 // =============================================================================
 
 // PyObject *MyModule = SP_INIT_MODULE(MyModuleName)
-#define SP_INIT_MODULE(MODULENAME) Py_InitModule(#MODULENAME,MODULENAME##ModuleMethods); sofa::simulation::PythonEnvironment::excludeModuleFromReload(#MODULENAME);
+#define SP_INIT_MODULE(MODULENAME, DOCSTRING) Py_InitModule3(#MODULENAME,MODULENAME##ModuleMethods, DOCSTRING); sofa::simulation::PythonEnvironment::excludeModuleFromReload(#MODULENAME);
 
 #define SP_MODULE_METHODS_BEGIN(MODULENAME) PyMethodDef MODULENAME##ModuleMethods[] = {
 #define SP_MODULE_METHODS_END {NULL,NULL,0,NULL} };
 #define SP_MODULE_METHOD(MODULENAME,M) {#M, MODULENAME##_##M, METH_VARARGS, ""},
+#define SP_MODULE_METHOD_DOC(MODULENAME,M, D) {#M, MODULENAME##_##M, METH_VARARGS, D},
 #define SP_MODULE_METHOD_KW(MODULENAME,M) {#M, (PyCFunction)MODULENAME##_##M, METH_KEYWORDS|METH_VARARGS, ""},
+#define SP_MODULE_METHOD_KW_DOC(MODULENAME,M, D) {#M, (PyCFunction)MODULENAME##_##M, METH_KEYWORDS|METH_VARARGS, D},
 
 
 
@@ -81,7 +86,8 @@ template <class T>
 struct PySPtr
 {
     PyObject_HEAD
-    boost::intrusive_ptr<T> object;
+    sofa::core::sptr<T> object;
+    
 //    PySPtr()        { object=0; }
 //    PySPtr(T *obj)  { object=obj; }
 
@@ -363,10 +369,10 @@ static PyTypeObject DummyChild_PyTypeObject = {
 
 
 // get python exceptions and print their error message
-void printPythonExceptions();
+SOFA_SOFAPYTHON_API void printPythonExceptions();
 
 // deal with SystemExit before PyErr_Print does
-void handle_python_error(const char* message);
+SOFA_SOFAPYTHON_API void handle_python_error(const char* message);
 
 
 // =============================================================================
@@ -393,6 +399,27 @@ void handle_python_error(const char* message);
                                    PyObject_GetAttrString((PyObject*)&SP_SOFAPYTYPEOBJECT(PythonScriptController), #funcName),Py_NE ) && \
         PyObject_HasAttrString(m_ScriptControllerInstance,#funcName ) ) { \
             m_Func_##funcName = PyObject_GetAttrString(m_ScriptControllerInstance,#funcName); \
+            if (!PyCallable_Check(m_Func_##funcName)) \
+                {m_Func_##funcName=0; sout<<#funcName<<" not callable"<<sendl;} \
+            else \
+                {sout<<#funcName<<" found"<<sendl;} \
+    }else{ \
+        m_Func_##funcName=0; sout<<#funcName<<" not found"<<sendl; } \
+    }
+
+
+
+// =============================================================================
+// Copy of the above with adaption for PythonScriptDataEngine
+// =============================================================================
+
+#define BIND_OBJECT_METHOD_DATA_ENGINE(funcName) \
+    { \
+    if( PyObject_HasAttrString((PyObject*)&SP_SOFAPYTYPEOBJECT(PythonScriptDataEngine),#funcName ) && \
+        PyObject_RichCompareBool( PyObject_GetAttrString(m_ScriptDataEngineClass, #funcName),\
+                                   PyObject_GetAttrString((PyObject*)&SP_SOFAPYTYPEOBJECT(PythonScriptDataEngine), #funcName),Py_NE ) && \
+        PyObject_HasAttrString(m_ScriptDataEngineInstance,#funcName ) ) { \
+            m_Func_##funcName = PyObject_GetAttrString(m_ScriptDataEngineInstance,#funcName); \
             if (!PyCallable_Check(m_Func_##funcName)) \
                 {m_Func_##funcName=0; sout<<#funcName<<" not callable"<<sendl;} \
             else \

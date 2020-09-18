@@ -1,6 +1,6 @@
 /******************************************************************************
-*       SOFA, Simulation Open-Framework Architecture, development version     *
-*                (c) 2006-2017 INRIA, USTL, UJF, CNRS, MGH                    *
+*                 SOFA, Simulation Open-Framework Architecture                *
+*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
 * This program is free software; you can redistribute it and/or modify it     *
 * under the terms of the GNU Lesser General Public License as published by    *
@@ -70,17 +70,31 @@ bool ObjectElement::initNode()
     {
         if (replaceAttribute.find(it->first) != replaceAttribute.end())
         {
-            setAttribute(it->first,replaceAttribute[it->first].c_str());
+            setAttribute(it->first,replaceAttribute[it->first]);
         }
     }
 
     core::objectmodel::BaseObject::SPtr obj = core::ObjectFactory::CreateObject(ctx, this);
 
-    if (obj == NULL)
+    if (obj == nullptr)
         obj = Factory::CreateObject(this->getType(), this);
-    if (obj == NULL)
+    if (obj == nullptr)
     {
-        getParent()->logError(std::string("Object type \"" + getType() + "\" creation Failed" ));
+        BaseObjectDescription desc("InfoComponent", "InfoComponent") ;
+        desc.setAttribute("name", ("Not created ("+getType()+")"));
+        obj = core::ObjectFactory::CreateObject(ctx, &desc) ;
+        std::stringstream tmp ;
+        for(auto& s : this->getErrors())
+            tmp << s << msgendl ;
+
+        if(obj)
+        {
+           obj->init() ;
+           msg_error(obj.get()) << tmp.str() ;
+           return false;
+        }
+
+        msg_error(ctx) << tmp.str() ;
         return false;
     }
     setObject(obj);
@@ -96,10 +110,10 @@ bool ObjectElement::initNode()
 
             msg_warning(obj.get()) << SOFA_FILE_INFO_COPIED_FROM(getSrcFile(), getSrcLine()) << "Unused Attribute: \""<<it->first <<"\" with value: \"" <<it->second.c_str() <<"\"" ;        }
     }
+    obj->setInstanciationSourceFilePos(getSrcLine());
+    obj->setInstanciationSourceFileName(getSrcFile());
     return true;
 }
-
-SOFA_DECL_CLASS(Object)
 
 Creator<BaseElement::NodeFactory, ObjectElement> ObjectNodeClass("Object");
 

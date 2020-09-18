@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include <SofaTest/Sofa_test.h>
 
 #include <SofaPython/PythonFactory.h>
@@ -47,7 +49,6 @@ int ExternalComponent::nbcalls = 0;
 
 
 //////////////////// //////// Registering the new component in the factory /////////////////////////
-SOFA_DECL_CLASS (ExternalComponent)
 int ExternalComponentClass = core::RegisterObject ( "An dummy External Component" )
         .add<ExternalComponent>(true);
 }
@@ -85,6 +86,7 @@ protected:
     {
         /// ADDING new component in the python Factory
         /// of course its binding must be defined!
+        simulation::PythonEnvironment::gil lock(__func__);
         SP_ADD_CLASS_IN_FACTORY( ExternalComponent, sofa::ExternalComponent )
     }
 
@@ -171,7 +173,7 @@ std::vector<std::vector<std::string>> dataconversionvalues =
      {"'XX_'+first.findData('name').getLinkPath()", "XX_@/theFirst.name"},
      {"first.findData('name').getLinkPath()", "theFirst"},
      {"first.findData('name')", "theFirst"},
-     {"'XX_'+rootNode.getAsACreateObjectParameter()", "XX_@"},
+     {"'XX_'+rootNode.getAsACreateObjectParameter()", "XX_@/"},
      {"CustomObject()", "custom value"}
     } ;
 
