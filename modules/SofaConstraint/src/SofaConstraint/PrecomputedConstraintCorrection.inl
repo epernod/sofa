@@ -178,14 +178,14 @@ bool PrecomputedConstraintCorrection<DataTypes>::loadCompliance(std::string file
 template<class DataTypes>
 void PrecomputedConstraintCorrection<DataTypes>::saveCompliance(const std::string& fileName)
 {
-    msg_info() << "saveCompliance in " << fileName;
-
     std::string filePathInSofaShare;
     std::string dir = fileDir.getValue();
     if (!dir.empty())
         filePathInSofaShare = dir + "/" + fileName;
     else
         filePathInSofaShare  = sofa::helper::system::DataRepository.getFirstPath() + "/" + fileName;
+
+    msg_info() << "saveCompliance in " << filePathInSofaShare;
 
     std::ofstream compFileOut(filePathInSofaShare.c_str(), std::fstream::out | std::fstream::binary);
     compFileOut.write((char*)invM->data, nbCols * nbRows * sizeof(double));
@@ -384,21 +384,6 @@ void PrecomputedConstraintCorrection<DataTypes>::bwdInit()
 
     // Optimisation for the computation of W
     _indexNodeSparseCompliance.resize(v0.size());
-
-    //  Print 400 first row and column of the matrix
-    if (this->notMuted())
-    {
-        msg_info() << "Matrix compliance : nbCols = " << nbCols << "  nbRows =" << nbRows;
-
-        for (unsigned int i = 0; i < 20 && i < nbCols; i++)
-        {
-            for (unsigned int j = 0; j < 20 && j < nbCols; j++)
-            {
-                msg_info() << " \t " << appCompliance[j*nbCols + i];
-            }
-        }
-
-    }
 }
 
 

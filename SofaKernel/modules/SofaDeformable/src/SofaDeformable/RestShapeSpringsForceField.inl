@@ -153,7 +153,7 @@ void RestShapeSpringsForceField<DataTypes>::reinit()
     }
     else
     {
-        msg_info() << "Indices successfully checked";
+        msg_info() << "Indices successfully checked at reinit()";
     }
 
     if (d_stiffness.getValue().empty())
@@ -224,10 +224,6 @@ void RestShapeSpringsForceField<DataTypes>::recomputeIndices()
     {
         msg_error() << "The dimension of the source and the targeted points are different ";
         m_indices.clear();
-    }
-    else
-    {
-        msg_info() << "Indices successfully checked";
     }
 }
 
