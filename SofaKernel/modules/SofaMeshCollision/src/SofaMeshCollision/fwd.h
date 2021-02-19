@@ -23,11 +23,19 @@
 
 #include <sofa/config.h>
 
-namespace sofa
+namespace sofa::component::collision
 {
 
-void SOFA_SOFAFRAMEWORK_API initSofaFramework();
+class TriangleLocalMinDistanceFilter;
 
-} // namespace sofa
+template<class DataTypes>
+class TriangleCollisionModel;
 
+template<class TDataTypes>
+class TTriangle;
 
+template<class DataTypes>
+class PointCollisionModel;
+
+class LocalMinDistanceFilter;
+}
