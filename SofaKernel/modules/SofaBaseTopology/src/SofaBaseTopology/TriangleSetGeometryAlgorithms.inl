@@ -1724,6 +1724,10 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
 
             if (!is_full_01)
             {
+                coord_t = 0.0;
+                coord_k = 0.0;
+                bool is_intersected_01 = false;
+                double is_initialized_01 = false;
                 /// Test of edge (p0,p1) :
                 s_t = (p0 - p1) * n_proj;
                 s_k = (pa - pb_proj) * n_01;
@@ -1745,12 +1749,12 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
                             coord_t = 1.0;
                         }
 
-                        is_intersected = (coord_k > 0.0 && (coord_t >= 0.0 && coord_t <= 1.0));
+                        is_intersected_01 = (coord_k > 0.0 && (coord_t >= 0.0 && coord_t <= 1.0));
 
                     }
                     else  // (pa,pb_proj) and (p0,p1) are parallel and disjoint
                     {
-                        is_intersected = false;
+                        is_intersected_01 = false;
                     }
                 }
                 else // s_t != 0.0 and s_k != 0.0
@@ -1758,14 +1762,13 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
                     coord_k = double((pa - p0) * (n_01)) * 1.0 / double(s_k);
                     coord_t = double((p0 - pa) * (n_proj)) * 1.0 / double(s_t);
 
-                    is_intersected = ((coord_k > 0.0) && (coord_t >= 0.0 && coord_t <= 1.0));
+                    is_intersected_01 = ((coord_k > 0.0) && (coord_t >= 0.0 && coord_t <= 1.0));
                 }
 
-                if (is_intersected)
+                if (is_intersected_01)
                 {
-                    if ((!is_initialized) || (coord_k > coord_kmin))
+                    if ((!is_initialized_01) || (coord_k > coord_kmin))
                     {
-                        std::cout << "yo01 "<<coord_t << std::endl;
                         //indices.clear();
                         indices.push_back(t[0]);
                         indices.push_back(t[1]);
@@ -1774,16 +1777,20 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
                         vecBaryCoef.push_back(baryCoef);
                     }
 
-                    is_initialized = true;
+                    is_initialized_01 = true;
                 }
 
-                is_validated = is_validated || is_initialized;
+                is_validated = is_validated || is_initialized_01;
             }
 
 
 
             if (!is_full_12)
             {
+                coord_t = 0.0;
+                coord_k = 0.0;
+                bool is_intersected_12 = false;
+                double is_initialized_12 = false;
                 /// Test of edge (p1,p2) :
 
                 s_t = (p1 - p2) * (n_proj);
@@ -1809,11 +1816,11 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
                             coord_t = 1.0;
                         }
 
-                        is_intersected = (coord_k > 0.0 && (coord_t >= 0.0 && coord_t <= 1.0));
+                        is_intersected_12 = (coord_k > 0.0 && (coord_t >= 0.0 && coord_t <= 1.0));
                     }
                     else // (pa,pb_proj) and (p1,p2) are parallel and disjoint
                     {
-                        is_intersected = false;
+                        is_intersected_12 = false;
                     }
 
                 }
@@ -1823,14 +1830,13 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
                     coord_k = double((pa - p1) * (n_12)) * 1.0 / double(s_k);
                     coord_t = double((p1 - pa) * (n_proj)) * 1.0 / double(s_t);
 
-                    is_intersected = ((coord_k > 0.0) && (coord_t >= 0.0 && coord_t <= 1.0));
+                    is_intersected_12 = ((coord_k > 0.0) && (coord_t >= 0.0 && coord_t <= 1.0));
                 }
 
-                if (is_intersected)
+                if (is_intersected_12)
                 {
-                    if ((!is_initialized) || (coord_k > coord_kmin))
+                    if ((!is_initialized_12) || (coord_k > coord_kmin))
                     {
-                        std::cout << "yo12 " << coord_t << std::endl;
                         //indices.clear();
                         indices.push_back(t[1]);
                         indices.push_back(t[2]);
@@ -1839,16 +1845,20 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
                         vecBaryCoef.push_back(baryCoef);
                     }
 
-                    is_initialized = true;
+                    is_initialized_12 = true;
                 }
 
-                is_validated = is_validated || is_initialized;
+                is_validated = is_validated || is_initialized_12;
             }
 
 
 
             if (!is_full_20)
             {
+                coord_t = 0.0;
+                coord_k = 0.0;
+                bool is_intersected_20 = false;
+                double is_initialized_20 = false;
                 /// Test of edge (p2,p0) :
 
                 s_t = (p2 - p0) * (n_proj);
@@ -1874,12 +1884,12 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
                             coord_t = 1.0;
                         }
 
-                        is_intersected = (coord_k > 0.0 && (coord_t >= 0.0 && coord_t <= 1.0));
+                        is_intersected_20 = (coord_k > 0.0 && (coord_t >= 0.0 && coord_t <= 1.0));
 
                     }
                     else // (pa,pb_proj) and (p2,p0) are parallel and disjoint
                     {
-                        is_intersected = false;
+                        is_intersected_20 = false;
                     }
                 }
                 else // s_t != 0.0 and s_k != 0.0
@@ -1887,14 +1897,13 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
                     coord_k = double((pa - p2) * (n_20)) * 1.0 / double(s_k);
                     coord_t = double((p2 - pa) * (n_proj)) * 1.0 / double(s_t);
 
-                    is_intersected = ((coord_k > 0.0) && (coord_t >= 0.0 && coord_t <= 1.0));
+                    is_intersected_20 = ((coord_k > 0.0) && (coord_t >= 0.0 && coord_t <= 1.0));
                 }
 
-                if (is_intersected)
+                if (is_intersected_20)
                 {
-                    if ((!is_initialized) || (coord_k > coord_kmin))
+                    if ((!is_initialized_20) || (coord_k > coord_kmin))
                     {
-                        std::cout << "yo20 " << coord_t << std::endl;
                         //indices.clear();
                         indices.push_back(t[2]);
                         indices.push_back(t[0]);
@@ -1903,9 +1912,9 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
                         vecBaryCoef.push_back(baryCoef);
                     }
 
-                    is_initialized = true;
+                    is_initialized_20 = true;
                 }
-                is_validated = is_validated || is_initialized;
+                is_validated = is_validated || is_initialized_20;
             }
 
 
