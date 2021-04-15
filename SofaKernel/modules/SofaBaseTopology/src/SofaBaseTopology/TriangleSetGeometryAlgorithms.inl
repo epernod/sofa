@@ -1630,7 +1630,8 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
     const sofa::defaulttype::Vec<3, double>& b,
     const TriangleID ind_t,
     sofa::helper::vector<TriangleID>& indices,
-    sofa::helper::vector<double>& vecBaryCoef) const
+    sofa::helper::vector<double>& vecBaryCoef,
+    sofa::helper::vector<double>& vecCoordKmin) const
 {
     double baryCoef;
     double coord_kmin;
@@ -1775,6 +1776,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
                         baryCoef = coord_t;
                         coord_kmin = coord_k;
                         vecBaryCoef.push_back(baryCoef);
+                        vecCoordKmin.push_back(coord_kmin);
                     }
 
                     is_initialized_01 = true;
@@ -1843,6 +1845,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
                         baryCoef = coord_t;
                         coord_kmin = coord_k;
                         vecBaryCoef.push_back(baryCoef);
+                        vecCoordKmin.push_back(coord_kmin);
                     }
 
                     is_initialized_12 = true;
@@ -1910,6 +1913,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
                         baryCoef = coord_t;
                         coord_kmin = coord_k;
                         vecBaryCoef.push_back(baryCoef);
+                        vecCoordKmin.push_back(coord_kmin);
                     }
 
                     is_initialized_20 = true;
