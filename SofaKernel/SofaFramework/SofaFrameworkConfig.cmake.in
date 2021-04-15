@@ -7,28 +7,21 @@ cmake_minimum_required(VERSION 3.12)
 set(SOFAFRAMEWORK_TARGETS @SOFAFRAMEWORK_TARGETS@)
 
 set(SOFAHELPER_HAVE_BOOST "@SOFAHELPER_HAVE_BOOST@")
-set(SOFAHELPER_HAVE_BOOST_SYSTEM "@SOFAHELPER_HAVE_BOOST_SYSTEM@")
 set(SOFAHELPER_HAVE_BOOST_FILESYSTEM "@SOFAHELPER_HAVE_BOOST_FILESYSTEM@")
-set(SOFAHELPER_HAVE_BOOST_PROGRAM_OPTIONS "@SOFAHELPER_HAVE_BOOST_PROGRAM_OPTIONS@")
 set(SOFAHELPER_HAVE_BOOST_THREAD "@SOFAHELPER_HAVE_BOOST_THREAD@")
-set(SOFAHELPER_HAVE_OPENGL "@SOFAHELPER_HAVE_OPENGL@")
-set(SOFAHELPER_HAVE_GLEW "@SOFAHELPER_HAVE_GLEW@")
-set(SOFAHELPER_HAVE_GTEST "@SOFAHELPER_HAVE_GTEST@")
+set(SOFA_TYPE_HAVE_SOFA_COMPAT "@SOFA_TYPE_HAVE_SOFA_COMPAT@")
 
 # Find dependencies
-find_package(Boost QUIET REQUIRED system filesystem program_options)
+find_package(Boost QUIET REQUIRED filesystem)
 if(SOFAHELPER_HAVE_BOOST_THREAD)
     find_package(Boost QUIET REQUIRED thread)
 endif()
-if(SOFAHELPER_HAVE_OPENGL)
-    find_package(OpenGL QUIET REQUIRED)
+
+if(SOFA_TYPE_HAVE_SOFA_COMPAT)
+	find_package(Sofa.Compat QUIET REQUIRED)
 endif()
-if(SOFAHELPER_HAVE_GLEW)
-    find_package(GLEW QUIET REQUIRED)
-endif()
-if(SOFAHELPER_HAVE_GTEST)
-    find_package(GTest CONFIG QUIET REQUIRED)
-endif()
+
+find_package(Sofa.Config QUIET REQUIRED)
 
 # Eigen3 is required by SofaDefaultType and SofaHelper
 find_package(Eigen3 QUIET REQUIRED)
@@ -41,12 +34,6 @@ foreach(target ${SOFAFRAMEWORK_TARGETS})
 endforeach()
 if(NOT TARGET @PROJECT_NAME@)
     include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
-endif()
-
-# This need to be AFTER the inclusion of SofaFrameworkTargets.cmake since Sofa.GL is dependant on SofaHelper and
-# SofaDefaultType targets, which are defined there.
-if(NOT SOFA_NO_OPENGL)
-    find_package(Sofa.GL CONFIG QUIET REQUIRED)
 endif()
 
 check_required_components(@PROJECT_NAME@)

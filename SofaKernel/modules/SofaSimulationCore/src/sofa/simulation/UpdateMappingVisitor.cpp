@@ -21,7 +21,7 @@
 ******************************************************************************/
 #include <sofa/simulation/UpdateMappingVisitor.h>
 #include <sofa/core/VecId.h>
-#include <sofa/helper/AdvancedTimer.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 #include <sofa/simulation/Node.h>
 
 namespace sofa
@@ -35,8 +35,8 @@ void UpdateMappingVisitor::processMapping(simulation::Node* /*n*/, core::BaseMap
     std::string msg = "MappingVisitor - processMapping: " + obj->getName();
     sofa::helper::ScopedAdvancedTimer timer(msg.c_str());
 
-    obj->apply(core::MechanicalParams::defaultInstance(), core::VecCoordId::position(), core::ConstVecCoordId::position());
-    obj->applyJ(core::MechanicalParams::defaultInstance(), core::VecDerivId::velocity(), core::ConstVecDerivId::velocity());
+    obj->apply(core::mechanicalparams::defaultInstance(), core::VecCoordId::position(), core::ConstVecCoordId::position());
+    obj->applyJ(core::mechanicalparams::defaultInstance(), core::VecDerivId::velocity(), core::ConstVecDerivId::velocity());
 }
 
 void UpdateMappingVisitor::processMechanicalMapping(simulation::Node* /*n*/, core::BaseMapping* obj)

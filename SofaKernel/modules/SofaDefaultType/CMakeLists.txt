@@ -7,14 +7,9 @@ set(HEADER_FILES
     ${SRC_ROOT}/AbstractTypeInfo.h
     ${SRC_ROOT}/BaseMatrix.h
     ${SRC_ROOT}/BaseVector.h
-    ${SRC_ROOT}/BoundingBox.h
     ${SRC_ROOT}/DataTypeInfo.h
-    ${SRC_ROOT}/Frame.h
     ${SRC_ROOT}/MapMapSparseMatrix.h
     ${SRC_ROOT}/MapMapSparseMatrixEigenUtils.h
-    ${SRC_ROOT}/Quat.h
-    ${SRC_ROOT}/Quat.inl
-    ${SRC_ROOT}/RGBAColor.h
     ${SRC_ROOT}/RigidTypes.h
     ${SRC_ROOT}/RigidVec6Types.h
     ${SRC_ROOT}/SolidTypes.h
@@ -25,13 +20,11 @@ set(HEADER_FILES
     ${SRC_ROOT}/TypeInfoRegistry.h
     ${SRC_ROOT}/TypeInfoRegistryTools.h
     ${SRC_ROOT}/TopologyTypes.h
-    ${SRC_ROOT}/Ray.h
     ${SRC_ROOT}/VecTypes.h
     ${SRC_ROOT}/defaulttype.h
     ${SRC_ROOT}/config.h.in
     ${SRC_ROOT}/init.h
     ${SRC_ROOT}/fwd.h
-    ${SRC_ROOT}/Color.h
     ${SRC_ROOT}/typeinfo/DataTypeInfoDynamicWrapper.h
     ${SRC_ROOT}/typeinfo/DataTypeInfo.h
     ${SRC_ROOT}/typeinfo/NoTypeInfo.h
@@ -50,6 +43,7 @@ set(HEADER_FILES
     ${SRC_ROOT}/typeinfo/TypeInfo_Vector.h
     ${SRC_ROOT}/typeinfo/TypeInfo_Vec.h
     ${SRC_ROOT}/typeinfo/TypeInfo_VecTypes.h
+    ${SRC_ROOT}/typeinfo/TypeInfo_Topology.h
 
     ${SRC_ROOT}/typeinfo/models/IncompleteTypeInfo.h
     ${SRC_ROOT}/typeinfo/models/BoolTypeInfo.h
@@ -64,8 +58,7 @@ set(HEADER_FILES
 set(SOURCE_FILES
     ${SRC_ROOT}/AbstractTypeInfo.cpp
     ${SRC_ROOT}/BaseMatrix.cpp
-    ${SRC_ROOT}/BoundingBox.cpp
-    ${SRC_ROOT}/Frame.cpp
+    ${SRC_ROOT}/BaseVector.cpp
     ${SRC_ROOT}/SolidTypes.cpp
     ${SRC_ROOT}/TemplatesAliases.cpp
     ${SRC_ROOT}/TypeInfoID.cpp
@@ -86,9 +79,10 @@ set(SOURCE_FILES
     ${SRC_ROOT}/typeinfo/TypeInfo_Vector.cpp
     ${SRC_ROOT}/typeinfo/TypeInfo_Vec.cpp
     ${SRC_ROOT}/typeinfo/TypeInfo_VecTypes.cpp
+    ${SRC_ROOT}/typeinfo/TypeInfo_Topology.cpp
 )
 
-find_package(Eigen3 REQUIRED)
+sofa_find_package(Eigen3 REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaHelper)
@@ -104,4 +98,5 @@ sofa_add_targets_to_package(
 
 if(SOFA_BUILD_TESTS)
     add_subdirectory(SofaDefaultType_test)
+    add_subdirectory(SofaDefaultType_simutest)
 endif()

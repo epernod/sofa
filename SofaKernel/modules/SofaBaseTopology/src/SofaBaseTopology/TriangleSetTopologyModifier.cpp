@@ -20,6 +20,7 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 #include <SofaBaseTopology/TriangleSetTopologyModifier.h>
+#include <sofa/core/topology/TopologyHandler.h>
 
 #include <SofaBaseTopology/TriangleSetTopologyContainer.h>
 #include <sofa/core/topology/TopologyChange.h>
@@ -587,24 +588,6 @@ void TriangleSetTopologyModifier::renumberPointsProcess( const sofa::helper::vec
 }
 
 
-
-
-void TriangleSetTopologyModifier::renumberPoints( const sofa::helper::vector<PointID> &index,
-        const sofa::helper::vector<PointID> &inv_index)
-{
-
-    /// add the topological changes in the queue
-    renumberPointsWarning(index, inv_index);
-    // inform other objects that the triangles are going to be removed
-    propagateTopologicalChanges();
-    // now renumber the points
-    renumberPointsProcess(index, inv_index);
-
-    m_container->checkTopology();
-}
-
-
-
 void TriangleSetTopologyModifier::addRemoveTriangles( const sofa::Size nTri2Add,
         const sofa::helper::vector< Triangle >& triangles2Add,
         const sofa::helper::vector< TriangleID >& trianglesIndex2Add,
@@ -951,11 +934,11 @@ void TriangleSetTopologyModifier::propagateTopologicalEngineChanges()
         return EdgeSetTopologyModifier::propagateTopologicalEngineChanges();
 
     sofa::helper::AdvancedTimer::stepBegin("TriangleSetTopologyModifier::propagateTopologicalEngineChanges");
-    std::list<sofa::core::topology::TopologyEngine *>::iterator it;
+    std::list<sofa::core::topology::TopologyHandler *>::iterator it;
 
     for ( it = m_container->m_enginesList.begin(); it!=m_container->m_enginesList.end(); ++it)
     {
-        sofa::core::topology::TopologyEngine* topoEngine = (*it);
+        sofa::core::topology::TopologyHandler* topoEngine = (*it);
         if (topoEngine->isDirty())
         {            
             topoEngine->update();

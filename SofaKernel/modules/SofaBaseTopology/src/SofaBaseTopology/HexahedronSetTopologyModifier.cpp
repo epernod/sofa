@@ -24,6 +24,7 @@
 #include <sofa/core/topology/TopologyChange.h>
 #include <SofaBaseTopology/HexahedronSetTopologyContainer.h>
 #include <sofa/core/ObjectFactory.h>
+#include <sofa/core/topology/TopologyHandler.h>
 
 #include <algorithm>
 
@@ -608,19 +609,6 @@ void HexahedronSetTopologyModifier::removeItems(const sofa::helper::vector< Hexa
     removeHexahedra(items);
 }
 
-void HexahedronSetTopologyModifier::renumberPoints(const sofa::helper::vector<PointID> &index,
-        const sofa::helper::vector<PointID> &inv_index)
-{
-    /// add the topological changes in the queue
-    renumberPointsWarning(index, inv_index);
-    // inform other objects that the triangles are going to be removed
-    propagateTopologicalChanges();
-    // now renumber the points
-    renumberPointsProcess(index, inv_index);
-
-    m_container->checkTopology();
-}
-
 void HexahedronSetTopologyModifier::propagateTopologicalEngineChanges()
 {
     if (m_container->beginChange() == m_container->endChange()) return; // nothing to do if no event is stored
@@ -628,11 +616,11 @@ void HexahedronSetTopologyModifier::propagateTopologicalEngineChanges()
     if (!m_container->isHexahedronTopologyDirty()) // hexahedron Data has not been touched
         return QuadSetTopologyModifier::propagateTopologicalEngineChanges();
 
-    std::list<sofa::core::topology::TopologyEngine *>::iterator it;
+    std::list<sofa::core::topology::TopologyHandler *>::iterator it;
 
     for ( it = m_container->m_enginesList.begin(); it!=m_container->m_enginesList.end(); ++it)
     {
-        sofa::core::topology::TopologyEngine* topoEngine = (*it);
+        sofa::core::topology::TopologyHandler* topoEngine = (*it);
         if (topoEngine->isDirty())
         {
             topoEngine->update();

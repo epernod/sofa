@@ -29,6 +29,7 @@
 #include <sofa/defaulttype/RigidTypes.h>
 #include <iostream>
 #include <SofaBaseTopology/TopologySubsetData.inl>
+#include <sofa/helper/vector_algorithm.h>
 
 #include <sofa/core/objectmodel/BaseObject.h>
 using sofa::core::objectmodel::ComponentState;
@@ -76,6 +77,13 @@ FixedConstraint<DataTypes>::FixedConstraint()
     // default to indice 0
     d_indices.beginEdit()->push_back(0);
     d_indices.endEdit();
+
+    this->addUpdateCallback("updateIndices", { &d_indices}, [this](const core::DataTracker& t)
+    {
+        SOFA_UNUSED(t);
+        checkIndices();
+        return sofa::core::objectmodel::ComponentState::Valid;
+    }, {});
 }
 
 
@@ -105,7 +113,7 @@ void FixedConstraint<DataTypes>::addConstraint(Index index)
 template <class DataTypes>
 void FixedConstraint<DataTypes>::removeConstraint(Index index)
 {
-    removeValue(*d_indices.beginEdit(),index);
+    sofa::helper::removeValue(*d_indices.beginEdit(),index);
     d_indices.endEdit();
 }
 
@@ -138,14 +146,14 @@ void FixedConstraint<DataTypes>::init()
 
         // Initialize topological functions
         m_pointHandler = new FCPointHandler(this, &d_indices);
-        d_indices.createTopologicalEngine(_topology, m_pointHandler);
+        d_indices.createTopologyHandler(_topology, m_pointHandler);
         d_indices.registerTopologicalData();
     }
     else
     {
         msg_info() << "Can not find the topology, won't be able to handle topological changes";
     }
-   
+
     this->checkIndices();
     this->d_componentState.setValue(ComponentState::Valid);
 }

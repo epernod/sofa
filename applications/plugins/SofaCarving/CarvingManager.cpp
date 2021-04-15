@@ -32,7 +32,7 @@
 
 #include <sofa/core/topology/TopologicalMapping.h>
 #include <SofaUserInteraction/TopologicalChangeManager.h>
-#include <sofa/helper/AdvancedTimer.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace sofa
 {
@@ -145,7 +145,7 @@ void CarvingManager::doCarve()
     if (detectionOutputs.size() == 0)
         return;
 
-    sofa::helper::ScopedAdvancedTimer("CarvingElems");
+    sofa::helper::ScopedAdvancedTimer timer("CarvingElems");
 
     // loop on the contact to get the one between the CarvingSurface and the CarvingTool collision model
     const ContactVector* contacts = NULL;

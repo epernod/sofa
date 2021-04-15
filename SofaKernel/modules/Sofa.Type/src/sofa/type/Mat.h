@@ -22,15 +22,17 @@
 #pragma once
 
 #include <sofa/type/config.h>
+#include <sofa/type/fwd.h>
 
-#include <sofa/type/stdtype/fixed_array.h>
+#include <sofa/type/fixed_array.h>
 #include <sofa/type/Vec.h>
+
 #include <iostream>
 
 namespace // anonymous
 {
     template<typename real>
-    real rabs(const real r)
+    constexpr real rabs(const real r)
     {
         if constexpr (std::is_signed<real>())
             return std::abs(r);
@@ -38,19 +40,25 @@ namespace // anonymous
             return r;
     }
 
+    template<typename real>
+    constexpr real equalsZero(const real r, const real epsilon = std::numeric_limits<real>::epsilon())
+    {
+        return rabs(r) <= epsilon;
+    }
+
 } // anonymous namespace
 
 namespace sofa::type
 {
 
-template <sofa::Size L, sofa::Size C, class real=float>
-class Mat : public stdtype::fixed_array<VecNoInit<C,real>, L>
+template <sofa::Size L, sofa::Size C, class real>
+class Mat : public fixed_array<VecNoInit<C,real>, L>
 {
 public:
 
     enum { N = L*C };
 
-    typedef typename stdtype::fixed_array<real, N>::size_type Size;
+    typedef typename fixed_array<real, N>::size_type Size;
 
     typedef real Real;
     typedef Vec<C,real> Line;
@@ -731,7 +739,7 @@ template <sofa::Size L, sofa::Size C, typename real> Mat<L,L,real> Mat<L,C,real>
 
 
 /// Same as Mat except the values are not initialized by default
-template <sofa::Size L, sofa::Size C, typename real=float>
+template <sofa::Size L, sofa::Size C, typename real>
 class MatNoInit : public Mat<L,C,real>
 {
 public:
@@ -835,8 +843,6 @@ inline Vec<N,real> diagonal(const Mat<N,N,real>& m)
     return v;
 }
 
-#define MIN_DETERMINANT  1.0e-100
-
 /// Matrix inversion (general case).
 template<sofa::Size S, class real>
 [[nodiscard]] bool invertMatrix(Mat<S,S,real>& dest, const Mat<S,S,real>& from)
@@ -870,7 +876,7 @@ template<sofa::Size S, class real>
             }
         }
 
-        if (pivot <= (real) MIN_DETERMINANT)
+        if (equalsZero(pivot))
         {
             return false;
         }
@@ -911,7 +917,7 @@ template<class real>
 {
     real det=determinant(from);
 
-    if ( -(real) MIN_DETERMINANT<=det && det<=(real) MIN_DETERMINANT)
+    if (equalsZero(det))
     {
         return false;
     }
@@ -935,7 +941,7 @@ bool invertMatrix(Mat<2,2,real>& dest, const Mat<2,2,real>& from)
 {
     real det=determinant(from);
 
-    if ( -(real) MIN_DETERMINANT<=det && det<=(real) MIN_DETERMINANT)
+    if (equalsZero(det))
     {
         return false;
     }
@@ -947,7 +953,6 @@ bool invertMatrix(Mat<2,2,real>& dest, const Mat<2,2,real>& from)
 
     return true;
 }
-#undef MIN_DETERMINANT
 
 /// Inverse Matrix considering the matrix as a transformation.
 template<sofa::Size S, class real>
@@ -969,29 +974,6 @@ bool transformInvertMatrix(Mat<S,S,real>& dest, const Mat<S,S,real>& from)
 
     return b;
 }
-
-typedef Mat<1,1,float> Mat1x1f;
-typedef Mat<1,1,double> Mat1x1d;
-
-typedef Mat<2,2,float> Mat2x2f;
-typedef Mat<2,2,double> Mat2x2d;
-
-typedef Mat<3,3,float> Mat3x3f;
-typedef Mat<3,3,double> Mat3x3d;
-
-typedef Mat<3,4,float> Mat3x4f;
-typedef Mat<3,4,double> Mat3x4d;
-
-typedef Mat<4,4,float> Mat4x4f;
-typedef Mat<4,4,double> Mat4x4d;
-
-typedef Mat<2,2,SReal> Mat2x2;
-typedef Mat<3,3,SReal> Mat3x3;
-typedef Mat<4,4,SReal> Mat4x4;
-
-typedef Mat<2,2,SReal> Matrix2;
-typedef Mat<3,3,SReal> Matrix3;
-typedef Mat<4,4,SReal> Matrix4;
 
 template <sofa::Size L, sofa::Size C, typename real>
 std::ostream& operator<<(std::ostream& o, const Mat<L,C,real>& m)

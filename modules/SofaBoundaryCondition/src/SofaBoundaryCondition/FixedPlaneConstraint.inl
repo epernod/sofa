@@ -23,11 +23,12 @@
 
 #include <SofaBoundaryCondition/FixedPlaneConstraint.h>
 #include <sofa/core/behavior/MultiMatrixAccessor.h>
+#include <sofa/defaulttype/BaseMatrix.h>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 #include <sofa/defaulttype/RigidTypes.h>
 #include <sofa/defaulttype/VecTypes.h>
-
+#include <sofa/helper/vector_algorithm.h>
 #include <SofaBaseTopology/TopologySubsetData.inl>
 
 namespace sofa::component::projectiveconstraintset
@@ -36,19 +37,19 @@ namespace sofa::component::projectiveconstraintset
 using sofa::helper::WriteAccessor;
 using sofa::defaulttype::Vec;
 using sofa::component::topology::PointSubsetData;
-using sofa::component::topology::TopologySubsetDataHandler;
+using sofa::component::topology::TopologyDataHandler;
 
 
 /////////////////////////// DEFINITION OF FCPointHandler (INNER CLASS) /////////////////////////////
 template <class DataTypes>
 class FixedPlaneConstraint<DataTypes>::FCPointHandler :
-        public TopologySubsetDataHandler<BaseMeshTopology::Point, SetIndexArray >
+        public TopologyDataHandler<BaseMeshTopology::Point, SetIndexArray >
 {
 public:
     typedef typename FixedPlaneConstraint<DataTypes>::SetIndexArray SetIndexArray;
 
     FCPointHandler(FixedPlaneConstraint<DataTypes>* _fc, PointSubsetData<SetIndexArray>* _data)
-        : TopologySubsetDataHandler<BaseMeshTopology::Point, SetIndexArray >(_data), fc(_fc) {}
+        : TopologyDataHandler<BaseMeshTopology::Point, SetIndexArray >(_data), fc(_fc) {}
 
     void applyDestroyFunction(Index /*index*/, value_type& /*T*/);
 
@@ -165,7 +166,7 @@ void FixedPlaneConstraint<DataTypes>::addConstraint(Index index)
 template <class DataTypes>
 void FixedPlaneConstraint<DataTypes>::removeConstraint(Index index)
 {
-    removeValue(*d_indices.beginEdit(),(unsigned int)index);
+    sofa::helper::removeValue(*d_indices.beginEdit(),(unsigned int)index);
     d_indices.endEdit();
 }
 
@@ -255,7 +256,7 @@ void FixedPlaneConstraint<DataTypes>::init()
         
         /// Initialize functions and parameters
         m_pointHandler = new FCPointHandler(this, &d_indices);
-        d_indices.createTopologicalEngine(_topology, m_pointHandler);
+        d_indices.createTopologyHandler(_topology, m_pointHandler);
         d_indices.registerTopologicalData();
     }
     else

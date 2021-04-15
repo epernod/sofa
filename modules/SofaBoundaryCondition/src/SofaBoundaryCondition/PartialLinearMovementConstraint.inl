@@ -30,6 +30,7 @@
 #include <sofa/helper/types/RGBAColor.h>
 #include <iostream>
 #include <SofaBaseTopology/TopologySubsetData.inl>
+#include <sofa/helper/vector_algorithm.h>
 
 
 namespace sofa::component::projectiveconstraintset
@@ -113,7 +114,7 @@ void PartialLinearMovementConstraint<DataTypes>::addIndex(Index index)
 template <class DataTypes>
 void PartialLinearMovementConstraint<DataTypes>::removeIndex(Index index)
 {
-    removeValue(*m_indices.beginEdit(),index);
+    sofa::helper::removeValue(*m_indices.beginEdit(),index);
     m_indices.endEdit();
 }
 
@@ -157,7 +158,7 @@ void PartialLinearMovementConstraint<DataTypes>::init()
 
         // Initialize functions and parameters
         m_pointHandler = new FCPointHandler(this, &m_indices);
-        m_indices.createTopologicalEngine(_topology, m_pointHandler);
+        m_indices.createTopologyHandler(_topology, m_pointHandler);
         m_indices.registerTopologicalData();
     }
     else

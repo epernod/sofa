@@ -33,6 +33,7 @@ set(HEADER_FILES
     ${SOFABASECOLLISION_SRC}/IntrUtility3.h
     ${SOFABASECOLLISION_SRC}/IntrUtility3.inl
     ${SOFABASECOLLISION_SRC}/MinProximityIntersection.h
+    ${SOFABASECOLLISION_SRC}/MirrorIntersector.h
     ${SOFABASECOLLISION_SRC}/NewProximityIntersection.h
     ${SOFABASECOLLISION_SRC}/NewProximityIntersection.inl
     ${SOFABASECOLLISION_SRC}/OBBIntTool.h
@@ -71,7 +72,7 @@ set(SOURCE_FILES
     ${SOFABASECOLLISION_SRC}/SphereModel.cpp
 )
 
-find_package(SofaFramework REQUIRED)
+sofa_find_package(SofaFramework REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaCore SofaSimulationCore)

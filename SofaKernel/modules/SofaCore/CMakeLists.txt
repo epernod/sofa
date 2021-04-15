@@ -48,6 +48,7 @@ set(HEADER_FILES
     ${SRC_ROOT}/behavior/Constraint.inl
     ${SRC_ROOT}/behavior/ConstraintCorrection.h
     ${SRC_ROOT}/behavior/ConstraintCorrection.inl
+    ${SRC_ROOT}/behavior/ConstraintResolution.h
     ${SRC_ROOT}/behavior/ConstraintSolver.h
     ${SRC_ROOT}/behavior/ForceField.h
     ${SRC_ROOT}/behavior/ForceField.inl
@@ -55,6 +56,8 @@ set(HEADER_FILES
     ${SRC_ROOT}/behavior/Mass.h
     ${SRC_ROOT}/behavior/Mass.inl
     ${SRC_ROOT}/behavior/MechanicalState.h
+    ${SRC_ROOT}/behavior/MechanicalState.inl
+    ${SRC_ROOT}/behavior/MechanicalMatrix.h
     ${SRC_ROOT}/behavior/MixedInteractionConstraint.h
     ${SRC_ROOT}/behavior/MixedInteractionConstraint.inl
     ${SRC_ROOT}/behavior/MixedInteractionForceField.h
@@ -130,16 +133,14 @@ set(HEADER_FILES
     ${SRC_ROOT}/objectmodel/SPtr.h
     ${SRC_ROOT}/objectmodel/Tag.h
     ${SRC_ROOT}/objectmodel/DataCallback.h
+    ${SRC_ROOT}/topology/Topology.h
     ${SRC_ROOT}/topology/BaseMeshTopology.h
     ${SRC_ROOT}/topology/BaseTopology.h
     ${SRC_ROOT}/topology/BaseTopologyData.h
-    ${SRC_ROOT}/topology/BaseTopologyEngine.h
     ${SRC_ROOT}/topology/BaseTopologyObject.h
     ${SRC_ROOT}/topology/TopologicalMapping.h
-    ${SRC_ROOT}/topology/Topology.h
     ${SRC_ROOT}/topology/TopologyChange.h
-    ${SRC_ROOT}/topology/TopologyElementHandler.h
-    ${SRC_ROOT}/topology/TopologyHandler.h
+	${SRC_ROOT}/topology/TopologyHandler.h
     ${SRC_ROOT}/visual/DisplayFlags.h
     ${SRC_ROOT}/visual/Shader.h
     ${SRC_ROOT}/visual/VisualLoop.h
@@ -180,10 +181,12 @@ set(SOURCE_FILES
     ${SRC_ROOT}/behavior/BaseProjectiveConstraintSet.cpp
     ${SRC_ROOT}/behavior/Constraint.cpp
     ${SRC_ROOT}/behavior/ConstraintCorrection.cpp
+    ${SRC_ROOT}/behavior/ConstraintResolution.cpp
     ${SRC_ROOT}/behavior/ConstraintSolver.cpp
     ${SRC_ROOT}/behavior/ForceField.cpp
     ${SRC_ROOT}/behavior/LinearSolver.cpp
     ${SRC_ROOT}/behavior/Mass.cpp
+    ${SRC_ROOT}/behavior/MechanicalMatrix.cpp
     ${SRC_ROOT}/behavior/MechanicalState.cpp
     ${SRC_ROOT}/behavior/MixedInteractionConstraint.cpp
     ${SRC_ROOT}/behavior/MixedInteractionForceField.cpp
@@ -236,15 +239,13 @@ set(SOURCE_FILES
     ${SRC_ROOT}/objectmodel/ScriptEvent.cpp
     ${SRC_ROOT}/objectmodel/IdleEvent.cpp
     ${SRC_ROOT}/objectmodel/Tag.cpp
+    ${SRC_ROOT}/topology/Topology.cpp
     ${SRC_ROOT}/topology/BaseMeshTopology.cpp
     ${SRC_ROOT}/topology/BaseTopology.cpp
     ${SRC_ROOT}/topology/BaseTopologyObject.cpp
-    ${SRC_ROOT}/topology/BaseTopologyEngine.cpp
     ${SRC_ROOT}/topology/TopologicalMapping.cpp
-    ${SRC_ROOT}/topology/Topology.cpp
     ${SRC_ROOT}/topology/TopologyChange.cpp
-    ${SRC_ROOT}/topology/TopologyElementHandler.cpp
-    ${SRC_ROOT}/topology/TopologyHandler.cpp
+	${SRC_ROOT}/topology/TopologyHandler.cpp
     ${SRC_ROOT}/visual/Shader.cpp
     ${SRC_ROOT}/visual/DisplayFlags.cpp
     ${SRC_ROOT}/visual/VisualLoop.cpp
@@ -255,14 +256,8 @@ set(SOURCE_FILES
     ${SRC_ROOT}/logging/PerComponentLoggingMessageHandler.cpp
 )
 
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC SofaHelper SofaDefaultType)
-#target_precompile_headers(${PROJECT_NAME} PUBLIC ${SRC_ROOT}/objectmodel/BaseObject.h ${SRC_ROOT}/objectmodel/BaseContext.h)
-
-if(SOFA_BUILD_WITH_PCH_ENABLED)
-    message("Adding precompiled header for SofaCore")
-    target_precompile_headers(${PROJECT_NAME} PUBLIC ${SRC_ROOT}/objectmodel/BaseObject.h ${SRC_ROOT}/objectmodel/Data.h)
-endif()
+add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES} ${COMPAT_HEADER_FILES})
+target_link_libraries(${PROJECT_NAME} PUBLIC SofaHelper Sofa.Topology SofaDefaultType)
 
 if(SOFA_BUILD_WITH_PCH_ENABLED)
     message("Adding precompiled header for SofaCore")
@@ -283,4 +278,5 @@ sofa_add_targets_to_package(
 
 if(SOFA_BUILD_TESTS)
     add_subdirectory(SofaCore_test)
+    add_subdirectory(SofaCore_simutest)
 endif()

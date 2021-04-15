@@ -22,8 +22,8 @@
 #ifndef SOFA_CORE_TOPOLOGY_BASEMESHTOPOLOGY_H
 #define SOFA_CORE_TOPOLOGY_BASEMESHTOPOLOGY_H
 
+#include <sofa/core/fwd.h>
 #include <sofa/core/topology/Topology.h>
-#include <sofa/core/topology/BaseTopologyEngine.h>
 #include <sofa/core/objectmodel/DataFileName.h>
 
 namespace sofa
@@ -303,17 +303,17 @@ public:
     */
     virtual std::list<const TopologyChange *>::const_iterator endStateChange() const;
 
-    /** \brief Adds a TopologyEngine to the list.
+    /** \brief Adds a TopologyHandler to the list.
     */
-    virtual void addTopologyEngine(TopologyEngine* _topologyEngine);
+    virtual void addTopologyHandler(TopologyHandler* _TopologyHandler);
 
-    /** \brief Provides an iterator on the first element in the list of TopologyEngine objects.
+    /** \brief Provides an iterator on the first element in the list of TopologyHandler objects.
     */
-    virtual std::list<TopologyEngine *>::const_iterator beginTopologyEngine() const;
+    virtual std::list<TopologyHandler *>::const_iterator beginTopologyHandler() const;
 
-    /** \brief Provides an iterator on the last element in the list of TopologyEngine objects.
+    /** \brief Provides an iterator on the last element in the list of TopologyHandler objects.
     */
-    virtual std::list<TopologyEngine *>::const_iterator endTopologyEngine() const;
+    virtual std::list<TopologyHandler *>::const_iterator endTopologyHandler() const;
     /// @}
 
     // functions returning border elements. To be moved in a mapping.

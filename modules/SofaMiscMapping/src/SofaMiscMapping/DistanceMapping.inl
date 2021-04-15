@@ -22,11 +22,15 @@
 #pragma once
 
 #include "DistanceMapping.h"
+#include <sofa/core/ConstraintParams.h>
+#include <sofa/core/MechanicalParams.h>
 #include <sofa/core/visual/VisualParams.h>
+#include <sofa/core/ConstraintParams.h>
 #include <iostream>
 #include <sofa/simulation/Node.h>
 #include <sofa/defaulttype/MapMapSparseMatrixEigenUtils.h>
-
+#include <sofa/core/behavior/BaseForceField.h>
+#include <sofa/core/behavior/MechanicalState.h>
 namespace sofa::component::mapping
 {
 
@@ -269,8 +273,9 @@ void DistanceMapping<TIn, TOut>::applyDJT(const core::MechanicalParams* mparams,
 template <class TIn, class TOut>
 void DistanceMapping<TIn, TOut>::applyJT(const core::ConstraintParams* cparams, Data<InMatrixDeriv>& in, const Data<OutMatrixDeriv>& out)
 {
-    const OutMatrixDeriv& childMat  = sofa::helper::read(out, cparams).ref();
-    InMatrixDeriv&        parentMat = sofa::helper::write(in, cparams).wref();
+    SOFA_UNUSED(cparams);
+    const OutMatrixDeriv& childMat  = sofa::helper::getReadAccessor(out).ref();
+    InMatrixDeriv&        parentMat = sofa::helper::getWriteAccessor(in).wref();
     addMultTransposeEigen(parentMat, jacobian.compressedMatrix, childMat);
 }
 

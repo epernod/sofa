@@ -215,7 +215,7 @@ public:
             arg->logError("The 'input' data attribute is empty. It should contain a valid path "
                           "to one or more mechanical states of type '" + std::string(TIn::Name()) + "'.");
             return false;
-        } else if (!LinkFromModels::CheckPaths( input, context )) {
+        } else if (!LinkFromModels::CheckPaths(input, context)) {
             arg->logError("The 'input' data attribute does not contain a valid path to one or more mechanical "
                           "states of type '" + std::string(TIn::Name()) + "'.");
             return false;
@@ -226,7 +226,7 @@ public:
             arg->logError("The 'output' data attribute is empty. It should contain a valid path "
                           "to one or more mechanical states. of type '" + std::string(TOut::Name()) + "'.");
             return false;
-        } else if (!LinkToModels::CheckPaths( output, context )) {
+        } else if (!LinkToModels::CheckPaths(output, context)) {
             arg->logError("The 'output' data attribute does not contain a valid path to one or more mechanical "
                           "states of type '" + std::string(TOut::Name()) + "'.");
             return false;
@@ -298,20 +298,16 @@ protected:
 
 #if !defined(SOFA_CORE_MULTIMAPPING_CPP)
 
-template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Vec1Types, sofa::defaulttype::Vec1Types >;
-template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Vec2Types, sofa::defaulttype::Vec1Types >;
-template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Vec3Types, sofa::defaulttype::Vec3Types >;
-template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Vec3Types, sofa::defaulttype::Vec2Types >;
-template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Vec3Types, sofa::defaulttype::Vec1Types >;
-template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Vec6Types, sofa::defaulttype::Vec1Types >;
-template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Rigid3Types, sofa::defaulttype::Vec1Types >;
-template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Rigid3Types, sofa::defaulttype::Vec3Types >;
-template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Rigid3Types, sofa::defaulttype::Vec6Types >;
-template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Rigid3Types, sofa::defaulttype::Rigid3Types >;
-
-
-
-
+extern template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Vec1Types, sofa::defaulttype::Vec1Types >;
+extern template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Vec2Types, sofa::defaulttype::Vec1Types >;
+extern template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Vec3Types, sofa::defaulttype::Vec3Types >;
+extern template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Vec3Types, sofa::defaulttype::Vec2Types >;
+extern template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Vec3Types, sofa::defaulttype::Vec1Types >;
+extern template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Vec6Types, sofa::defaulttype::Vec1Types >;
+extern template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Rigid3Types, sofa::defaulttype::Vec1Types >;
+extern template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Rigid3Types, sofa::defaulttype::Vec3Types >;
+extern template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Rigid3Types, sofa::defaulttype::Vec6Types >;
+extern template class SOFA_CORE_API MultiMapping< sofa::defaulttype::Rigid3Types, sofa::defaulttype::Rigid3Types >;
 
 #endif
 

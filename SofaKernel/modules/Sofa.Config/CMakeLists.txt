@@ -56,7 +56,7 @@ endif()
 
 # Options
 option(SOFA_DETECTIONOUTPUT_FREEMOTION "Compile Sofa with the DETECTIONOUTPUT_FREEMOTION macro defined." OFF)
-option(SOFA_NO_OPENGL "Compile Sofa with no OpenGL support. (This will define the SOFA_NO_OPENGL macro.)" OFF)
+option(SOFA_WITH_OPENGL "Compile Sofa with OpenGL support. This will define the SOFA_WITH_OPENGL and SOFA_NO_OPENGL CMake variables." ON)
 option(SOFA_NO_UPDATE_BBOX "Compile Sofa with the SOFA_NO_UPDATE_BBOX macro defined." OFF)
 option(SOFA_DUMP_VISITOR_INFO "Compile Sofa with the SOFA_DUMP_VISITOR_INFO macro defined." OFF)
 if(MSVC)
@@ -102,7 +102,6 @@ set(SOFACONFIG_BUILD_OPTIONS_SRC
     ${SOFACONFIGSRC_ROOT}/config/sharedlibrary_defines.h.in
     ${SOFACONFIGSRC_ROOT}/config/build_option_deprecated_components.h.in
     ${SOFACONFIGSRC_ROOT}/config/build_option_dump_visitor.h.in
-    ${SOFACONFIGSRC_ROOT}/config/build_option_opengl.h.in
     ${SOFACONFIGSRC_ROOT}/config/build_option_threading.h.in
     ${SOFACONFIGSRC_ROOT}/config/build_option_bbox.h.in
 )
@@ -198,7 +197,7 @@ endif()
 ## OpenMP
 option(SOFA_OPENMP "Compile Sofa with OpenMP multithreading." OFF)
 if(SOFA_OPENMP)
-    find_package(OpenMP QUIET)
+    sofa_find_package(OpenMP QUIET)
     if (OPENMP_FOUND)
         list(APPEND SOFACONFIG_COMPILE_OPTIONS "${OpenMP_CXX_FLAGS}")
         list(APPEND SOFACONFIG_LINK_OPTIONS "${OpenMP_CXX_FLAGS}")
@@ -276,15 +275,11 @@ configure_file(cmake/CMakeParseLibraryList.cmake ${CMAKE_BINARY_DIR}/cmake/CMake
 install(FILES cmake/CMakeParseLibraryList.cmake DESTINATION lib/cmake/${PROJECT_NAME} COMPONENT headers)
 
 # SofaMacros*.cmake
-file(GLOB macro_files RELATIVE ${CMAKE_CURRENT_LIST_DIR}/cmake LIST_DIRECTORIES FALSE "SofaMacros*.cmake")
+set(macro_files SofaMacros.cmake SofaMacrosConfigure.cmake SofaMacrosInstall.cmake SofaMacrosPython.cmake SofaMacrosUtils.cmake)
 foreach(macro_file ${macro_files})
-    configure_file(${macro_file} ${CMAKE_BINARY_DIR}/cmake/${macro_file} COPYONLY)
-    install(FILES ${macro_file} DESTINATION lib/cmake/${PROJECT_NAME} COMPONENT headers)
+    configure_file(cmake/${macro_file} ${CMAKE_BINARY_DIR}/cmake/${macro_file} COPYONLY)
+    install(FILES cmake/${macro_file} DESTINATION lib/cmake/${PROJECT_NAME} COMPONENT headers)
 endforeach()
-
-# own include dir, the macro does not handle "independent" package for SofaFramework-style include 
-# i.e NOT the name of package first (sofa/ is wanted, instead of Sofa.Config/sofa)
-target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include/${PROJECT_NAME}/${PROJECT_NAME}>")
 
 sofa_create_package_with_targets(
     PACKAGE_NAME ${PROJECT_NAME}

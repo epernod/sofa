@@ -12,39 +12,65 @@ set(HEADER_FILES
     ${SOFATYPESRC_ROOT}/Mat_solve_Cholesky.h
     ${SOFATYPESRC_ROOT}/Mat_solve_LU.h
     ${SOFATYPESRC_ROOT}/Mat_solve_SVD.h
-    ${SOFATYPESRC_ROOT}/stdtype/fixed_array.h
-    ${SOFATYPESRC_ROOT}/stdtype/fixed_array_algorithms.h
+    ${SOFATYPESRC_ROOT}/trait/is_container.h
+    ${SOFATYPESRC_ROOT}/trait/is_vector.h
+    ${SOFATYPESRC_ROOT}/fwd.h
+    ${SOFATYPESRC_ROOT}/Quat.h
+    ${SOFATYPESRC_ROOT}/Quat.inl
+    ${SOFATYPESRC_ROOT}/DualQuat.h
+    ${SOFATYPESRC_ROOT}/DualQuat.inl
+    ${SOFATYPESRC_ROOT}/BoundingBox.h
+    ${SOFATYPESRC_ROOT}/Color.h
+    ${SOFATYPESRC_ROOT}/Frame.h
+    ${SOFATYPESRC_ROOT}/Material.h
+    ${SOFATYPESRC_ROOT}/PrimitiveGroup.h
+    ${SOFATYPESRC_ROOT}/Ray.h
+    ${SOFATYPESRC_ROOT}/RGBAColor.h
+    ${SOFATYPESRC_ROOT}/RGBAColor_fwd.h
+    ${SOFATYPESRC_ROOT}/fixed_array.h
+    ${SOFATYPESRC_ROOT}/fixed_array_algorithms.h
+    ${SOFATYPESRC_ROOT}/stable_vector.h
+    ${SOFATYPESRC_ROOT}/vector.h
+    ${SOFATYPESRC_ROOT}/vector_T.h
+    ${SOFATYPESRC_ROOT}/vector_T.inl
+    ${SOFATYPESRC_ROOT}/vector_Real.h
+    ${SOFATYPESRC_ROOT}/vector_Integral.h
+    ${SOFATYPESRC_ROOT}/vector_String.h
+    ${SOFATYPESRC_ROOT}/vector_algebra.h
+    ${SOFATYPESRC_ROOT}/vector_algorithm.h
+    ${SOFATYPESRC_ROOT}/vector_device.h
+    ${SOFATYPESRC_ROOT}/SVector.h
 )
 
 set(SOURCE_FILES
     ${SOFATYPESRC_ROOT}/init.cpp
     ${SOFATYPESRC_ROOT}/Vec.cpp
-    ${SOFATYPESRC_ROOT}/stdtype/fixed_array.cpp
+    ${SOFATYPESRC_ROOT}/Quat.cpp
+    ${SOFATYPESRC_ROOT}/DualQuat.cpp
+    ${SOFATYPESRC_ROOT}/BoundingBox.cpp
+    ${SOFATYPESRC_ROOT}/Frame.cpp
+    ${SOFATYPESRC_ROOT}/Material.cpp
+    ${SOFATYPESRC_ROOT}/PrimitiveGroup.cpp
+    ${SOFATYPESRC_ROOT}/RGBAColor.cpp
+    ${SOFATYPESRC_ROOT}/fixed_array.cpp
+    ${SOFATYPESRC_ROOT}/vector.cpp
+    ${SOFATYPESRC_ROOT}/vector_Real.cpp
+    ${SOFATYPESRC_ROOT}/vector_Integral.cpp
+    ${SOFATYPESRC_ROOT}/vector_String.cpp
+    ${SOFATYPESRC_ROOT}/SVector.cpp
 )
 
-# Compatibility files
-set (COMPATSRC_ROOT "compat/")
-set(COMPAT_HEADER_FILES
-    ${COMPATSRC_ROOT}/sofa/defaulttype/Vec.h
-    ${COMPATSRC_ROOT}/sofa/defaulttype/Mat.h
-    ${COMPATSRC_ROOT}/sofa/defaulttype/MatSym.h
-    ${COMPATSRC_ROOT}/sofa/defaulttype/Mat_solve_Cholesky.h
-    ${COMPATSRC_ROOT}/sofa/defaulttype/Mat_solve_LU.h
-    ${COMPATSRC_ROOT}/sofa/defaulttype/Mat_solve_SVD.h
-    ${COMPATSRC_ROOT}/sofa/helper/fixed_array.h
-    ${COMPATSRC_ROOT}/sofa/helper/fixed_array_algorithms.h
-)
+sofa_find_package(Boost REQUIRED)
+sofa_find_package(Sofa.Config REQUIRED)
+sofa_find_package(Sofa.Compat REQUIRED BOTH_SCOPES) #TODO remove REQUIRED once the sofa code has been ported
 
-find_package(Sofa.Config REQUIRED)
-
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES} ${COMPAT_HEADER_FILES})
+add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Config)
-
-target_include_directories(${PROJECT_NAME} PUBLIC
-                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${COMPATSRC_ROOT}>
-                           $<INSTALL_INTERFACE:include/SofaFramework/compat>)
-source_group("compat" FILES ${COMPAT_HEADER_FILES})
+target_link_libraries(${PROJECT_NAME} PUBLIC Boost::boost)
+if(Sofa.Compat_FOUND)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Compat)
+endif()
 
 sofa_add_targets_to_package(
     PACKAGE_NAME SofaFramework
@@ -53,10 +79,3 @@ sofa_add_targets_to_package(
     INCLUDE_SOURCE_DIR "src"
     INCLUDE_INSTALL_DIR "SofaFramework"
     )
-
-## Tests
-# cmake_dependent_option(SOFA_TYPE_BUILD_TESTS "Compile the automatic tests" ON "SOFA_BUILD_TESTS OR NOT DEFINED SOFA_BUILD_TESTS" OFF)
-# if(SOFA_TYPE_BUILD_TESTS)
-#     enable_testing()
-#     add_subdirectory(${PROJECT_NAME}_test)
-# endif()
