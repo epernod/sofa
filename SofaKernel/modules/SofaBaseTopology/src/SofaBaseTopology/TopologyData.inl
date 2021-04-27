@@ -89,18 +89,6 @@ void TopologyData <TopologyElementType, VecT>::createTopologyHandler(sofa::core:
 }
 
 
-template <typename TopologyElementType, typename VecT>
-void TopologyData <TopologyElementType, VecT>::addInputData(sofa::core::objectmodel::BaseData *_data)
-{
-    if (this->m_topologyHandler)
-        this->m_topologyHandler->addInput(_data);
-    else
-        msg_info(this->getOwner()) <<"Warning: TopologyData: " << this->getName() << " has no engine. Use createTopologyHandler function before addInputData." ;
-}
-
-
-
-
 /// Method used to link Data to point Data array, using the engine's method
 template <typename TopologyElementType, typename VecT>
 void TopologyData <TopologyElementType, VecT>::linkToPointDataArray()

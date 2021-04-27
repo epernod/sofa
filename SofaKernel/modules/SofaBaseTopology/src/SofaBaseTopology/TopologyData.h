@@ -74,7 +74,6 @@ public:
     void createTopologyHandler(sofa::core::topology::BaseMeshTopology* _topology, sofa::component::topology::TopologyDataHandler< TopologyElementType, VecT>* topoEngine);
 
     /// Allow to add additionnal dependencies to others Data.
-    void addInputData(sofa::core::objectmodel::BaseData* _data);
 
     /// Link Data to topology arrays
     void linkToPointDataArray();
