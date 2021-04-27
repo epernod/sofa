@@ -231,13 +231,13 @@ void TopologyDataHandler<TopologyElementType,  VecT>::linkToHexahedronDataArray(
 
 /// Apply swap between indices elements.
 template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const EIndicesSwap* event)
+void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementIndicesSwap* event)
 {
     m_topologyData->swap(event->index[0], event->index[1]);
 }
 /// Apply adding elements.
 template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const EAdded* event)
+void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementAdded* event)
 {
     //this->add(event->getNbAddedElements(), event->getElementArray(),
     //    event->ancestorsList, event->coefs);
@@ -247,23 +247,23 @@ void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const 
 
 /// Apply removing elements.
 template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ERemoved* event)
+void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementRemoved* event)
 {
     m_topologyData->remove(event->getArray());
 }
 
 /// Apply renumbering on elements.
 template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ERenumbering* event)
+void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementRenumbering* event)
 {
     m_topologyData->renumber(event->getIndexArray());
 }
 
 /// Apply moving elements.
 template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const EMoved* /*event*/)
+void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementMoved* /*event*/)
 {
-    msg_warning("TopologyDataHandler") << "MOVED topology event not handled on " << ElementInfo::name()
+    msg_warning("TopologyDataHandler") << "MOVED topology event not handled on " << m_data_name
         << " (it should not even exist!)";
 }
 

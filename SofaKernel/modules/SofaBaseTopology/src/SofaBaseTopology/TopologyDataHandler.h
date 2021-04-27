@@ -25,7 +25,7 @@
 #include <sofa/core/topology/TopologyHandler.h>
 #include <sofa/core/topology/BaseTopologyData.h>
 
-#include <sofa/core/topology/BaseTopology.h>
+#include <sofa/geometry/ElementInfo.h>
 
 #include <sofa/defaulttype/VecTypes.h>
 
@@ -46,7 +46,7 @@ public:
     typedef typename container_type::value_type value_type;
     typedef sofa::core::topology::BaseTopologyData<VecT> t_topologicalData;
 
-    typedef core::topology::TopologyElementInfo<TopologyElementType> ElementInfo;
+    typedef sofa::geometry::ElementInfo<TopologyElementType> ElementInfo;
     typedef core::topology::TopologyChangeElementInfo<TopologyElementType> ChangeElementInfo;
 
     typedef core::topology::BaseMeshTopology::Point Point;
@@ -57,14 +57,14 @@ public:
     typedef core::topology::BaseMeshTopology::Hexahedron Hexahedron;
 
     // Event types (EMoved* are not used for all element types, i.e. Point vs others)
-    typedef typename ChangeElementInfo::EIndicesSwap    EIndicesSwap;
-    typedef typename ChangeElementInfo::ERenumbering    ERenumbering;
-    typedef typename ChangeElementInfo::EAdded          EAdded;
-    typedef typename ChangeElementInfo::ERemoved        ERemoved;
-    typedef typename ChangeElementInfo::EMoved          EMoved;
-    typedef typename ChangeElementInfo::EMoved_Removing EMoved_Removing;
-    typedef typename ChangeElementInfo::EMoved_Adding   EMoved_Adding;
-    typedef typename ChangeElementInfo::AncestorElem    AncestorElem;
+    typedef typename ChangeElementInfo::EIndicesSwap    ElementIndicesSwap;
+    typedef typename ChangeElementInfo::ERenumbering    ElementRenumbering;
+    typedef typename ChangeElementInfo::EAdded          ElementAdded;
+    typedef typename ChangeElementInfo::ERemoved        ElementRemoved;
+    typedef typename ChangeElementInfo::EMoved          ElementMoved;
+    typedef typename ChangeElementInfo::EMoved_Removing ElementMoved_Removing;
+    typedef typename ChangeElementInfo::EMoved_Adding   ElementMoved_Adding;
+    typedef typename ChangeElementInfo::AncestorElem    AncestorElement;
 
     TopologyDataHandler(t_topologicalData* _topologicalData,
         sofa::core::topology::BaseMeshTopology* _topology, 
@@ -100,15 +100,15 @@ public:
     using TopologyHandler::ApplyTopologyChange;
 
     /// Apply swap between indices elements.
-    virtual void ApplyTopologyChange(const EIndicesSwap* event) override;
+    virtual void ApplyTopologyChange(const ElementIndicesSwap* event) override;
     /// Apply adding elements.
-    virtual void ApplyTopologyChange(const EAdded* event) override;
+    virtual void ApplyTopologyChange(const ElementAdded* event) override;
     /// Apply removing elements.
-    virtual void ApplyTopologyChange(const ERemoved* event) override;
+    virtual void ApplyTopologyChange(const ElementRemoved* event) override;
     /// Apply renumbering on elements.
-    virtual void ApplyTopologyChange(const ERenumbering* event) override;
+    virtual void ApplyTopologyChange(const ElementRenumbering* event) override;
     /// Apply moving elements.
-    virtual void ApplyTopologyChange(const EMoved* event) override;
+    virtual void ApplyTopologyChange(const ElementMoved* event) override;
     /// Apply adding function on moved elements.
     //virtual void ApplyTopologyChange(const EMoved_Adding* event) override;
     ///// Apply removing function on moved elements.
@@ -138,7 +138,7 @@ public:
     virtual void applyCreateFunction(Index i, value_type& t, const TopologyElementType& e,
         const sofa::helper::vector< Index >& ancestors,
         const sofa::helper::vector< double >& coefs,
-        const AncestorElem* /*ancestorElem*/)
+        const AncestorElement* /*ancestorElem*/)
     {
         applyCreateFunction(i, t, e, ancestors, coefs);
     }
