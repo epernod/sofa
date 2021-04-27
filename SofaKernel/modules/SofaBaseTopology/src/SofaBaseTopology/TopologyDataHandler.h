@@ -80,12 +80,6 @@ public:
 
     void handleTopologyChange() override;
 
-    /// Function to link the topological Data with the engine and the current topology. And init everything.
-    /// This function should be used at the end of the all declaration link to this Data while using it in a component.
-    bool registerTopology(sofa::core::topology::BaseMeshTopology* _topology) override;
-
-    bool registerTopology() override;
-
     void registerTopologicalData(t_topologicalData *topologicalData) {m_topologyData = topologicalData;}
 
 
@@ -162,7 +156,6 @@ public:
 
 protected:
     t_topologicalData* m_topologyData;
-    sofa::core::topology::TopologyContainer* m_topology;
     value_type m_defaultValue; // default value when adding an element (by set as value_type() by default)
 
 

@@ -36,6 +36,12 @@ size_t TopologyHandler::getNumberOfTopologicalChanges()
 //////////////////////////////   Generic Handling of Topology Event    /////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+TopologyHandler::TopologyHandler()
+    : m_topology(nullptr)
+{
+    
+}
+
 #define SOFA_CALLBACK_CASE(name, type) \
     case core::topology::name: \
         (*itM).second(static_cast< const type* >( *changeIt )); \
@@ -198,15 +204,17 @@ void TopologyHandler::addCallBack(core::topology::TopologyChangeType type, TopoC
     m_callbackMap[type] = callback;
 }
 
-bool TopologyHandler::registerTopology()
-{
-    return false;
-}
-
 bool TopologyHandler::registerTopology(sofa::core::topology::BaseMeshTopology* _topology)
 {
-    SOFA_UNUSED(_topology);
-    return false;
+    m_topology = dynamic_cast<sofa::core::topology::TopologyContainer*>(_topology);
+
+    if (m_topology == nullptr)
+    {
+        msg_info("TopologyHandler") << "Topology: " << _topology->getName() << " is not dynamic, topology engine on Data '" << m_data_name << "' won't be registered.";
+        return false;
+    }
+
+    return true;
 }
 
 } // namespace sofa

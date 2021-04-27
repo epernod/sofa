@@ -22,6 +22,7 @@
 #pragma once
 
 #include <sofa/core/DataEngine.h>
+#include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/topology/TopologyChange.h>
 #include <sofa/core/fwd.h>
 
@@ -38,7 +39,7 @@ namespace topology
 class SOFA_CORE_API TopologyHandler : public sofa::core::objectmodel::DDGNode
 {
 protected:
-    TopologyHandler() {}
+    TopologyHandler();
 
 public:
     virtual void handleTopologyChange() {}
@@ -163,7 +164,6 @@ public:
     void setNamePrefix(const std::string& s) { m_prefix = s; }
     std::string getName() { return m_prefix + m_data_name; }
 
-    virtual bool registerTopology();
     virtual bool registerTopology(sofa::core::topology::BaseMeshTopology* _topology);
 
     void addCallBack(core::topology::TopologyChangeType type, TopoChange_callback callback);
@@ -175,6 +175,8 @@ protected:
     std::string m_data_name;
 
     std::map < core::topology::TopologyChangeType, TopoChange_callback> m_callbackMap;
+
+    sofa::core::topology::TopologyContainer* m_topology;
 };
 
 } // namespace topology
