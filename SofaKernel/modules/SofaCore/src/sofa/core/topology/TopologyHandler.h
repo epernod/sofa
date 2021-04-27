@@ -47,9 +47,6 @@ public:
     void update() override;
 
 public:
-    // really need to be a Data??
-    Data <std::list<const TopologyChange *> >m_changeList;
-
     typedef std::function<void(const core::topology::TopologyChange*)> TopoChange_callback;
 
     virtual void ApplyTopologyChanges(const std::list< const core::topology::TopologyChange*>& _topologyChangeEvents, const Size _dataSize);
