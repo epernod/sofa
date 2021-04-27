@@ -50,15 +50,12 @@ void TopologyData <TopologyElementType, VecT>::createTopologyHandler(sofa::core:
     this->m_topologyHandler->init();
 
     // Register the engine
-    m_isTopologyDynamic = this->m_topologyHandler->registerTopology();
+    m_isTopologyDynamic = this->m_topologyHandler->registerTopology(_topology);
     if (m_isTopologyDynamic)
     {
         this->linkToElementDataArray((TopologyElementType*)nullptr);
         msg_info(this->getOwner()) << "TopologyData: " << this->getName() << " initialized with dynamic " << _topology->getClassName() << "Topology.";
     }
-
-    // TODO need to check why second call is needed...
-    this->m_topologyHandler->registerTopology();
 
     //if (this->getOwner() && dynamic_cast<sofa::core::objectmodel::BaseObject*>(this->getOwner()))
     //    dynamic_cast<sofa::core::objectmodel::BaseObject*>(this->getOwner())->addSlave(this->m_topologyHandler);
