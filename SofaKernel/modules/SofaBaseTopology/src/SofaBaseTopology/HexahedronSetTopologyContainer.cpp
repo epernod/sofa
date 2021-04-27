@@ -1229,4 +1229,9 @@ void HexahedronSetTopologyContainer::updateTopologyHandlerGraph()
     QuadSetTopologyContainer::updateTopologyHandlerGraph();
 }
 
+void HexahedronSetTopologyContainer::addTopologyHandler(sofa::core::topology::TopologyHandler* _TopologyHandler)
+{
+    this->m_enginesList.push_back(_TopologyHandler);
+}
+
 } //namespace sofa::component::topology
