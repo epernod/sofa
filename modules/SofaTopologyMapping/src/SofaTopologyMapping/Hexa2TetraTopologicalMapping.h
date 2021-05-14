@@ -33,6 +33,7 @@
 namespace sofa::component::topology
 {
 
+class TetrahedronSetTopologyModifier;
 
 /**
 * This class, called Hexa2TetraTopologicalMapping, is a specific implementation of the interface TopologicalMapping where :
@@ -77,6 +78,9 @@ public:
 
     sofa::core::objectmodel::Data<bool> swapping; ///< Boolean enabling to swapp hexa-edges  in order to avoid bias effect
 
+
+protected:
+    TetrahedronSetTopologyModifier* m_outTopoModifier; ///< Pointer to the output topology modifier
 };
 
 } //namespace sofa::component::topology

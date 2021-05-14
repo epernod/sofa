@@ -31,9 +31,9 @@
 #include <SofaBaseTopology/TetrahedronSetTopologyModifier.h>
 
 #include <sofa/core/topology/TopologyChange.h>
-
 #include <SofaBaseTopology/GridTopology.h>
 
+#include <sofa/helper/AdvancedTimer.h>
 #include <sofa/defaulttype/Vec.h>
 #include <map>
 #include <sofa/defaulttype/VecTypes.h>
@@ -71,13 +71,23 @@ void Hexa2TetraTopologicalMapping::init()
     bool modelsOk = true;
     if (!fromModel)
     {
-        msg_error() << "Pointer to input topology is invalid.";
+        msg_error() << "No input mesh topology found. Consider setting the '" << fromModel.getName() << "' data attribute.";
         modelsOk = false;
     }
 
     if (!toModel)
     {
-        msg_error() << "Pointer to output topology is invalid.";
+        msg_error() << "No output mesh topology found. Consider setting the '" << toModel.getName() << "' data attribute.";
+        modelsOk = false;
+    }
+
+
+    // Making sure the output topology is derived from the triangle topology container
+    if (!dynamic_cast<TetrahedronSetTopologyContainer*>(toModel.get()))
+    {
+        msg_error() << "The output topology '" << toModel.getPath() << "' is not a derived class of TetrahedronSetTopologyContainer. "
+            << "Consider setting the '" << toModel.getName() << "' data attribute to a valid"
+            " TetrahedronSetTopologyContainer derived object.";
         modelsOk = false;
     }
     else
@@ -86,8 +96,12 @@ void Hexa2TetraTopologicalMapping::init()
         toModel->getContext()->get(to_tstm);
         if (!to_tstm)
         {
-            msg_error() << "No TetrahedronSetTopologyModifier found in the Tetrahedron topology Node.";
+            msg_error() << "No TetrahedronSetTopologyModifier found in the output topology node '"
+                << toModel->getContext()->getName() << "'.";
             modelsOk = false;
+        }
+        else {
+            m_outTopoModifier = to_tstm;
         }
     }
 
@@ -97,13 +111,13 @@ void Hexa2TetraTopologicalMapping::init()
         return;
     }
 
-    TetrahedronSetTopologyContainer *to_tstc;
-    toModel->getContext()->get(to_tstc);
+    // INITIALISATION of Tetrahedron mesh from Hexahedron mesh :
     // Clear output topology
-    to_tstc->clear();
+    toModel->clear();
 
     // Set the same number of points
     toModel->setNbPoints(fromModel->getNbPoints());
+
 
     sofa::helper::vector <Index>& Loc2GlobVec = *(Loc2GlobDataVec.beginEdit());
 
@@ -167,21 +181,21 @@ void Hexa2TetraTopologicalMapping::init()
 #undef swap
         if(!swapped)
         {
-            to_tstc->addTetra(c[0],c[5],c[1],c[6]);
-            to_tstc->addTetra(c[0],c[1],c[3],c[6]);
-            to_tstc->addTetra(c[1],c[3],c[6],c[2]);
-            to_tstc->addTetra(c[6],c[3],c[0],c[7]);
-            to_tstc->addTetra(c[6],c[7],c[0],c[5]);
-            to_tstc->addTetra(c[7],c[5],c[4],c[0]);
+            toModel->addTetra(c[0],c[5],c[1],c[6]);
+            toModel->addTetra(c[0],c[1],c[3],c[6]);
+            toModel->addTetra(c[1],c[3],c[6],c[2]);
+            toModel->addTetra(c[6],c[3],c[0],c[7]);
+            toModel->addTetra(c[6],c[7],c[0],c[5]);
+            toModel->addTetra(c[7],c[5],c[4],c[0]);
         }
         else
         {
-            to_tstc->addTetra(c[0],c[5],c[6],c[1]);
-            to_tstc->addTetra(c[0],c[1],c[6],c[3]);
-            to_tstc->addTetra(c[1],c[3],c[2],c[6]);
-            to_tstc->addTetra(c[6],c[3],c[7],c[0]);
-            to_tstc->addTetra(c[6],c[7],c[5],c[0]);
-            to_tstc->addTetra(c[7],c[5],c[0],c[4]);
+            toModel->addTetra(c[0],c[5],c[6],c[1]);
+            toModel->addTetra(c[0],c[1],c[6],c[3]);
+            toModel->addTetra(c[1],c[3],c[2],c[6]);
+            toModel->addTetra(c[6],c[3],c[7],c[0]);
+            toModel->addTetra(c[6],c[7],c[5],c[0]);
+            toModel->addTetra(c[7],c[5],c[0],c[4]);
         }
         for(int j=0; j<6; j++)
             Loc2GlobVec.push_back(i);
@@ -204,8 +218,100 @@ Index Hexa2TetraTopologicalMapping::getFromIndex(Index /*ind*/)
 
 void Hexa2TetraTopologicalMapping::updateTopologicalMappingTopDown()
 {
-    msg_warning() << "Method Hexa2TetraTopologicalMapping::updateTopologicalMappingTopDown() not yet implemented!";
-// TODO...
+    if (this->d_componentState.getValue() != sofa::core::objectmodel::ComponentState::Valid)
+        return;
+
+    sofa::helper::AdvancedTimer::stepBegin("Update Hexa2TetraTopologicalMapping");
+
+    auto itBegin = fromModel->beginChange();
+    auto itEnd = fromModel->endChange();
+
+    sofa::helper::vector <Index>& Loc2GlobVec = *(Loc2GlobDataVec.beginEdit());
+
+    while (itBegin != itEnd)
+    {
+        TopologyChangeType changeType = (*itBegin)->getChangeType();
+        std::string topoChangeType = "Hexa2TetraTopologicalMapping - " + parseTopologyChangeTypeToString(changeType);
+        sofa::helper::AdvancedTimer::stepBegin(topoChangeType);
+
+        switch (changeType)
+        {
+        case core::topology::ENDING_EVENT:
+        {
+            m_outTopoModifier->notifyEndingEvent();
+            break;
+        }
+        case core::topology::TETRAHEDRAREMOVED:
+        {
+            break;
+        }
+        case core::topology::TETRAHEDRAADDED:
+        {
+            break;
+        }
+        case core::topology::HEXAHEDRAREMOVED:
+        {
+            const auto& hexahedronArray = fromModel->getHexahedra();
+            const auto& hexaIds2Remove = (static_cast<const HexahedraRemoved*>(*itBegin))->getArray();
+
+            std::cout << "hexahedronArray: " << hexahedronArray << std::endl;
+            std::cout << "hexaIds2Remove: " << hexaIds2Remove << std::endl;
+
+            std::cout << "Loc2GlobVec: " << Loc2GlobVec << std::endl;
+            std::cout << "Glob2LocMap: " << std::endl;
+            for (auto ids : Glob2LocMap)
+            {
+                std::cout << "ids: " << ids.first << " -> " << ids.second << std::endl;
+            }
+
+            sofa::Size idLast = fromModel->getNbHexahedra() - 1;
+            sofa::helper::vector< BaseMeshTopology::TetrahedronID > tetraId_to_remove;
+            for (auto hexaId : hexaIds2Remove)
+            {
+                auto iter_1 = Glob2LocMap.find(hexaId);
+
+                if (iter_1 == Glob2LocMap.end())
+                {
+                    msg_error() << " in HEXAHEDRAREMOVED process, hexa id " << hexaId << " not found in Glob2LocMap";
+                    continue;
+                }
+
+                BaseMeshTopology::HexahedronID idLast = iter_1->second;
+                BaseMeshTopology::HexahedronID idFirst = idLast - 5; // 6 tetra per hexa
+
+                if (idFirst == BaseMeshTopology::InvalidID)
+                {
+                    msg_error() << " in HEXAHEDRAREMOVED process, tetra id " << idLast << " is not including 5 previous tetrahedron indices.";
+                    continue;
+                }
+
+                for (BaseMeshTopology::HexahedronID i = idFirst; i <= idLast; i++)
+                    tetraId_to_remove.push_back(i);
+
+                Glob2LocMap.erase(Glob2LocMap.find(idLast));
+                idLast--;
+                Loc2GlobVec.pop_back();
+            }
+
+            // remove old triangles
+            m_outTopoModifier->removeTetrahedra(tetraId_to_remove, true);
+            break;
+        }
+        case core::topology::HEXAHEDRAADDED:
+        {
+            break;
+        }
+
+        }
+
+
+        sofa::helper::AdvancedTimer::stepEnd(topoChangeType);
+        ++itBegin;
+    }
+
+    Loc2GlobDataVec.endEdit();
+
+    sofa::helper::AdvancedTimer::stepEnd("Update Hexa2TetraTopologicalMapping");
 }
 
 
