@@ -408,6 +408,9 @@ void ConstantForceField<DataTypes>::addForce(const core::MechanicalParams* param
     size_t indicesSize = indices.size();
     m_systemSize = _f1.size();
 
+    if (indices.size() != forces.size())
+        computeForceFromSingleForce();
+
     if (!d_indexFromEnd.getValue())
     {
         for (size_t i=0; i<indicesSize; i++)
