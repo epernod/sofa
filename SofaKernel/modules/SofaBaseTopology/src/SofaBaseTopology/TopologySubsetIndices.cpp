@@ -46,6 +46,11 @@ Index TopologySubsetIndices::indexOfElement(Index index)
     return sofa::InvalidID;
 }
 
+void TopologySubsetIndices::createTopologyHandler(sofa::core::topology::BaseMeshTopology* _topology)
+{
+    this->Inherit::createTopologyHandler(_topology);
+}
+
 void TopologySubsetIndices::createTopologyHandler(sofa::core::topology::BaseMeshTopology* _topology, sofa::component::topology::TopologyDataHandler < core::topology::BaseMeshTopology::Point, helper::vector<Index> >* topoEngine)
 {
     this->Inherit::createTopologyHandler(_topology, topoEngine);

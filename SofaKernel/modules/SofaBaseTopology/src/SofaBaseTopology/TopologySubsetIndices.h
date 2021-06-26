@@ -47,6 +47,8 @@ public:
     
     Index indexOfElement(Index index) override;
 
+    void createTopologyHandler(sofa::core::topology::BaseMeshTopology* _topology);
+
     void createTopologyHandler(sofa::core::topology::BaseMeshTopology* _topology, sofa::component::topology::TopologyDataHandler < core::topology::BaseMeshTopology::Point, helper::vector<Index> >* topoEngine);
 
 protected:
