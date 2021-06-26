@@ -28,7 +28,7 @@
 #include <sofa/defaulttype/Mat.h>
 #include <sofa/helper/vector.h>
 #include <sofa/helper/Quater.h>
-#include <SofaBaseTopology/TopologySubsetData.h>
+#include <SofaBaseTopology/TopologySubsetIndices.h>
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/defaulttype/RigidTypes.h>
 #include <type_traits>
@@ -62,7 +62,7 @@ public:
     typedef Data<VecCoord> DataVecCoord;
     typedef Data<VecDeriv> DataVecDeriv;
     typedef helper::vector<Index> SetIndexArray;
-    typedef sofa::component::topology::PointSubsetData< SetIndexArray > SetIndex;
+    typedef sofa::component::topology::TopologySubsetIndices SetIndex;
     typedef defaulttype::Quat Quat;
     typedef defaulttype::Vector3 Vector3;
 

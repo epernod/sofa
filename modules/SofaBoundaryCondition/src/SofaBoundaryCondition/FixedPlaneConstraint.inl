@@ -29,7 +29,6 @@
 #include <sofa/defaulttype/RigidTypes.h>
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/helper/vector_algorithm.h>
-#include <SofaBaseTopology/TopologySubsetData.inl>
 
 namespace sofa::component::projectiveconstraintset
 {

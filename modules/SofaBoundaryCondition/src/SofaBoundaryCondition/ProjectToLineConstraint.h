@@ -31,7 +31,7 @@
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/helper/vector.h>
 #include <sofa/defaulttype/Mat.h>
-#include <SofaBaseTopology/TopologySubsetData.h>
+#include <SofaBaseTopology/TopologySubsetIndices.h>
 #include <SofaEigen2Solver/EigenSparseMatrix.h>
 #include <set>
 
@@ -69,7 +69,7 @@ public:
     typedef Data<MatrixDeriv> DataMatrixDeriv;
     typedef sofa::defaulttype::Vector3 Vector3;
     typedef helper::vector<Index> Indices;
-    typedef sofa::component::topology::PointSubsetData< Indices > IndexSubsetData;
+    typedef sofa::component::topology::TopologySubsetIndices IndexSubsetData;
     typedef linearsolver::EigenBaseSparseMatrix<SReal> BaseSparseMatrix;
     typedef linearsolver::EigenSparseMatrix<DataTypes,DataTypes> SparseMatrix;
     typedef typename SparseMatrix::Block Block;                                       ///< projection matrix of a particle displacement to the plane
