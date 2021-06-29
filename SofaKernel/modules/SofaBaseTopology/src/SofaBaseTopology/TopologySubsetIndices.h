@@ -63,7 +63,6 @@ protected:
 #if !defined(SOFA_COMPONENT_TOPOLOGY_SUBSETINDICES_CPP)
 extern template class SOFA_SOFABASETOPOLOGY_API sofa::component::topology::TopologyDataHandler < core::topology::BaseMeshTopology::Point, helper::vector<Index> >;
 extern template class SOFA_SOFABASETOPOLOGY_API sofa::component::topology::TopologyData < core::topology::BaseMeshTopology::Point, helper::vector<Index> >;
-extern template class SOFA_SOFABASETOPOLOGY_API sofa::core::topology::BaseTopologyData < helper::vector<Index> >;
 #endif
 
 } //namespace sofa::component::topology
