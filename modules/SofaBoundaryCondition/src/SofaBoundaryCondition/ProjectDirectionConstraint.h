@@ -125,7 +125,7 @@ public:
     public:
         typedef typename ProjectDirectionConstraint<DataTypes>::Indices Indices;
         typedef sofa::core::topology::Point Point;
-        FCPointHandler(ProjectDirectionConstraint<DataTypes>* _fc, component::topology::PointSubsetData<Indices>* _data)
+        FCPointHandler(ProjectDirectionConstraint<DataTypes>* _fc, IndexSubsetData* _data)
             : sofa::component::topology::TopologyDataHandler<core::topology::BaseMeshTopology::Point, Indices >(_data), fc(_fc) {}
 
 

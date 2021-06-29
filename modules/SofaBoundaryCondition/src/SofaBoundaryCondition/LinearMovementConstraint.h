@@ -140,7 +140,7 @@ public:
     public:
         typedef typename LinearMovementConstraint<DataTypes>::SetIndexArray SetIndexArray;
 
-        FCPointHandler(LinearMovementConstraint<DataTypes>* _lc, sofa::component::topology::PointSubsetData<SetIndexArray>* _data)
+        FCPointHandler(LinearMovementConstraint<DataTypes>* _lc, SetIndex* _data)
             : sofa::component::topology::TopologyDataHandler<core::topology::BaseMeshTopology::Point, SetIndexArray >(_data), lc(_lc) {}
 
         void applyDestroyFunction(Index /*index*/, value_type& /*T*/);

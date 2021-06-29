@@ -116,7 +116,7 @@ public:
     public:
         typedef typename LinearVelocityConstraint<DataTypes>::SetIndexArray SetIndexArray;
 
-        FCPointHandler(LinearVelocityConstraint<DataTypes>* _lc, sofa::component::topology::PointSubsetData<SetIndexArray>* _data)
+        FCPointHandler(LinearVelocityConstraint<DataTypes>* _lc, SetIndex* _data)
             : sofa::component::topology::TopologyDataHandler<core::topology::BaseMeshTopology::Point, SetIndexArray >(_data), lc(_lc) {}
 
 

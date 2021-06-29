@@ -141,7 +141,7 @@ public:
     public:
         typedef typename PatchTestMovementConstraint<DataTypes>::SetIndexArray SetIndexArray;
 
-        FCPointHandler(PatchTestMovementConstraint<DataTypes>* _fc, sofa::component::topology::PointSubsetData<SetIndexArray>* _data)
+        FCPointHandler(PatchTestMovementConstraint<DataTypes>* _fc, SetIndex* _data)
             : sofa::component::topology::TopologyDataHandler<core::topology::BaseMeshTopology::Point, SetIndexArray >(_data), fc(_fc) {}
 
         void applyDestroyFunction(Index /*index*/, value_type& /*T*/);
