@@ -137,4 +137,8 @@ template< class VecT > using QuadSubsetData = TopologySubsetData<core::topology:
 template< class VecT > using TetrahedronSubsetData = TopologySubsetData<core::topology::BaseMeshTopology::Tetrahedron, VecT>;
 template< class VecT > using HexahedronSubsetData = TopologySubsetData<core::topology::BaseMeshTopology::Hexahedron, VecT>;
 
+#if !defined(SOFA_COMPONENT_TOPOLOGY_SUBSETINDICES_CPP)
+extern template class SOFA_SOFABASETOPOLOGY_API sofa::component::topology::TopologyDataHandler < core::topology::BaseMeshTopology::Point, helper::vector<Index> >;
+#endif
+
 } //namespace sofa::component::topology
