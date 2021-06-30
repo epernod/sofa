@@ -46,7 +46,7 @@ public:
     typedef core::topology::TopologyElementInfo<TopologyElementType> ElementInfo;
     typedef core::topology::TopologyChangeElementInfo<TopologyElementType> ChangeElementInfo;
     typedef typename ChangeElementInfo::AncestorElem    AncestorElem;
-    
+
     /// Default Constructor to init Data
     TopologySubsetData(const typename sofa::core::topology::BaseTopologyData< VecT >::InitData& data);
 
@@ -82,7 +82,7 @@ public:
     virtual void add(sofa::Size nbElements,
         const sofa::helper::vector< TopologyElementType >&,
         const sofa::helper::vector< sofa::helper::vector< Index > >& ancestors,
-        const sofa::helper::vector< sofa::helper::vector< double > >& coefs);    
+        const sofa::helper::vector< sofa::helper::vector< double > >& coefs);
 
     void add(const sofa::helper::vector<Index>& index,
         const sofa::helper::vector< TopologyElementType >& elems,
@@ -137,8 +137,8 @@ template< class VecT > using QuadSubsetData = TopologySubsetData<core::topology:
 template< class VecT > using TetrahedronSubsetData = TopologySubsetData<core::topology::BaseMeshTopology::Tetrahedron, VecT>;
 template< class VecT > using HexahedronSubsetData = TopologySubsetData<core::topology::BaseMeshTopology::Hexahedron, VecT>;
 
-#if !defined(SOFA_COMPONENT_TOPOLOGY_SUBSETINDICES_CPP)
-extern template class SOFA_SOFABASETOPOLOGY_API sofa::component::topology::TopologyDataHandler < core::topology::BaseMeshTopology::Point, helper::vector<Index> >;
-#endif
+#if !defined(DEFINITION_TOPOLOGYSUBSETDATA)
+extern template class SOFA_SOFABASETOPOLOGY_API TopologySubsetData<Index, sofa::type::vector<Index>>;
+#endif // DEFINITION_TOPOLOGYSUBSETDATA
 
 } //namespace sofa::component::topology
