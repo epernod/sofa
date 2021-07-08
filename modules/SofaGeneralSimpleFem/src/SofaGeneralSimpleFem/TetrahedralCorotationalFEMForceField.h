@@ -28,6 +28,7 @@
 #include <sofa/type/Vec.h>
 #include <sofa/type/Mat.h>
 #include <sofa/helper/map.h>
+#include <sofa/helper/ColorMap.h>
 
 // corotational tetrahedron from
 // @InProceedings{NPF05,
@@ -64,6 +65,14 @@ public:
     typedef core::objectmodel::Data<VecDeriv>    DataVecDeriv;
     typedef core::objectmodel::Data<VecCoord>    DataVecCoord;
 
+    typedef core::topology::BaseMeshTopology::Tetra Element;
+    typedef core::topology::BaseMeshTopology::SeqTetrahedra VecElement;
+    typedef core::topology::BaseMeshTopology::Tetrahedron Tetrahedron;
+    
+    typedef type::Vec<3, Real> Vec3;
+    typedef type::Mat<4, 4, Real> Mat44;
+    typedef type::Mat<3, 3, Real> Mat33;
+
     using Index = sofa::Index;
 
     enum { SMALL = 0, ///< Symbol of small displacements tetrahedron solver
@@ -91,6 +100,7 @@ public:
 
     /// @}
 
+public:
     /// the information stored for each tetrahedron
     class TetrahedronInformation
     {
@@ -104,6 +114,20 @@ public:
         Transformation rotation;
         /// polar method
         Transformation initialTransformation;
+        /// von Mises stress
+        Real vonMisesStress;
+        /// strain vector
+        type::Vec<6, Real> strain;
+        /// stress vector
+        type::Vec<6, Real> stress;
+        /// max strain
+        Real maxStrain;
+        /// principal strain direction
+        Coord principalStrainDirection;
+        /// max stress
+        Real maxStress;
+        /// principal stress direction
+        Coord principalStressDirection;
 
         TetrahedronInformation()
         {
@@ -121,8 +145,7 @@ public:
             return in;
         }
     };
-    /// container that stotes all requires information for each tetrahedron
-    topology::TetrahedronData<sofa::type::vector<TetrahedronInformation> > tetrahedronInfo;
+    
 
     void createTetrahedronInformation(Index tetrahedronIndex, TetrahedronInformation& tInfo, const core::topology::BaseMeshTopology::Tetrahedron& tetra,
         const sofa::type::vector<Index>& ancestors,
@@ -137,6 +160,10 @@ public:
 
     CompressedMatrix _stiffnesses;
     /// @}
+
+    /// container that stotes all requires information for each tetrahedron
+    topology::TetrahedronData<sofa::type::vector<TetrahedronInformation> > tetrahedronInfo;
+
 
 public:
     int method;
@@ -203,12 +230,18 @@ public:
 
 protected:
 
+    ////////////// Forcefield computation
     void computeStrainDisplacement( StrainDisplacementTransposed &J, Coord a, Coord b, Coord c, Coord d );
     Real peudo_determinant_for_coef ( const type::Mat<2, 3, Real>&  M );
 
     void computeStiffnessMatrix( StiffnessMatrix& S,StiffnessMatrix& SR,const MaterialStiffness &K, const StrainDisplacementTransposed &J, const Transformation& Rot );
 
-    void computeMaterialStiffness(int i, Index&a, Index&b, Index&c, Index&d);
+    void computeMaterialStiffness(int i, Index& a, Index& b, Index& c, Index& d);
+
+    void computeStrain(type::Vec<6, Real> &strain, const StrainDisplacementTransposed &J, const Displacement &D);
+    void computeStress(type::Vec<6, Real> &stress, MaterialStiffness &K, type::Vec<6, Real> &strain);
+    void computePrincipalStrain(Index elementIndex, type::Vec<6, Real> &strain);
+    void computePrincipalStress(Index elementIndex, type::Vec<6, Real> &stress);
 
     /// overloaded by classes with non-uniform stiffness
     virtual void computeMaterialStiffness(MaterialStiffness& materialMatrix, Index&a, Index&b, Index&c, Index&d, SReal localStiffnessFactor=1);
@@ -233,6 +266,40 @@ protected:
     void applyStiffnessPolar( Vector& f, const Vector& x, int i=0, Index a=0,Index b=1,Index c=2,Index d=3, SReal fact=1.0 );
 
     void printStiffnessMatrix(int idTetra);
+
+public:
+    Data<bool> _computeVonMisesStress;
+    void computeVonMisesStress();
+    bool updateVonMisesStress;
+    void handleEvent(core::objectmodel::Event* event) override;
+    Data< VecCoord > _initialPoints; ///< the initial positions of the points
+    const VecElement* _indexedElements;
+
+    /// to compute vonMises stress for visualization
+    /// two options: either using corotational strain (TODO)
+    ///              or full Green strain tensor (which must be therefore computed for each element and requires some pre-calculations in reinit)
+    type::vector<Real> elemLambda;
+    type::vector<Real> elemMu;
+    type::vector<Mat44> elemShapeFun;
+
+    /// Symmetrical tensor written as a vector following the Voigt notation
+    typedef type::VecNoInit<6, Real> VoigtTensor;
+
+    Data<type::vector<Real> > _vonMisesPerNode; ///< von Mises Stress per node
+    Data<type::vector<sofa::type::RGBAColor> > _vonMisesStressColors; ///< Vector of colors describing the VonMises stress
+
+    Real prevMaxStress;
+    Data<float> _showStressAlpha; ///< Alpha for vonMises visualisation
+    Data<std::string> _showStressColorMap; ///< Color map used to show stress values
+    sofa::helper::ColorMap* m_VonMisesColorMap;
+    Data<bool> _showVonMisesColorMap;
+    Real minVM;
+    Real maxVM;
+
+    Data<bool> d_computePrincipalStress;
+    Data<bool> showPrincipalStress;
+    Data<bool> d_computePrincipalStrain;
+    Data<bool> showPrincipalStrain;
 
 };
 

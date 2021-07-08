@@ -39,10 +39,13 @@ list(APPEND SOURCE_FILES
 sofa_find_package(SofaBase REQUIRED) # SofaBaseTopology SofaBaseMechanics
 sofa_find_package(SofaSimpleFem REQUIRED)
 sofa_find_package(SofaBaseLinearSolver REQUIRED)
-
+sofa_find_package(Newmat BOTH_SCOPES)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} PUBLIC SofaBaseTopology SofaSimpleFem SofaBaseLinearSolver SofaBaseMechanics)
+if(Newmat_FOUND)
+    target_link_libraries(${PROJECT_NAME} PUBLIC newmat)
+endif()
 
 sofa_create_package_with_targets(
     PACKAGE_NAME ${PROJECT_NAME}
