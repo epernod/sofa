@@ -29,14 +29,12 @@
 #include <sofa/defaulttype/RigidTypes.h>
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/type/vector_algorithm.h>
-#include <SofaBaseTopology/TopologySubsetData.inl>
 
 namespace sofa::component::projectiveconstraintset
 {
 
 using sofa::helper::WriteAccessor;
 using sofa::type::Vec;
-using sofa::component::topology::PointSubsetData;
 
 /////////////////////////// DEFINITION OF FixedPlaneConstraint /////////////////////////////////////
 template <class DataTypes>

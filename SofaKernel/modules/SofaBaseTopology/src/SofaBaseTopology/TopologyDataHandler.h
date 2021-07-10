@@ -148,9 +148,9 @@ public:
 
 
     ////////////////////////////////////// DEPRECATED ///////////////////////////////////////////
-    // TODO change message before PR
-    SOFA_ATTRIBUTE_DISABLED("v21.06", "PR#2114", "This method has been removed as it has never been used and is not needed.")
+    SOFA_ATTRIBUTE_DISABLED("v21.06 (PR#2171)", "v21.06 (PR#2171)", "This method has been removed as it has never been used and is not needed. Use applyCreateFunction to add a callback.")
     bool applyTestCreateFunction(Index /*index*/, const sofa::type::vector< Index >& /*ancestors*/, const sofa::type::vector< double >& /*coefs*/) = delete;
+
 
 protected:
     t_topologicalData* m_topologyData;

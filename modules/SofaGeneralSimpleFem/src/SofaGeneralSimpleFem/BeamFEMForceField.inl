@@ -124,29 +124,28 @@ void BeamFEMForceField<DataTypes>::init()
         return;
     }
     m_indexedElements = &m_topology->getEdges();
-    if (d_listSegment.getValue().size() == 0)
+    if (!d_listSegment.getValue().empty())
     {
-        msg_info() <<"Forcefield named "<<this->getName()<<" applies to the wholo topo.";
-        m_partialListSegment = false;
-    }
-    else
-    {
-        msg_info() <<"Forcefield named "<<this->getName()<<" applies to a subset of edges.";
+        msg_info() << "Forcefield named " << this->getName() << " applies to a subset of edges.";
         m_partialListSegment = true;
 
-        for (unsigned int j=0; j<d_listSegment.getValue().size(); j++)
+        for (unsigned int j = 0; j < d_listSegment.getValue().size(); j++)
         {
             unsigned int i = d_listSegment.getValue()[j];
-            if (i>=m_indexedElements->size())
+            if (i >= m_indexedElements->size())
             {
-                msg_warning() <<"Defined listSegment is not compatible with topology";
+                msg_warning() << "Defined listSegment is not compatible with topology";
                 m_partialListSegment = false;
             }
         }
+    } else
+    {
+        msg_info() << "Forcefield named " << this->getName() << " applies to the wholo topo.";
+        m_partialListSegment = false;
     }
 
     m_beamsData.createTopologyHandler(m_topology);
-    m_beamsData.applyCreateFunction([this](Index edgeIndex, BeamInfo& ei,
+    m_beamsData.setCreationCallback([this](Index edgeIndex, BeamInfo& ei,
         const core::topology::BaseMeshTopology::Edge& edge,
         const sofa::type::vector< Index >& ancestors,
         const sofa::type::vector< double >& coefs)

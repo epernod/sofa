@@ -40,6 +40,13 @@ template< class TopologyElementType, class VecT>
 class TopologySubsetData : public sofa::component::topology::TopologyData<TopologyElementType, VecT>
 {
 public:
+    typedef VecT container_type;
+    typedef typename container_type::value_type value_type;
+
+    typedef core::topology::TopologyElementInfo<TopologyElementType> ElementInfo;
+    typedef core::topology::TopologyChangeElementInfo<TopologyElementType> ChangeElementInfo;
+    typedef typename ChangeElementInfo::AncestorElem    AncestorElem;
+
     /// Default Constructor to init Data
     TopologySubsetData(const typename sofa::core::topology::BaseTopologyData< VecT >::InitData& data);
 
@@ -58,7 +65,7 @@ public:
     * @param {Index} element index of the full Data vector to find in the vector map
     * @return {Index} position of the element in the vector map. return sofa::InvalidID if not found.
     */
-    Index indexOfElement(Index index);
+    virtual Index indexOfElement(Index index);
 
     /// Swaps values of this subsetmap at indices i1 and i2. (only if i1 and i2 < subset size())
     void swap(Index i1, Index i2) override;
@@ -73,9 +80,9 @@ public:
         const sofa::type::vector< sofa::type::vector< double > >& coefs);
 
     virtual void add(sofa::Size nbElements,
-        const sofa::type::vector< TopologyElementType >&,
+        const sofa::type::vector< TopologyElementType >& elems,
         const sofa::type::vector< sofa::type::vector< Index > >& ancestors,
-        const sofa::type::vector< sofa::type::vector< double > >& coefs);    
+        const sofa::type::vector< sofa::type::vector< double > >& coefs);
 
     void add(const sofa::type::vector<Index>& index,
         const sofa::type::vector< TopologyElementType >& elems,
@@ -104,11 +111,35 @@ public:
     void removeOnMovedPosition(const sofa::type::vector<Index>& indices) override;
 
 protected:
+    /**
+    * Internal method called at the end of @sa swap method to apply internal mechanism, such as map swap.
+    * @param i1 First element index to be swaped.
+    * @param i2 Second element index to be swaped with first one.
+    */
+    virtual void swapPostProcess(Index i1, Index i2);
+
+    /**
+    * Internal method called at the end of @sa remove method to apply internal mechanism, such as updating the map size
+    * @param nbElements Number of element removed.
+    */
+    virtual void removePostProcess(sofa::Size nbElements);
+
+    /**
+    * Internal method called at the end of @sa add method to apply internal mechanism, such as updating the map size.
+    * @param nbElements Number of element added
+    */
+    virtual void addPostProcess(sofa::Size nbElements);
+
+    /**
+    * Internal method to update the last element of this Data and/or map when the topology buffer is reduced.
+    * @param posLastIndex Index position of the last topology element in this subset.
+    * @param newGlobalId Global topology element index to be set at Data[posLastIndex].
+    */
+    virtual void updateLastIndex(Index posLastIndex, Index newGlobalId);
+
+protected:
     /// same size as this SubsetData but contains id of element link to each data[]
     sofa::type::vector<Index> m_map2Elements;
-
-    /// booleen to store the behavior if the vector map @sa m_map2Elements is used. False by default, meaning the subset is the map itself.
-    bool m_usingMap;
 
     /// boolen to set subdata as concerne, will allow to add element
     bool m_isConcerned;
@@ -126,6 +157,8 @@ template< class VecT > using QuadSubsetData = TopologySubsetData<core::topology:
 template< class VecT > using TetrahedronSubsetData = TopologySubsetData<core::topology::BaseMeshTopology::Tetrahedron, VecT>;
 template< class VecT > using HexahedronSubsetData = TopologySubsetData<core::topology::BaseMeshTopology::Hexahedron, VecT>;
 
-using TopologySubsetIndices = TopologySubsetData<core::topology::BaseMeshTopology::Point, type::vector<Index> >;
+#if !defined(DEFINITION_TOPOLOGYSUBSETDATA)
+extern template class SOFA_SOFABASETOPOLOGY_API TopologySubsetData<Index, sofa::type::vector<Index>>;
+#endif // DEFINITION_TOPOLOGYSUBSETDATA
 
 } //namespace sofa::component::topology

@@ -247,7 +247,6 @@ void TetrahedralCorotationalFEMForceField<DataTypes>::reinit()
         }
         computeVonMisesStress();
     }
-
     tetrahedronInfo.endEdit();
 }
 

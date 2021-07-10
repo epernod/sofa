@@ -301,7 +301,7 @@ TetrahedralTensorMassForceField<DataTypes>::init()
     for (i=0; i<m_topology->getNbTetrahedra(); ++i)
         tetrahedronAdded.push_back(i);
 
-    edgeInfo.applyCreateFunction([this](Index edgeIndex, EdgeRestInformation& ei,
+    edgeInfo.setCreationCallback([this](Index edgeIndex, EdgeRestInformation& ei,
         const core::topology::BaseMeshTopology::Edge& edge,
         const sofa::type::vector< Index >& ancestors,
         const sofa::type::vector< double >& coefs)

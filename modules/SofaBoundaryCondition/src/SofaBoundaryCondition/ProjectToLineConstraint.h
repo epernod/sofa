@@ -31,7 +31,7 @@
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/type/vector.h>
 #include <sofa/type/Mat.h>
-#include <SofaBaseTopology/TopologySubsetData.h>
+#include <SofaBaseTopology/TopologySubsetIndices.h>
 #include <SofaEigen2Solver/EigenSparseMatrix.h>
 #include <set>
 
@@ -69,7 +69,7 @@ public:
     typedef Data<MatrixDeriv> DataMatrixDeriv;
     typedef sofa::type::Vector3 Vector3;
     typedef type::vector<Index> Indices;
-    typedef sofa::component::topology::PointSubsetData< Indices > IndexSubsetData;
+    typedef sofa::component::topology::TopologySubsetIndices IndexSubsetData;
     typedef linearsolver::EigenBaseSparseMatrix<SReal> BaseSparseMatrix;
     typedef linearsolver::EigenSparseMatrix<DataTypes,DataTypes> SparseMatrix;
     typedef typename SparseMatrix::Block Block;                                       ///< projection matrix of a particle displacement to the plane
@@ -123,6 +123,10 @@ protected :
 
     SparseMatrix jacobian; ///< projection matrix in local state
     SparseMatrix J;        ///< auxiliary variable
+
+    /// Resize/update Jacobian matrix according to the linked mechanical state and the direction
+    void updateJacobian();
+
 };
 
 

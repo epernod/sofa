@@ -117,7 +117,7 @@ void HexahedralFEMForceField<DataTypes>::reinit()
             (const std::vector< double >)0);
     }
     hexahedronInfo.createTopologyHandler(_topology);
-    hexahedronInfo.applyCreateFunction([this](Index hexahedronIndex, HexahedronInformation& hexaInfo,
+    hexahedronInfo.setCreationCallback([this](Index hexahedronIndex, HexahedronInformation& hexaInfo,
         const core::topology::BaseMeshTopology::Hexahedron& hexa,
         const sofa::type::vector< Index >& ancestors,
         const sofa::type::vector< double >& coefs)

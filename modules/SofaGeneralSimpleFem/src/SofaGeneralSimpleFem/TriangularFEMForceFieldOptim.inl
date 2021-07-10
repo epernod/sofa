@@ -92,23 +92,21 @@ void TriangularFEMForceFieldOptim<DataTypes>::init()
 
     // Create specific handler for TriangleData
     d_triangleInfo.createTopologyHandler(m_topology);
-    d_triangleInfo.applyCreateFunction([this](Index triangleIndex, TriangleInfo& ti,
+    d_triangleInfo.setCreationCallback([this](Index triangleIndex, TriangleInfo& ti,
         const core::topology::BaseMeshTopology::Triangle& t,
         const sofa::type::vector< Index >& ancestors,
         const sofa::type::vector< double >& coefs)
     {
         createTriangleInfo(triangleIndex, ti, t, ancestors, coefs);
     });
-
     d_triangleState.createTopologyHandler(m_topology);
-    d_triangleState.applyCreateFunction([this](Index triangleIndex, TriangleState& ti,
+    d_triangleState.setCreationCallback([this](Index triangleIndex, TriangleState& ti,
         const core::topology::BaseMeshTopology::Triangle& t,
         const sofa::type::vector< Index >& ancestors,
         const sofa::type::vector< double >& coefs)
     {
         createTriangleState(triangleIndex, ti, t, ancestors, coefs);
     });
-
     d_edgeInfo.createTopologyHandler(m_topology);
     d_vertexInfo.createTopologyHandler(m_topology);
 
@@ -581,9 +579,8 @@ void TriangularFEMForceFieldOptim<DataTypes>::draw(const core::visual::VisualPar
             {
                 Real maxs = std::min(stresses[i],stresses2[i]);
                 Triangle t = triangles[i];
-                for (unsigned int j=0;j<t.size();++j)
+                for (const auto p : t)
                 {
-                    unsigned int p = t[j];
                     pstresses[p].first += 1;
                     pstresses[p].second += helper::rabs(maxs);
                 }

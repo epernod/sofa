@@ -236,7 +236,7 @@ template <class DataTypes> void FastTetrahedralCorotationalForceField<DataTypes>
     }
     /// set the call back function upon creation of a tetrahedron
     tetrahedronInfo.createTopologyHandler(m_topology);
-    tetrahedronInfo.applyCreateFunction([this](Index tetrahedronIndex, TetrahedronRestInformation& tetraInfo,
+    tetrahedronInfo.setCreationCallback([this](Index tetrahedronIndex, TetrahedronRestInformation& tetraInfo,
         const core::topology::BaseMeshTopology::Tetrahedron& tetra,
         const sofa::type::vector< Index >& ancestors,
         const sofa::type::vector< double >& coefs)

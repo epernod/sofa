@@ -24,7 +24,7 @@
 
 #include <sofa/core/topology/BaseMeshTopology.h>
 #include <LMConstraint/LMConstraint.h>
-#include <SofaBaseTopology/TopologySubsetData.h>
+#include <SofaBaseTopology/TopologySubsetIndices.h>
 #include <sofa/simulation/Node.h>
 
 
@@ -59,7 +59,7 @@ public:
     typedef typename core::behavior::MechanicalState<DataTypes> MechanicalState;
 
 
-    typedef sofa::component::topology::PointSubsetData< type::vector<Index> > SetIndex;
+    typedef sofa::component::topology::TopologySubsetIndices SetIndex;
     typedef type::vector<Index> SetIndexArray;
 
     typedef core::ConstraintParams::ConstOrder ConstOrder;

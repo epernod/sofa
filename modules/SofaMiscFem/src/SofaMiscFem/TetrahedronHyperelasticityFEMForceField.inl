@@ -195,7 +195,7 @@ template <class DataTypes> void TetrahedronHyperelasticityFEMForceField<DataType
 
     /// set the call back function upon creation of a tetrahedron
     m_tetrahedronInfo.createTopologyHandler(m_topology);
-    m_tetrahedronInfo.applyCreateFunction([this](Index tetrahedronIndex, TetrahedronRestInformation& tetraInfo,
+    m_tetrahedronInfo.setCreationCallback([this](Index tetrahedronIndex, TetrahedronRestInformation& tetraInfo,
         const core::topology::BaseMeshTopology::Tetrahedron& tetra,
         const sofa::type::vector< Index >& ancestors,
         const sofa::type::vector< double >& coefs)

@@ -88,7 +88,7 @@ template <class DataTypes> void StandardTetrahedralFEMForceField<DataTypes>::ini
     }
 
     tetrahedronInfo.createTopologyHandler(m_topology);
-    tetrahedronInfo.applyCreateFunction([this](Index tetrahedronIndex, TetrahedronRestInformation& tetraInfo,
+    tetrahedronInfo.setCreationCallback([this](Index tetrahedronIndex, TetrahedronRestInformation& tetraInfo,
         const core::topology::BaseMeshTopology::Tetrahedron& tetra,
         const sofa::type::vector< Index >& ancestors,
         const sofa::type::vector< double >& coefs)

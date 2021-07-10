@@ -117,7 +117,7 @@ void QuadBendingFEMForceField<DataTypes>::init()
     }
     // Create specific handler for QuadData
     quadInfo.createTopologyHandler(m_topology);
-    quadInfo.applyCreateFunction([this](Index quadIndex, QuadInformation& qInfo,
+    quadInfo.setCreationCallback([this](Index quadIndex, QuadInformation& qInfo,
         const core::topology::BaseMeshTopology::Quad& q,
         const sofa::type::vector< Index >& ancestors,
         const sofa::type::vector< double >& coefs)

@@ -99,7 +99,7 @@ void TriangularAnisotropicFEMForceField<DataTypes>::init()
 
     // Create specific handler for TriangleData
     localFiberDirection.createTopologyHandler(m_topology);
-    localFiberDirection.applyCreateFunction([this](Index triangleIndex, TriangleFiberDirection& triInfo,
+    localFiberDirection.setCreationCallback([this](Index triangleIndex, TriangleFiberDirection& triInfo,
         const core::topology::BaseMeshTopology::Triangle& t,
         const sofa::type::vector< Index >& ancestors,
         const sofa::type::vector< double >& coefs)
