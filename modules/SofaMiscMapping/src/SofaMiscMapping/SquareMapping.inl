@@ -132,7 +132,7 @@ const sofa::defaulttype::BaseMatrix* SquareMapping<TIn, TOut>::getJ()
 }
 
 template <class TIn, class TOut>
-const helper::vector<sofa::defaulttype::BaseMatrix*>* SquareMapping<TIn, TOut>::getJs()
+const type::vector<sofa::defaulttype::BaseMatrix*>* SquareMapping<TIn, TOut>::getJs()
 {
     return &baseMatrices;
 }
@@ -164,20 +164,5 @@ const defaulttype::BaseMatrix* SquareMapping<TIn, TOut>::getK()
 {
     return &K;
 }
-
-
-
-template <class TIn, class TOut>
-void SquareMapping<TIn, TOut>::updateForceMask()
-{
-    for(size_t i=0, iend=this->maskTo->size(); i<iend; ++i )
-    {
-        if (this->maskTo->getEntry( i ) )
-        {
-            this->maskFrom->insertEntry( i );
-        }
-    }
-}
-
 
 } // namespace sofa::component::mapping

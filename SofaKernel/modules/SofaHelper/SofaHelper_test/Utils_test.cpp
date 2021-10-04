@@ -19,10 +19,13 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
+#include <sofa/testing/config.h>
+
 #include <sofa/helper/Utils.h>
 #include <gtest/gtest.h>
 
 #include <sofa/helper/system/FileSystem.h>
+#include <sofa/helper/system/Locale.h>
 
 using sofa::helper::Utils;
 using sofa::helper::system::FileSystem;
@@ -33,6 +36,16 @@ TEST(UtilsTest, string_to_widestring_to_string)
     for (char c = 32 ; c <= 126 ; c++)
         ascii_chars.push_back(c);
     EXPECT_EQ(ascii_chars, Utils::narrowString(Utils::widenString(ascii_chars)));
+
+    // This test will pass if the executable has been executed with a unicode-compliant locale
+    // Windows and MacOS are unicode by default
+    // But it seems some linux distrib are not (?)
+#ifdef __linux
+    if(std::locale("").name().find("UTF-8") == std::string::npos)
+    {
+        return;
+    }
+#endif
 
     const std::string s("chaîne de test avec des caractères accentués");
     EXPECT_EQ(s, Utils::narrowString(Utils::widenString(s)));
@@ -88,7 +101,7 @@ TEST(UtilsTest, readBasicIniFile_nonexistentFile)
 
 TEST(UtilsTest, readBasicIniFile)
 {
-    const std::string path = std::string(FRAMEWORK_TEST_RESOURCES_DIR) + "/UtilsTest.ini";
+    const std::string path = std::string(SOFA_TESTING_RESOURCES_DIR) + "/UtilsTest.ini";
     std::map<std::string, std::string> values = Utils::readBasicIniFile(path);
     EXPECT_EQ(3u, values.size());
     EXPECT_EQ(1u, values.count("a"));

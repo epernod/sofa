@@ -68,6 +68,7 @@ public:
 
     /// Retrieve the associated MechanicalState
     MechanicalState<DataTypes>* getMState() { return this->mstate.get(); }
+    const MechanicalState<DataTypes>* getMState() const { return this->mstate.get(); }
 
 
     /// @name Vector operations
@@ -124,8 +125,8 @@ public:
     ///
     /// This method retrieves the positions and velocity vectors and call the internal
     /// getMomentum(const MechanicalParams*, const VecCoord&, const VecDeriv&) method implemented by the component.
-    defaulttype::Vector6 getMomentum( const MechanicalParams* mparams ) const override;
-    virtual defaulttype::Vector6 getMomentum( const MechanicalParams* , const DataVecCoord& , const DataVecDeriv&  ) const;
+    type::Vector6 getMomentum( const MechanicalParams* mparams ) const override;
+    virtual type::Vector6 getMomentum( const MechanicalParams* , const DataVecCoord& , const DataVecDeriv&  ) const;
 
 
 
@@ -147,9 +148,6 @@ public:
     /// \param bFact coefficient for damping contributions (i.e. first derivatives term in the ODE)
     /// \param kFact coefficient for stiffness contributions (i.e. DOFs term in the ODE)
     void addMBKToMatrix(const MechanicalParams* mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix) override;
-
-    /// addMBKToMatrix only on the subMatrixIndex
-    void addSubMBKToMatrix(const MechanicalParams* mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix, const helper::vector<unsigned> subMatrixIndex) override;
 
     /// @}
 

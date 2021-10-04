@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(SofaCore)
+project(Sofa.Core)
 
 set(SRC_ROOT "src/sofa/core")
 
@@ -14,9 +14,12 @@ set(HEADER_FILES
     ${SRC_ROOT}/ConstraintParams.h
     ${SRC_ROOT}/DataEngine.h
     ${SRC_ROOT}/DataTracker.h
+    ${SRC_ROOT}/DataTrackerCallback.h
+    ${SRC_ROOT}/DataTrackerFunctor.h
     ${SRC_ROOT}/ExecParams.h
     ${SRC_ROOT}/Mapping.h
     ${SRC_ROOT}/Mapping.inl
+    ${SRC_ROOT}/MappingHelper.h
     ${SRC_ROOT}/MechanicalParams.h
     ${SRC_ROOT}/Multi2Mapping.h
     ${SRC_ROOT}/Multi2Mapping.inl
@@ -89,14 +92,11 @@ set(HEADER_FILES
     ${SRC_ROOT}/collision/NarrowPhaseDetection.h
     ${SRC_ROOT}/collision/Pipeline.h
     ${SRC_ROOT}/config.h.in
-    ${SRC_ROOT}/core.h
     ${SRC_ROOT}/init.h
     ${SRC_ROOT}/fwd.h
     ${SRC_ROOT}/loader/BaseLoader.h
     ${SRC_ROOT}/loader/ImageLoader.h
-    ${SRC_ROOT}/loader/Material.h
     ${SRC_ROOT}/loader/MeshLoader.h
-    ${SRC_ROOT}/loader/PrimitiveGroup.h
     ${SRC_ROOT}/loader/SceneLoader.h
     ${SRC_ROOT}/loader/VoxelLoader.h
     ${SRC_ROOT}/objectmodel/AbstractDataLink.h
@@ -140,7 +140,7 @@ set(HEADER_FILES
     ${SRC_ROOT}/topology/BaseTopologyObject.h
     ${SRC_ROOT}/topology/TopologicalMapping.h
     ${SRC_ROOT}/topology/TopologyChange.h
-	${SRC_ROOT}/topology/TopologyHandler.h
+    ${SRC_ROOT}/topology/TopologyHandler.h
     ${SRC_ROOT}/visual/DisplayFlags.h
     ${SRC_ROOT}/visual/Shader.h
     ${SRC_ROOT}/visual/VisualLoop.h
@@ -161,6 +161,9 @@ set(SOURCE_FILES
     ${SRC_ROOT}/ConstraintParams.cpp
     ${SRC_ROOT}/DataEngine.cpp
     ${SRC_ROOT}/DataTracker.cpp
+    ${SRC_ROOT}/DataTrackerCallback.cpp
+    ${SRC_ROOT}/DataTrackerFunctor.cpp
+    ${SRC_ROOT}/DevBaseMonitor.h
     ${SRC_ROOT}/ExecParams.cpp
     ${SRC_ROOT}/Mapping.cpp
     ${SRC_ROOT}/MechanicalParams.cpp
@@ -190,7 +193,6 @@ set(SOURCE_FILES
     ${SRC_ROOT}/behavior/MechanicalState.cpp
     ${SRC_ROOT}/behavior/MixedInteractionConstraint.cpp
     ${SRC_ROOT}/behavior/MixedInteractionForceField.cpp
-    ${SRC_ROOT}/behavior/MultiMatrix.cpp
     ${SRC_ROOT}/behavior/MultiMatrixAccessor.cpp
     ${SRC_ROOT}/behavior/OdeSolver.cpp
     ${SRC_ROOT}/behavior/PairInteractionConstraint.cpp
@@ -198,8 +200,10 @@ set(SOURCE_FILES
     ${SRC_ROOT}/behavior/PairInteractionProjectiveConstraintSet.cpp
     ${SRC_ROOT}/behavior/ProjectiveConstraintSet.cpp
     ${SRC_ROOT}/behavior/fwd.cpp
+    ${SRC_ROOT}/collision/BroadPhaseDetection.cpp
     ${SRC_ROOT}/collision/Contact.cpp
     ${SRC_ROOT}/collision/Intersection.cpp
+    ${SRC_ROOT}/collision/NarrowPhaseDetection.cpp
     ${SRC_ROOT}/collision/Pipeline.cpp
     ${SRC_ROOT}/init.cpp    
     ${SRC_ROOT}/fwd.cpp
@@ -256,8 +260,16 @@ set(SOURCE_FILES
     ${SRC_ROOT}/logging/PerComponentLoggingMessageHandler.cpp
 )
 
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES} ${COMPAT_HEADER_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC SofaHelper Sofa.Topology SofaDefaultType)
+sofa_find_package(Sofa.Topology REQUIRED)
+sofa_find_package(Sofa.Helper REQUIRED)
+sofa_find_package(Sofa.DefaultType REQUIRED)
+
+add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
+# Create alias to support compatibility, starting from v21.06
+# This alias will be deleted in v21.12
+add_library(SofaCore ALIAS Sofa.Core)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Helper Sofa.Topology Sofa.DefaultType)
 
 if(SOFA_BUILD_WITH_PCH_ENABLED)
     message("Adding precompiled header for SofaCore")
@@ -269,12 +281,16 @@ if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-attributes)
 endif()
 
-sofa_add_targets_to_package(
-    PACKAGE_NAME SofaFramework
+sofa_create_package_with_targets(
+    PACKAGE_NAME ${PROJECT_NAME}
+    PACKAGE_VERSION ${Sofa_VERSION}
     TARGETS ${PROJECT_NAME} AUTO_SET_TARGET_PROPERTIES
     INCLUDE_SOURCE_DIR "src"
-    INCLUDE_INSTALL_DIR "SofaFramework"
-    )
+    INCLUDE_INSTALL_DIR "${PROJECT_NAME}"
+)
+
+# Create alias
+add_library(SofaCore ALIAS ${PROJECT_NAME})
 
 if(SOFA_BUILD_TESTS)
     add_subdirectory(SofaCore_test)

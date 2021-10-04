@@ -24,6 +24,8 @@
 #include "MechanicalMatrixMapper.h"
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/helper/rmath.h>
+#include <sofa/helper/AdvancedTimer.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 
 // accumulate jacobian
 
@@ -31,6 +33,9 @@
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/core/behavior/BaseMass.h>
 #include <sofa/defaulttype/MapMapSparseMatrix.h>
+
+#include <sofa/simulation/mechanicalvisitor/MechanicalResetConstraintVisitor.h>
+using sofa::simulation::mechanicalvisitor::MechanicalResetConstraintVisitor;
 
 // verify timing
 #include <sofa/helper/system/thread/CTime.h>
@@ -67,7 +72,7 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::init()
 
     if(l_nodeToParse.get() == nullptr)
     {
-        msg_error() << " failed to initialized -> missing/wrong link " << l_nodeToParse.getName() << " : " << l_nodeToParse.getLinkedPath() << sendl;
+        msg_error() << " failed to initialized -> missing/wrong link " << l_nodeToParse.getName() << " : " << l_nodeToParse.getLinkedPath();
         this->d_componentState.setValue(ComponentState::Invalid) ;
         return;
     }
@@ -76,7 +81,7 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::init()
 
     if (mstate1.get() == nullptr || mstate2.get() == nullptr)
     {
-        msg_error() << " failed to initialized -> missing/wrong link " << mstate1.getName() << " or " << mstate2.getName() << sendl;
+        msg_error() << " failed to initialized -> missing/wrong link " << mstate1.getName() << " or " << mstate2.getName();
         this->d_componentState.setValue(ComponentState::Invalid) ;
         return;
     }
@@ -172,7 +177,7 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::parseNode(sofa::simulation:
 template<class DataTypes1, class DataTypes2>
 void MechanicalMatrixMapper<DataTypes1, DataTypes2>::buildIdentityBlocksInJacobian(core::behavior::BaseMechanicalState* mstate, sofa::core::MatrixDerivId Id)
 {
-    sofa::helper::vector<unsigned int> list;
+    sofa::type::vector<unsigned int> list;
     for (unsigned int i=0; i<mstate->getSize(); i++)
         list.push_back(i);
     mstate->buildIdentityBlocksInJacobian(list, Id);
@@ -193,7 +198,7 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::accumulateJacobians(const M
     sofa::core::MatrixDerivId Id= sofa::core::MatrixDerivId::mappingJacobian();
     core::objectmodel::BaseContext* context = this->getContext();
     simulation::Node* gnode = dynamic_cast<simulation::Node*>(context);
-    simulation::MechanicalResetConstraintVisitor(&cparams).execute(context);
+    MechanicalResetConstraintVisitor(&cparams).execute(context);
     buildIdentityBlocksInJacobian(l_mechanicalState,Id);
 
     MechanicalAccumulateJacobian(&cparams, core::MatrixDerivId::mappingJacobian()).execute(gnode);
@@ -292,20 +297,13 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::addKToMatrix(const Mechanic
     if(this->d_componentState.getValue() != ComponentState::Valid)
         return ;
 
-    sofa::helper::system::thread::CTime *timer = new sofa::helper::system::thread::CTime();
-    double timeScale, time, totime ;
-    timeScale = time = totime = 0;
-
-    timeScale = 1000.0 / (double)sofa::helper::system::thread::CTime::getTicksPerSec();
-    totime = (double)timer->getTime();
+    sofa::helper::ScopedAdvancedTimer addKToMatrixTimer("MMM-addKToMatrix");
 
     sofa::core::behavior::MechanicalState<DataTypes1>* ms1 = this->getMState1();
     sofa::core::behavior::MechanicalState<DataTypes2>* ms2 = this->getMState2();
 
-
     sofa::core::behavior::BaseMechanicalState*  bms1 = this->getMechModel1();
     sofa::core::behavior::BaseMechanicalState*  bms2 = this->getMechModel2();
-
 
     MultiMatrixAccessor::MatrixRef mat11 = matrix->getMatrix(mstate1);
     MultiMatrixAccessor::MatrixRef mat22 = matrix->getMatrix(mstate2);
@@ -316,9 +314,9 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::addKToMatrix(const Mechanic
     /* -------------------------------------------------------------------------- */
     /*              compute jacobians using generic implementation                */
     /* -------------------------------------------------------------------------- */
-    time= (double)timer->getTime();
+    sofa::helper::AdvancedTimer::stepBegin("jacobian" );
     accumulateJacobiansOptimized(mparams);
-    msg_info() <<" accumulate J : "<<( (double)timer->getTime() - time)*timeScale<<" ms";
+    sofa::helper::AdvancedTimer::stepEnd("jacobian" );
 
     ///////////////////////////     STEP 2      ////////////////////////////////////
     /* -------------------------------------------------------------------------- */
@@ -326,7 +324,7 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::addKToMatrix(const Mechanic
     /*          get the stiffness matrix from the mapped ForceField               */
     /* TODO: use the template of the FF for Real                                  */
     /* -------------------------------------------------------------------------- */
-
+    sofa::helper::AdvancedTimer::stepBegin("stiffness" );
 
     ///////////////////////     GET K       ////////////////////////////////////////
     CompressedRowSparseMatrix< Real1 >* K = new CompressedRowSparseMatrix< Real1 > ( );
@@ -337,8 +335,6 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::addKToMatrix(const Mechanic
     KAccessor->addMechanicalState( l_mechanicalState );
     KAccessor->setGlobalMatrix(K);
     KAccessor->setupMatrices();
-
-    time= (double)timer->getTime();
 
     sofa::simulation::Node *node = l_nodeToParse.get();
     size_t currentNbInteractionFFs = node->interactionForceField.size();
@@ -368,30 +364,31 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::addKToMatrix(const Mechanic
 
     addMassToSystem(mparams,KAccessor);
 
+    sofa::helper::AdvancedTimer::stepEnd("stiffness" );
+
     if (!K)
     {
         msg_error(this) << "matrix of the force-field system not found";
         return;
     }
 
-    msg_info()<<" time addKtoMatrix K : "<<( (double)timer->getTime() - time)*timeScale<<" ms";
-
     ///////////////////////     COMPRESS K       ///////////////////////////////////
-    time= (double)timer->getTime();
+    sofa::helper::AdvancedTimer::stepBegin("compressStiffnessMatrix" );
     K->compress();
-    msg_info() << " time compress K : "<<( (double)timer->getTime() - time)*timeScale<<" ms";
+    sofa::helper::AdvancedTimer::stepEnd("compressStiffnessMatrix" );
+
 
     //------------------------------------------------------------------------------
 
-    time = (double)timer->getTime();
+    sofa::helper::AdvancedTimer::stepBegin("copyKToEigen" );
     Eigen::SparseMatrix<double,Eigen::ColMajor> Keig;
     Keig.resize(m_fullMatrixSize,m_fullMatrixSize);
     copyKToEigenFormat(K,Keig);
-    msg_info()<<" time set Keig : "<<( (double)timer->getTime() - time)*timeScale<<" ms";
+    sofa::helper::AdvancedTimer::stepEnd("copyKToEigen" );
 
 
     ///////////////////////    COPY J1 AND J2 IN EIGEN FORMAT //////////////////////////////////////
-    double startTime= (double)timer->getTime();
+    sofa::helper::AdvancedTimer::stepBegin("copyJ1J2ToEigen" );
     sofa::core::MultiMatrixDerivId c = sofa::core::MatrixDerivId::mappingJacobian();
     const MatrixDeriv1 &J1 = c[ms1].read()->getValue();
     const MatrixDeriv2 &J2 = c[ms2].read()->getValue();
@@ -399,17 +396,16 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::addKToMatrix(const Mechanic
     optimizeAndCopyMappingJacobianToEigenFormat1(J1, m_J1eig);
     if (bms1 != bms2)
     {
-        double startTime2= (double)timer->getTime();
+        sofa::helper::ScopedAdvancedTimer copyJ2Timer("copyJ2ToEigen" );
         optimizeAndCopyMappingJacobianToEigenFormat2(J2, m_J2eig);
-        msg_info()<<" time set J2eig alone : "<<( (double)timer->getTime() - startTime2)*timeScale<<" ms";
     }
-    msg_info()<<" time getJ + set J1eig (and potentially J2eig) : "<<( (double)timer->getTime() - startTime)*timeScale<<" ms";
-    startTime= (double)timer->getTime();
+    sofa::helper::AdvancedTimer::stepEnd("copyJ1J2ToEigen" );
 
     ///////////////////////////     STEP 4      ////////////////////////////////////
     /* -------------------------------------------------------------------------- */
     /*          perform the multiplication with [J1t J2t] * K * [J1 J2]           */
     /* -------------------------------------------------------------------------- */
+    sofa::helper::AdvancedTimer::stepBegin("Multiplication" );
     m_nbColsJ1 = m_J1eig.cols();
     if (bms1 != bms2)
     {
@@ -418,9 +414,10 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::addKToMatrix(const Mechanic
     Eigen::SparseMatrix<double>  J1tKJ1eigen(m_nbColsJ1,m_nbColsJ1);
 
     if (!d_skipJ1tKJ1.getValue())
-    J1tKJ1eigen = m_J1eig.transpose()*Keig*m_J1eig;
-
-    msg_info()<<" time compute J1tKJ1eigen alone : "<<( (double)timer->getTime() - startTime)*timeScale<<" ms";
+    {
+        sofa::helper::ScopedAdvancedTimer J1tKJ1Timer("J1tKJ1" );
+        J1tKJ1eigen = m_J1eig.transpose()*Keig*m_J1eig;
+    }
 
     Eigen::SparseMatrix<double>  J2tKJ2eigen(m_nbColsJ2,m_nbColsJ2);
     Eigen::SparseMatrix<double>  J1tKJ2eigen(m_nbColsJ1,m_nbColsJ2);
@@ -428,43 +425,50 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::addKToMatrix(const Mechanic
 
     if (bms1 != bms2)
     {
-        double startTime2= (double)timer->getTime();
         if (!d_skipJ2tKJ2.getValue())
-                J2tKJ2eigen = m_J2eig.transpose()*Keig*m_J2eig;
-        J1tKJ2eigen = m_J1eig.transpose()*Keig*m_J2eig;
-        J2tKJ1eigen = m_J2eig.transpose()*Keig*m_J1eig;
-        msg_info()<<" time compute J1tKJ2eigen J2TKJ2 and J2tKJ1 : "<<( (double)timer->getTime() - startTime2)*timeScale<<" ms";
+        {
+            sofa::helper::ScopedAdvancedTimer J2tKJ2Timer("J2tKJ2" );
+            J2tKJ2eigen = m_J2eig.transpose()*Keig*m_J2eig;
+        }
+        {
+            sofa::helper::ScopedAdvancedTimer J1tKJ2Timer("J1tKJ2" );
+            J1tKJ2eigen = m_J1eig.transpose()*Keig*m_J2eig;
+        }
+        {
+            sofa::helper::ScopedAdvancedTimer J2tKJ1Timer("J2tKJ1" );
+            J2tKJ1eigen = m_J2eig.transpose()*Keig*m_J1eig;
+        }
+
     }
 
-
+    sofa::helper::AdvancedTimer::stepEnd("Multiplication" );
     //--------------------------------------------------------------------------------------------------------------------
 
-    msg_info()<<" time compute all JtKJeigen with J1eig and J2eig : "<<( (double)timer->getTime() - startTime)*timeScale<<" ms";
-    //int row;
     unsigned int mstateSize = l_mechanicalState->getSize();
     addPrecomputedMassToSystem(mparams,mstateSize,m_J1eig,J1tKJ1eigen);
     int offset,offrow, offcol;
-    startTime= (double)timer->getTime();
+
+    sofa::helper::AdvancedTimer::stepBegin("J1tKJ1-copy" );
     offset = mat11.offset;
     for (int k=0; k<J1tKJ1eigen.outerSize(); ++k)
-      for (Eigen::SparseMatrix<double>::InnerIterator it(J1tKJ1eigen,k); it; ++it)
-      {
-              mat11.matrix->add(offset + it.row(),offset + it.col(), it.value());
-      }
-    msg_info()<<" time copy J1tKJ1eigen back to J1tKJ1 in CompressedRowSparse : "<<( (double)timer->getTime() - startTime)*timeScale<<" ms";
-
+        for (Eigen::SparseMatrix<double>::InnerIterator it(J1tKJ1eigen,k); it; ++it)
+        {
+            mat11.matrix->add(offset + it.row(),offset + it.col(), it.value());
+        }
+    sofa::helper::AdvancedTimer::stepEnd("J1tKJ1-copy" );
 
     if (bms1 != bms2)
     {
-        startTime= (double)timer->getTime();
+        sofa::helper::AdvancedTimer::stepBegin("J2tKJ2-copy" );
         offset = mat22.offset;
         for (int k=0; k<J2tKJ2eigen.outerSize(); ++k)
-          for (Eigen::SparseMatrix<double>::InnerIterator it(J2tKJ2eigen,k); it; ++it)
-          {
-                  mat22.matrix->add(offset + it.row(),offset + it.col(), it.value());
-          }
-        msg_info()<<" time copy J2tKJ2eigen back to J2tKJ2 in CompressedRowSparse : "<<( (double)timer->getTime() - startTime)*timeScale<<" ms";
-        startTime= (double)timer->getTime();
+            for (Eigen::SparseMatrix<double>::InnerIterator it(J2tKJ2eigen,k); it; ++it)
+            {
+                mat22.matrix->add(offset + it.row(),offset + it.col(), it.value());
+            }
+        sofa::helper::AdvancedTimer::stepEnd("J2tKJ2-copy" );
+
+        sofa::helper::AdvancedTimer::stepBegin("J1tKJ2-copy" );
         offrow = mat12.offRow;
         offcol = mat12.offCol;
         for (int k=0; k<J1tKJ2eigen.outerSize(); ++k)
@@ -472,35 +476,29 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::addKToMatrix(const Mechanic
           {
                   mat12.matrix->add(offrow + it.row(),offcol + it.col(), it.value());
           }
-        msg_info()<<" time copy J1tKJ2eigen back to J1tKJ2 in CompressedRowSparse : "<<( (double)timer->getTime() - startTime)*timeScale<<" ms";
-        startTime= (double)timer->getTime();
+        sofa::helper::AdvancedTimer::stepEnd("J1tKJ2-copy" );
+
+        sofa::helper::AdvancedTimer::stepBegin("J2tKJ1-copy" );
         offrow = mat21.offRow;
         offcol = mat21.offCol;
 
         for (int k=0; k<J2tKJ1eigen.outerSize(); ++k)
-          for (Eigen::SparseMatrix<double>::InnerIterator it(J2tKJ1eigen,k); it; ++it)
-          {
-                  mat21.matrix->add(offrow + it.row(),offcol + it.col(), it.value());
-          }
-        msg_info()<<" time copy J2tKJ1eigen back to J2tKJ1 in CompressedRowSparse : "<<( (double)timer->getTime() - startTime)*timeScale<<" ms";
-
+            for (Eigen::SparseMatrix<double>::InnerIterator it(J2tKJ1eigen,k); it; ++it)
+            {
+                mat21.matrix->add(offrow + it.row(),offcol + it.col(), it.value());
+            }
+        sofa::helper::AdvancedTimer::stepEnd("J2tKJ1-copy" );
     }
 
-    msg_info()<<" total time compute J() * K * J: "<<( (double)timer->getTime() - totime)*timeScale<<" ms";
     delete KAccessor;
     delete K;
-
-
-    dmsg_info() << "EXIT addKToMatrix\n";
 
 
     const core::ExecParams* eparams = dynamic_cast<const core::ExecParams *>( mparams );
     core::ConstraintParams cparams = core::ConstraintParams(*eparams);
 
     core::objectmodel::BaseContext* context = this->getContext();
-    simulation::MechanicalResetConstraintVisitor(&cparams).execute(context);
-
-    delete timer;
+    MechanicalResetConstraintVisitor(&cparams).execute(context);
 
 }
 

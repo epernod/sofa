@@ -26,20 +26,18 @@
  * (float/Real) and BlockMN size in CompressedRowSparse.
 */
 
-#include <SofaTest/Sofa_test.h>
-
 #include <SofaEigen2Solver/EigenSparseMatrix.h>
 #include <SofaBaseLinearSolver/SparseMatrix.h>
 #include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
 #include <SofaBaseLinearSolver/FullMatrix.h>
 #include <SofaBaseLinearSolver/FullVector.h>
 
-#include <sofa/defaulttype/Mat.h>
-#include <sofa/defaulttype/Vec.h>
+#include <sofa/type/Mat.h>
+#include <sofa/type/Vec.h>
 #include <sofa/defaulttype/VecTypes.h>
 
-#include <gtest/gtest.h>
-
+#include <sofa/testing/NumericTest.h>
+using sofa::testing::NumericTest;
 
 #define BENCHMARK_MATRIX_PRODUCT 0
 
@@ -56,6 +54,16 @@ Real get_time() {
 namespace sofa
 {
 
+template<class TReal, sofa::Index TNbRows, sofa::Index TNbCols, sofa::Index TBlockRows, sofa::Index TBlockCols >
+struct TestSparseMatricesTraits
+{
+    static constexpr sofa::Index NbRows = TNbRows;
+    static constexpr sofa::Index NbCols = TNbCols;
+    static constexpr sofa::Index BlockRows = TBlockRows;
+    static constexpr sofa::Index BlockCols = TBlockCols;
+    using Real = TReal;
+};
+
 
 /** Sparse matrix test suite.
 
@@ -63,15 +71,17 @@ namespace sofa
 
   Perform matrix-vector products and compare the results.
   */
-template <typename _Real, unsigned NumRows, unsigned NumCols, unsigned BlockRows, unsigned BlockCols>
-struct TestSparseMatrices : public Sofa_test<_Real>
+template <class T>
+struct TestSparseMatrices : public NumericTest<typename T::Real>
 {
+    using Inherit = NumericTest<typename T::Real>;
+
     // Scalar type and dimensions of the matrices to test
-    typedef _Real Real;
-    static const unsigned NROWS=NumRows;   // matrix size
-    static const unsigned NCOLS=NumCols;
-    static const unsigned BROWS=BlockRows; // block size used for matrices with block-wise storage
-    static const unsigned BCOLS=BlockCols;
+    typedef typename T::Real Real;
+    static const unsigned NROWS=T::NbRows;   // matrix size
+    static const unsigned NCOLS=T::NbCols;
+    static const unsigned BROWS=T::BlockRows; // block size used for matrices with block-wise storage
+    static const unsigned BCOLS=T::BlockCols;
 
 
     // Dense implementation
@@ -82,18 +92,19 @@ struct TestSparseMatrices : public Sofa_test<_Real>
     typedef sofa::component::linearsolver::SparseMatrix<Real> MapMatrix;
 
     // Blockwise Compressed Sparse Row format
-    typedef sofa::defaulttype::Mat<BROWS,BCOLS,Real> BlockMN;
+    typedef sofa::component::linearsolver::CompressedRowSparseMatrix<Real> CRSMatrixScalar;
+    typedef sofa::type::Mat<BROWS,BCOLS,Real> BlockMN;
     typedef sofa::component::linearsolver::CompressedRowSparseMatrix<BlockMN> CRSMatrixMN;
-    typedef sofa::defaulttype::Mat<BCOLS,BROWS,Real> BlockNM;
+    typedef sofa::type::Mat<BCOLS,BROWS,Real> BlockNM;
     typedef sofa::component::linearsolver::CompressedRowSparseMatrix<BlockNM> CRSMatrixNM;
-    typedef sofa::defaulttype::Mat<BROWS,BROWS,Real> BlockMM;
+    typedef sofa::type::Mat<BROWS,BROWS,Real> BlockMM;
     typedef sofa::component::linearsolver::CompressedRowSparseMatrix<BlockMM> CRSMatrixMM;
-    typedef sofa::defaulttype::Mat<BCOLS,BCOLS,Real> BlockNN;
+    typedef sofa::type::Mat<BCOLS,BCOLS,Real> BlockNN;
     typedef sofa::component::linearsolver::CompressedRowSparseMatrix<BlockNN> CRSMatrixNN;
 
     // Implementation based on Eigen
-    typedef sofa::defaulttype::StdVectorTypes< sofa::defaulttype::Vec<BCOLS,Real>, sofa::defaulttype::Vec<BCOLS,Real> > InTypes;
-    typedef sofa::defaulttype::StdVectorTypes< sofa::defaulttype::Vec<BROWS,Real>, sofa::defaulttype::Vec<BROWS,Real> > OutTypes;
+    typedef sofa::defaulttype::StdVectorTypes< sofa::type::Vec<BCOLS,Real>, sofa::type::Vec<BCOLS,Real> > InTypes;
+    typedef sofa::defaulttype::StdVectorTypes< sofa::type::Vec<BROWS,Real>, sofa::type::Vec<BROWS,Real> > OutTypes;
     typedef sofa::component::linearsolver::EigenSparseMatrix<InTypes,OutTypes> EigenBlockSparseMatrix;
     typedef sofa::component::linearsolver::EigenBaseSparseMatrix<Real> EigenBaseSparseMatrix;
     typedef Eigen::Matrix<Real,Eigen::Dynamic,Eigen::Dynamic> EigenDenseMatrix;
@@ -101,21 +112,25 @@ struct TestSparseMatrices : public Sofa_test<_Real>
 
 
     // Regular Mat implementation
-    typedef sofa::defaulttype::Mat<NROWS,NCOLS,Real> MatMN;
-    typedef sofa::defaulttype::Mat<NCOLS,NROWS,Real> MatNM;
-    typedef sofa::defaulttype::Mat<NROWS,NROWS,Real> MatMM;
-    typedef sofa::defaulttype::Mat<NCOLS,NCOLS,Real> MatNN;
-    typedef sofa::defaulttype::Vec<NROWS,Real> VecM;
-    typedef sofa::defaulttype::Vec<NCOLS,Real> VecN;
+    typedef sofa::type::Mat<NROWS,NCOLS,Real> MatMN;
+    typedef sofa::type::Mat<NCOLS,NROWS,Real> MatNM;
+    typedef sofa::type::Mat<NROWS,NROWS,Real> MatMM;
+    typedef sofa::type::Mat<NCOLS,NCOLS,Real> MatNN;
+    typedef sofa::type::Vec<NROWS,Real> VecM;
+    typedef sofa::type::Vec<NCOLS,Real> VecN;
 
 
     // The matrices used in the tests
     CRSMatrixMN crs1,crs2;
+    CRSMatrixScalar crsScalar;
     FullMatrix fullMat;
     MapMatrix mapMat;
     EigenBlockSparseMatrix eiBlock1,eiBlock2,eiBlock3;
     EigenBaseSparseMatrix eiBase;
     // matrices for multiplication test
+    CRSMatrixScalar crsScalarMultiplier;
+    CRSMatrixScalar crsScalarMultiplication;
+    CRSMatrixScalar crsScalarTransposeMultiplication;
     CRSMatrixNM crsMultiplier;
     CRSMatrixMM crsMultiplication;
     CRSMatrixNN crsTransposeMultiplication;
@@ -143,7 +158,7 @@ struct TestSparseMatrices : public Sofa_test<_Real>
     /// generating a random Mat
     /// if sparse=0 a lot a null entries will be created
     template<Size nbrows,Size nbcols>
-    static void generateRandomMat( defaulttype::Mat<nbrows,nbcols,Real>& mat, bool sparse=false )
+    static void generateRandomMat( type::Mat<nbrows,nbcols,Real>& mat, bool sparse=false )
     {
         for( Size j=0; j<mat.nbCols; j++)
         {
@@ -158,7 +173,7 @@ struct TestSparseMatrices : public Sofa_test<_Real>
 
     /// filling a BaseMatrix from a given Mat
     template<Size nbrows,Size nbcols>
-    static void copyFromMat( defaulttype::BaseMatrix& baseMat, const defaulttype::Mat<nbrows,nbcols,Real>& mat )
+    static void copyFromMat( defaulttype::BaseMatrix& baseMat, const type::Mat<nbrows,nbcols,Real>& mat )
     {
         baseMat.resize(mat.nbLines,mat.nbCols);
 
@@ -182,11 +197,11 @@ struct TestSparseMatrices : public Sofa_test<_Real>
         generateRandomMat( mat, true );
         copyFromMat( crs1, mat );
         copyFromMat( crs2, mat );
+        copyFromMat(crsScalar, mat);
         copyFromMat( fullMat, mat );
         copyFromMat( mapMat, mat );
         copyFromMat( eiBlock1, mat );
         copyFromMat( eiBlock2, mat );
-//        copyFromMat( eiBlock3, mat );
         copyFromMat( eiBase, mat );
         eiBlock3.copyFrom(crs1);
 
@@ -213,6 +228,7 @@ struct TestSparseMatrices : public Sofa_test<_Real>
         // matrix multiplication
 
         generateRandomMat( matMultiplier, true );
+        copyFromMat(crsScalarMultiplier, matMultiplier);
         copyFromMat( crsMultiplier, matMultiplier );
         copyFromMat( fullMultiplier, matMultiplier );
         copyFromMat( eiBaseMultiplier, matMultiplier );
@@ -220,12 +236,14 @@ struct TestSparseMatrices : public Sofa_test<_Real>
 
 
         matMultiplication = mat * matMultiplier;
+        crsScalar.mul(crsScalarMultiplication, crsScalarMultiplier);
         crs1.mul( crsMultiplication, crsMultiplier );
         fullMat.mul( fullMultiplication, fullMultiplier );
         eiBase.mul_MT( eiBaseMultiplication, eiBaseMultiplier ); // sparse x sparse
         eiBase.mul_MT( eiDenseMultiplication, eiDenseMultiplier ); // sparse x dense
 
         matTransposeMultiplication = mat.multTranspose( mat );
+        crsScalar.mulTranspose(crsScalarTransposeMultiplication, crsScalar);
         crs1.mulTranspose( crsTransposeMultiplication, crs1 );
         fullMat.mulT( fullTransposeMultiplication, fullMat );
 
@@ -264,7 +282,7 @@ struct TestSparseMatrices : public Sofa_test<_Real>
             }
         }
         b.compress();
-        return Sofa_test<_Real>::matrixMaxDiff(a,b) < 100 * Sofa_test<_Real>::epsilon();
+        return Inherit::matrixMaxDiff(a,b) < 100 * Inherit::epsilon();
     }
 
     /** Check the filling of EigenMatrix per rows of blocks. */
@@ -299,7 +317,7 @@ struct TestSparseMatrices : public Sofa_test<_Real>
         }
         mb.compress();
 
-        ASSERT_TRUE( Sofa_test<_Real>::matrixMaxDiff(ma,mb) < 100*Sofa_test<_Real>::epsilon() );
+        ASSERT_TRUE( Inherit::matrixMaxDiff(ma,mb) < 100*Inherit::epsilon() );
 
         // building with ordered blocks
 
@@ -325,7 +343,7 @@ struct TestSparseMatrices : public Sofa_test<_Real>
         }
         mb.compress();
 
-        ASSERT_TRUE( Sofa_test<_Real>::matrixMaxDiff(ma,mb) < 100*Sofa_test<_Real>::epsilon() );
+        ASSERT_TRUE( Inherit::matrixMaxDiff(ma,mb) < 100*Inherit::epsilon() );
 
 
 
@@ -353,7 +371,7 @@ struct TestSparseMatrices : public Sofa_test<_Real>
         }
         mb.compress();
 
-        ASSERT_TRUE( Sofa_test<_Real>::matrixMaxDiff(ma,mb) < 100*Sofa_test<_Real>::epsilon() );
+        ASSERT_TRUE( Inherit::matrixMaxDiff(ma,mb) < 100*Inherit::epsilon() );
 
 
 
@@ -384,12 +402,12 @@ struct TestSparseMatrices : public Sofa_test<_Real>
         }
         mb.compress();
 
-        ASSERT_TRUE( Sofa_test<_Real>::matrixMaxDiff(ma,mb) < 100*Sofa_test<_Real>::epsilon() );
+        ASSERT_TRUE( Inherit::matrixMaxDiff(ma,mb) < 100*Inherit::epsilon() );
     }
 
     bool checkEigenMatrixBlockFromCompressedRowSparseMatrix()
     {
-        return Sofa_test<_Real>::matrixMaxDiff(crs1,eiBlock3) < 100*Sofa_test<_Real>::epsilon();
+        return Inherit::matrixMaxDiff(crs1,eiBlock3) < 100*Inherit::epsilon();
     }
 
     bool checkEigenDenseMatrix()
@@ -406,38 +424,90 @@ struct TestSparseMatrices : public Sofa_test<_Real>
     }
 };
 
-///////////////////
-// Real precision
-///////////////////
-// trivial blocs
-typedef TestSparseMatrices<SReal,4,8,4,8> Ts4848;
-#define TestMatrix Ts4848
-#include "Matrix_test.inl"
-#undef TestMatrix
+using TestSparseMatricesImplementations = ::testing::Types<
+    TestSparseMatricesTraits<SReal, 4, 8, 4, 8>,
+    TestSparseMatricesTraits<SReal, 4, 8, 4, 2>,
+    TestSparseMatricesTraits<SReal, 4, 8, 1, 8>,
+    TestSparseMatricesTraits<SReal, 4, 8, 2, 8>,
+    TestSparseMatricesTraits<SReal, 4, 8, 2, 3>,
+    TestSparseMatricesTraits<SReal, 24, 24, 3, 3>
+>;
 
-//// semi-trivial blocs
-typedef TestSparseMatrices<SReal,4,8,4,2> Ts4842;
-#define TestMatrix Ts4842
-#include "Matrix_test.inl"
-#undef TestMatrix
+TYPED_TEST_SUITE(TestSparseMatrices, TestSparseMatricesImplementations);
 
-typedef TestSparseMatrices<SReal,4,8,1,8> Ts4818;
-#define TestMatrix Ts4818
-#include "Matrix_test.inl"
-#undef TestMatrix
+// ==============================
+// Set/get value tests
+TYPED_TEST(TestSparseMatrices, set_fullMat ) { ASSERT_TRUE( this->matrixMaxDiff(this->mat,this->fullMat) < 100*this->epsilon() ); }
+TYPED_TEST(TestSparseMatrices, set_crs_scalar ) { ASSERT_TRUE( this->matrixMaxDiff(this->fullMat,this->crsScalar ) < 100*this->epsilon() ); }
+TYPED_TEST(TestSparseMatrices, set_crs1 ) { ASSERT_TRUE( this->matrixMaxDiff(this->fullMat,this->crs1) < 100*this->epsilon() ); }
+TYPED_TEST(TestSparseMatrices, set_crs2 ) { ASSERT_TRUE( this->matrixMaxDiff(this->fullMat,this->crs2) < 100*this->epsilon() ); }
+TYPED_TEST(TestSparseMatrices, set_mapMat ) { ASSERT_TRUE( this->matrixMaxDiff(this->fullMat,this->mapMat) < 100*this->epsilon() ); }
+TYPED_TEST(TestSparseMatrices, set_eiBlock1 ) { ASSERT_TRUE( this->matrixMaxDiff(this->fullMat,this->eiBlock1) < 100*this->epsilon() ); }
+TYPED_TEST(TestSparseMatrices, set_eiBlock2 ) { ASSERT_TRUE( this->matrixMaxDiff(this->fullMat,this->eiBlock2) < 100*this->epsilon() ); }
+TYPED_TEST(TestSparseMatrices, set_eiBase ) { ASSERT_TRUE( this->matrixMaxDiff(this->fullMat,this->eiBase) < 100*this->epsilon() ); }
+TYPED_TEST(TestSparseMatrices, eigenMatrix_update ) { ASSERT_TRUE( this->checkEigenMatrixUpdate() ); }
+TYPED_TEST(TestSparseMatrices, eigenMatrix_block_row_filling ) { this->checkEigenMatrixBlockRowFilling(); }
+TYPED_TEST(TestSparseMatrices, eigenMatrixBlockFromCompressedRowSparseMatrix ) { ASSERT_TRUE( this->checkEigenMatrixBlockFromCompressedRowSparseMatrix() ); }
+TYPED_TEST(TestSparseMatrices, eigenMapToDenseMatrix ) { ASSERT_TRUE( this->checkEigenDenseMatrix() ); }
 
-// well-fitted blocs
-typedef TestSparseMatrices<SReal,4,8,2,2> Ts4822;
-#define TestMatrix Ts4822
-#include "Matrix_test.inl"
-#undef TestMatrix
+// ==============================
+// Matrix-Vector product tests
+TYPED_TEST(TestSparseMatrices, set_fullVec_nrows_reference )
+{
+    ASSERT_TRUE(this->vectorMaxDiff(this->vecM,this->fullVec_nrows_reference) < this->epsilon() );
+}
+TYPED_TEST(TestSparseMatrices, fullMat_vector_product )
+{
+    //    fullMat.opMulV(&fullVec_nrows_result,&fullVec_ncols);
+    this->fullVec_nrows_result = this->fullMat * this->fullVec_ncols;
+    ASSERT_TRUE(this->vectorMaxDiff(this->fullVec_nrows_reference,this->fullVec_nrows_result) < this->epsilon() );
+}
+TYPED_TEST(TestSparseMatrices, mapMat_vector_product )
+{
+    //    mapMat.opMulV(&fullVec_nrows_result,&fullVec_ncols);
+    this->fullVec_nrows_result = this->mapMat * this->fullVec_ncols;
+    ASSERT_TRUE(this->vectorMaxDiff(this->fullVec_nrows_reference,this->fullVec_nrows_result) < this->epsilon() );
+}
+TYPED_TEST(TestSparseMatrices, eiBlock1_vector_product )
+{
+    //    eiBlock1.opMulV(&fullVec_nrows_result,&fullVec_ncols);
+    //    eiBlock1.multVector(fullVec_nrows_result,fullVec_ncols);
+    this->fullVec_nrows_result = this->eiBlock1 * this->fullVec_ncols;
+    ASSERT_TRUE(this->vectorMaxDiff(this->fullVec_nrows_reference,this->fullVec_nrows_result) < this->epsilon() );
 
-/// not fitted blocs
-//typedef TestSparseMatrices<Real,4,8,2,3> Ts4823;
-//#define TestMatrix Ts4823
-//#include "Matrix_test.inl"
-//#undef TestMatrix
+}
+TYPED_TEST(TestSparseMatrices, crs1_vector_product )
+{
+    //    EXPECT_TRUE(NROWS%BROWS==0 && NCOLS%BCOLS==0) << "Error: CompressedRowSparseMatrix * Vector crashes when the size of the matrix is not a multiple of the size of the matrix blocks. Aborting this test, and reporting a failure."; // otherwise the product crashes
+    //    crs1.opMulV(&fullVec_nrows_result,&fullVec_ncols);
+    this->fullVec_nrows_result = this->crs1 * this->fullVec_ncols;
+    ASSERT_TRUE(this->vectorMaxDiff(this->fullVec_nrows_reference,this->fullVec_nrows_result) < this->epsilon() );
+}
 
+
+// ==============================
+// Matrix product tests
+TYPED_TEST(TestSparseMatrices, full_matrix_product ) { ASSERT_TRUE( this->matrixMaxDiff(this->matMultiplication,this->fullMultiplication) < 100*this->epsilon() );  }
+TYPED_TEST(TestSparseMatrices, crs_scalar_matrix_product ) { ASSERT_TRUE( this->matrixMaxDiff(this->fullMultiplication,this->crsScalarMultiplication) < 100*this->epsilon() ); }
+TYPED_TEST(TestSparseMatrices, crs_matrix_product ) { ASSERT_TRUE( this->matrixMaxDiff(this->fullMultiplication,this->crsMultiplication) < 100*this->epsilon() ); }
+TYPED_TEST(TestSparseMatrices, EigenBase_matrix_product ) { ASSERT_TRUE( this->matrixMaxDiff(this->fullMultiplication,this->eiBaseMultiplication) < 100*this->epsilon() ); }
+//TYPED_TEST(TestSparseMatrices, EigenSparseDense_matrix_product ) { ASSERT_TRUE( EigenDenseMatrix(this->eiBaseMultiplication.compressedMatrix) == this->eiDenseMultiplication ); }
+TYPED_TEST(TestSparseMatrices, full_matrix_transposeproduct ) { ASSERT_TRUE( this->matrixMaxDiff(this->matTransposeMultiplication,this->fullTransposeMultiplication) < 100*this->epsilon() ); }
+TYPED_TEST(TestSparseMatrices, crs_scalar_matrix_transposeproduct ) { ASSERT_TRUE( this->matrixMaxDiff(this->fullTransposeMultiplication,this->crsScalarTransposeMultiplication) < 100*this->epsilon() ); }
+TYPED_TEST(TestSparseMatrices, crs_matrix_transposeproduct ) { ASSERT_TRUE( this->matrixMaxDiff(this->fullTransposeMultiplication,this->crsTransposeMultiplication) < 100*this->epsilon() ); }
+
+// Matrix addition
+TYPED_TEST(TestSparseMatrices, crs_matrix_addition )
+{
+    this->crs2 = this->crs1 + this->crs1;
+    ASSERT_TRUE( this->matrixMaxDiff(this->mat*2,this->crs2) < 100*this->epsilon() );
+
+    this->crs2 += this->crs1;
+    ASSERT_TRUE( this->matrixMaxDiff(this->mat*3,this->crs2) < 100*this->epsilon() );
+
+    this->crs2 -= this->crs1;
+    ASSERT_TRUE( this->matrixMaxDiff(this->mat*2,this->crs2) < 100*this->epsilon() );
+}
 
 #if BENCHMARK_MATRIX_PRODUCT
 ///// product timing

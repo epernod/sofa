@@ -1,15 +1,14 @@
 cmake_minimum_required(VERSION 3.12)
-project(SofaDefaultType)
+project(Sofa.DefaultType)
 
 set(SRC_ROOT "src/sofa/defaulttype")
 
 set(HEADER_FILES
     ${SRC_ROOT}/AbstractTypeInfo.h
-    ${SRC_ROOT}/BaseMatrix.h
-    ${SRC_ROOT}/BaseVector.h
     ${SRC_ROOT}/DataTypeInfo.h
     ${SRC_ROOT}/MapMapSparseMatrix.h
     ${SRC_ROOT}/MapMapSparseMatrixEigenUtils.h
+    ${SRC_ROOT}/MatrixExporter.h
     ${SRC_ROOT}/RigidTypes.h
     ${SRC_ROOT}/RigidVec6Types.h
     ${SRC_ROOT}/SolidTypes.h
@@ -21,7 +20,6 @@ set(HEADER_FILES
     ${SRC_ROOT}/TypeInfoRegistryTools.h
     ${SRC_ROOT}/TopologyTypes.h
     ${SRC_ROOT}/VecTypes.h
-    ${SRC_ROOT}/defaulttype.h
     ${SRC_ROOT}/config.h.in
     ${SRC_ROOT}/init.h
     ${SRC_ROOT}/fwd.h
@@ -57,8 +55,7 @@ set(HEADER_FILES
 
 set(SOURCE_FILES
     ${SRC_ROOT}/AbstractTypeInfo.cpp
-    ${SRC_ROOT}/BaseMatrix.cpp
-    ${SRC_ROOT}/BaseVector.cpp
+    ${SRC_ROOT}/MatrixExporter.cpp
     ${SRC_ROOT}/SolidTypes.cpp
     ${SRC_ROOT}/TemplatesAliases.cpp
     ${SRC_ROOT}/TypeInfoID.cpp
@@ -82,21 +79,29 @@ set(SOURCE_FILES
     ${SRC_ROOT}/typeinfo/TypeInfo_Topology.cpp
 )
 
+sofa_find_package(Sofa.Helper REQUIRED)
+sofa_find_package(Sofa.LinearAlgebra REQUIRED)
 sofa_find_package(Eigen3 REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC SofaHelper)
+# Create alias to support compatibility, starting from v21.06
+# This alias will be deleted in v21.12
+add_library(SofaDefaultType ALIAS Sofa.DefaultType)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Helper Sofa.Type Sofa.LinearAlgebra)
 target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen)
 target_compile_definitions(${PROJECT_NAME} PRIVATE "-DSOFA_BUILD_DEFAULTTYPE")
 
-sofa_add_targets_to_package(
-    PACKAGE_NAME SofaFramework
+sofa_create_package_with_targets(
+    PACKAGE_NAME ${PROJECT_NAME}
+    PACKAGE_VERSION ${Sofa_VERSION}
     TARGETS ${PROJECT_NAME} AUTO_SET_TARGET_PROPERTIES
     INCLUDE_SOURCE_DIR "src"
-    INCLUDE_INSTALL_DIR "SofaFramework"
-    )
+    INCLUDE_INSTALL_DIR "${PROJECT_NAME}"
+)
 
 if(SOFA_BUILD_TESTS)
+    add_subdirectory(SofaDefaultType.Testing)
     add_subdirectory(SofaDefaultType_test)
     add_subdirectory(SofaDefaultType_simutest)
 endif()

@@ -23,13 +23,13 @@
 
 #include <sofa/gui/BaseGUI.h>
 #include <sofa/simulation/fwd.h>
-#include <sofa/helper/ArgumentParser.h>
 #include <string>
-
-using sofa::helper::ArgumentParser;
+#include <sstream>
 
 namespace sofa::gui
 {
+
+class ArgumentParser;
 
 class SOFA_SOFAGUICOMMON_API BatchGUI : public BaseGUI
 {
@@ -49,24 +49,6 @@ public:
     void redraw() override;
     int closeGUI() override;
 
-    static void setNumIterations(const std::string& nbIterInp) 
-    {
-        size_t inpLen= nbIterInp.length();
-       
-        if (nbIterInp == "infinite")
-        {
-            nbIter = -1;
-        }
-        else if (inpLen)
-        {
-            nbIter = std::stoi(nbIterInp);
-        }
-        else
-        {
-            nbIter = DEFAULT_NUMBER_OF_ITERATIONS;
-        }
-        
-    }
     sofa::simulation::Node* currentSimulation() override;
 
     /// @}
@@ -76,6 +58,7 @@ public:
 
     static BaseGUI* CreateGUI(const char* name, sofa::simulation::NodeSPtr groot = nullptr, const char* filename = nullptr);
     static int RegisterGUIParameters(ArgumentParser* argumentParser);
+    static void OnNbIterChange(const ArgumentParser*, const std::string& strValue);
 
 
     static const signed int DEFAULT_NUMBER_OF_ITERATIONS;
@@ -94,6 +77,12 @@ protected:
     std::string filename;
     static signed int nbIter;
     static std::string nbIterInp;
+
+    /// Return true if the timer output string has a json string and the timer is setup to output json
+    static bool canExportJson(const std::string& timerOutputStr, const std::string& timerId);
+
+    /// Export a text file (with json extension) containing the timer output string
+    void exportJson(const std::string& timerOutputStr, int iterationNumber) const;
 };
 
 } // namespace sofa::gui
