@@ -69,7 +69,7 @@ public:
     typedef sofa::Index Index;
     
 
-protected:    
+public:    
     /// data structure stored for each tetrahedron
     class TetrahedronRestInformation
     {

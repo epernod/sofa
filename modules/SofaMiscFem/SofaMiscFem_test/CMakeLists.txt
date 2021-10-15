@@ -11,6 +11,7 @@ set(SOURCE_FILES
     # Test of regression for hyperelasticity (MooneyRivlin)
     TetrahedronHyperelasticityFEMForceField_scene_test.cpp
     TriangleFEMForceField_test.cpp
+    FastTetrahedralCorotationalForceField_test.cpp
     )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
