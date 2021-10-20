@@ -97,9 +97,6 @@ public:
     void init() override;
     void reinit() override;
 
-    // handle topological changes
-    void handleTopologyChange(core::topology::Topology*) override;
-
 protected:
     /// condensate matrice from finest level to the actual mechanical level
     virtual void computeMechanicalMatricesByCondensation(
