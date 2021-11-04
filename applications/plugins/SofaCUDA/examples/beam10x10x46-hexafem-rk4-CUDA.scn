@@ -1,6 +1,18 @@
-<Node name="root" dt="0.002" showBehaviorModels="1" showCollisionModels="0" showMappings="0" showForceFields="0">
-    <RequiredPlugin name="CUDA computing" pluginName="SofaCUDA" />
+<?xml version="1.0" ?>
+<Node name="root" dt="0.002">
+    <RequiredPlugin name="SofaOpenglVisual"/>	
+    <RequiredPlugin name="SofaBoundaryCondition"/>
+    <RequiredPlugin name="SofaEngine"/>
+    <RequiredPlugin name="SofaGeneralExplicitOdeSolver"/>
+    <RequiredPlugin name="SofaMiscCollision"/>
+    <RequiredPlugin name="SofaSimpleFem"/>
+    <RequiredPlugin name="SofaTopologyMapping"/>
+    <RequiredPlugin name="SofaCUDA"/>
 	
+	<VisualStyle displayFlags="showBehaviorModels" />
+    
+	<DefaultAnimationLoop/>
+	<DefaultVisualManagerLoop/>
 	<DefaultPipeline depth="6" verbose="0" draw="0"/>
 	<BruteForceBroadPhase/>
     <BVHNarrowPhase/>
@@ -8,30 +20,46 @@
 	<DefaultContactManager name="Response" response="default" />
 	<DefaultCollisionGroupManager name="Group" />
 	
-	<Node name="M1" processor="0">
-    <RungeKutta4Solver />
-		<MechanicalObject template="CudaVec3f"/>
-		<UniformMass totalMass="200" />
+    <Node name="Floor">
 		<RegularGridTopology
+			nx="2" ny="1" nz="2"
+			xmin="10" xmax="-10"
+			ymin="-5.05" ymax="-5.05"
+			zmin="-10" zmax="10" />
+		<MechanicalObject template="Vec3d"/>
+		<Node name="Visu">
+			<OglModel name="Visual" color="red"/>
+			<IdentityMapping input="@.." output="@Visual"/>
+		</Node>
+	</Node>
+	
+	<Node name="M1" processor="0">
+        <RungeKutta4Solver />
+		<RegularGridTopology name="grid"
 			nx="10" ny="10" nz="46"
-			xmin="-9" xmax="-6"
+			xmin="-1.5" xmax="1.5"
 			ymin="0" ymax="3"
-			zmin="0" zmax="15"
-		/>
-		<BoxConstraint box="-9.1 -0.1 -0.1 -5.9 3.1 0.1" />
-		<HexahedronFEMForceField name="FEM" youngModulus="5000" poissonRatio="0.3" method="large" />
-		<Node>
-		  	<CubeTopology internalPoints="0" splitNormals="1"
-		  		nx="10" ny="10" nz="46"
-		  		xmin="-9" xmax="-6"
-		  		ymin="0" ymax="3"
-		  		zmin="0" zmax="15"
-		  	/>
-		  <MappedObject name="Mapped" template="CudaVec3f" />
-		  <SubsetMapping output="@Mapped" />
-		  <Node>
-		  	<CudaVisualModel template="CudaVec3f" diffuse="0.8 0.8 0.8 1.0" computeNormals="true" />
-		  </Node>
+			zmin="-7.5" zmax="7.5"
+        />
+        
+		<MechanicalObject name="dofs" template="CudaVec3f"/>
+		<UniformMass totalMass="400" />
+        
+		<BoxConstraint box="-1.6 -0.1 -7.6 1.6 3.1 -7.4" />
+		<HexahedronFEMForceField name="FEM" template="CudaVec3f" youngModulus="5000" poissonRatio="0.3" method="large" />
+		<PlaneForceField normal="0 1 0" d="-5" stiffness="10000"  showPlane="1" />
+		
+        <Node name="Visual">
+			<TetrahedronSetTopologyContainer name="tetraContainer" />
+			<TetrahedronSetTopologyModifier/>
+			<Hexa2TetraTopologicalMapping input="@../grid" output="@tetraContainer" />
+
+			<TriangleSetTopologyContainer name="triangleContainer" />
+			<TriangleSetTopologyModifier/>
+			<Tetra2TriangleTopologicalMapping input="@tetraContainer" output="@triangleContainer" />
+
+			<OglModel name="Visual" topology="@triangleContainer" />
+			<IdentityMapping input="@../dofs" output="@Visual" />
 		</Node>
 	</Node>
 </Node>
