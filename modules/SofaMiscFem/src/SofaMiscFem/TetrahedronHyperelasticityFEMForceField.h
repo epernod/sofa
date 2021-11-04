@@ -106,16 +106,16 @@ public :
         /// fiber direction in rest configuration
         Coord m_fiberDirection;
         /// rest volume
-        Real m_restVolume;
+        Real m_restVolume{};
         /// current tetrahedron volume
-        Real m_volScale;
-        Real m_volume;
+        Real m_volScale{};
+        Real m_volume{};
         /// volume/ restVolume
         MatrixSym m_SPKTensorGeneral;
         /// deformation gradient = gradPhi
         Matrix3 m_deformationGradient;
         /// right Cauchy-Green deformation tensor C (gradPhi^T gradPhi)
-        Real m_strainEnergy;
+        Real m_strainEnergy{};
 
         /// Output stream
         inline friend std::ostream& operator<< ( std::ostream& os, const TetrahedronRestInformation& /*eri*/ ) {  return os;  }
@@ -144,7 +144,6 @@ public :
     core::topology::BaseMeshTopology* m_topology;
     VecCoord  m_initialPoints;	/// the intial positions of the points
     bool m_updateMatrix;
-    bool  m_meshSaved ;
 
     Data<bool> d_stiffnessMatrixRegularizationWeight; ///< Regularization of the Stiffness Matrix (between true or false)
     Data<std::string> d_materialName; ///< the name of the material
@@ -204,7 +203,6 @@ public:
     fem::HyperelasticMaterial<DataTypes> *m_myMaterial;
 
     void testDerivatives();
-    void saveMesh( const char *filename );
 
     void updateTangentMatrix();
 };

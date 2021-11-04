@@ -22,7 +22,8 @@
 #include <sofa/defaulttype/VecTypes.h>
 #include <SofaBaseMechanics/MechanicalObject.h>
 #include <SofaMiscFem/FastTetrahedralCorotationalForceField.h>
-#include <SofaBaseTopology/EdgeSetTopologyModifier.h>
+#include <SofaBaseTopology/TetrahedronSetTopologyContainer.h>
+#include <SofaBaseTopology/TetrahedronSetTopologyModifier.h>
 #include <SofaBaseTopology/TopologyData.inl>
 
 #include <SofaSimulationGraph/SimpleApi.h>

@@ -97,6 +97,10 @@ public:
         {
             return in;
         }
+
+        TetrahedronRestInformation()
+        {
+        }
     };
 
     topology::PointData<sofa::type::vector<Mat3x3> > pointInfo; ///< Internal point data

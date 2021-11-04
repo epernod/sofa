@@ -335,7 +335,6 @@ void TriangularTensorMassForceField<DataTypes>::addForce(const core::MechanicalP
 
     type::vector<EdgeRestInformation>& edgeInf = *(edgeInfo.beginEdit());
 
-    Deriv force;
     Coord dp0,dp1,dp;
 
     for(i=0; i<nbEdges; i++ )
@@ -369,7 +368,6 @@ void TriangularTensorMassForceField<DataTypes>::addDForce(const core::Mechanical
 
     type::vector<EdgeRestInformation>& edgeInf = *(edgeInfo.beginEdit());
 
-    Deriv force;
     Coord dp0,dp1,dp;
 
     for(unsigned int i=0; i<nbEdges; i++ )
