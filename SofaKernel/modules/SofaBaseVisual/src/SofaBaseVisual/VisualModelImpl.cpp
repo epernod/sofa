@@ -998,24 +998,25 @@ void VisualModelImpl::initFromTopology()
         {
             m_vtexcoords.updateIfDirty();
             m_vtexcoords.setParent(nullptr); // manually break the data link to follow topological changes
-            m_vtexcoords.createTopologyHandler(m_topology);
-            m_vtexcoords.setCreationCallback([this](Index pointIndex, TexCoord& tCoord,
-                const core::topology::BaseMeshTopology::Point& point,
-                const sofa::type::vector< Index >& ancestors,
-                const sofa::type::vector< double >& coefs)
-            {
-                SOFA_UNUSED(pointIndex);
-                SOFA_UNUSED(point);
-
-                const VecTexCoord& texcoords = m_vtexcoords.getValue();
-                tCoord = TexCoord(0, 0);
-                for (Index i = 0; i < ancestors.size(); i++)
-                {
-                    const TexCoord& tAnces = texcoords[ancestors[i]];
-                    tCoord += tAnces * coefs[i];
-                }
-            });
         }
+
+        m_vtexcoords.createTopologyHandler(m_topology);
+        m_vtexcoords.setCreationCallback([this](Index pointIndex, TexCoord& tCoord,
+            const core::topology::BaseMeshTopology::Point& point,
+            const sofa::type::vector< Index >& ancestors,
+            const sofa::type::vector< double >& coefs)
+        {
+            SOFA_UNUSED(pointIndex);
+            SOFA_UNUSED(point);
+
+            const VecTexCoord& texcoords = m_vtexcoords.getValue();
+            tCoord = TexCoord(0, 0);
+            for (Index i = 0; i < ancestors.size(); i++)
+            {
+                const TexCoord& tAnces = texcoords[ancestors[i]];
+                tCoord += tAnces * coefs[i];
+            }
+        });
     }
 
 }
