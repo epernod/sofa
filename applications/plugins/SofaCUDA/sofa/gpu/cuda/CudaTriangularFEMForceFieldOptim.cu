@@ -103,49 +103,88 @@ __global__ void TriangularFEMForceFieldOptimCuda3f_addForce_kernel(int size, Cud
     int index0 = (blockIdx.x*BSIZE);
     int index = threadIdx.x;
     int i = index0+index;
+    //if (i == 0)
+    //    printf("CUDA triangle: %d \n", i);
     
-        GPUTriangleInfo t = gpuTriangleInfo[i];
-        const TriangleInfo& ti = triInfo[i];
-        TriangleState& ts = triState[i];
-        CudaVec3<float> a  = x[t.ia];
-        CudaVec3<float> ab = x[t.ib]-a;
-        CudaVec3<float> ac = x[t.ic]-a;
-        //computeTriangleRotation(ts.frame, ab, ac);
-        CudaVec3<float> frame_x = ab;
-        CudaVec3<float> n = cross(ab,ac);
-        CudaVec3<float> frame_y = cross(n,ab);
-        frame_x *= invnorm(frame_x);
-        frame_y *= invnorm(frame_y);
-        ts.frame_x = frame_x;
-        ts.frame_y = frame_y;
+    GPUTriangleInfo t = gpuTriangleInfo[i]; // triangle info (vertex indices)
+    const TriangleInfo& ti = triInfo[i];
+    TriangleState& ts = triState[i];
+    CudaVec3<float> a  = x[t.ia];
+    CudaVec3<float> ab = x[t.ib]-a;
+    CudaVec3<float> ac = x[t.ic]-a;
 
-        float dbx = ti.bx - frame_x*ab;
-        // float dby = 0
-        float dcx = ti.cx - frame_x*ac;
-        float dcy = ti.cy - frame_y*ac;
-        //sout << "Elem" << i << ": D= 0 0  " << dbx << " 0  " << dcx << " " << dcy << sendl;
+    //if (i == 0) 
+    //{
+    //    printf("a: %f, %f, %f \n", a.x, a.y, a.z);
+    //    printf("b: %f, %f, %f \n", x[t.ib].x, x[t.ib].y, x[t.ib].z);
+    //    printf("c: %f, %f, %f \n", x[t.ic].x, x[t.ic].y, x[t.ic].z);
+    //    
+    //    
+    //    printf("ab: %f, %f, %f \n", ab.x, ab.y, ab.z);
+    //    printf("ac: %f, %f, %f \n", ac.x, ac.y, ac.z);
+    //}
+    
+    //computeTriangleRotation(ts.frame, ab, ac);
+        
+    CudaVec3<float> frame_x = ab;
+    CudaVec3<float> n = cross(ab,ac);
+    CudaVec3<float> frame_y = cross(n,ab);
+    frame_x *= invnorm(frame_x);
+    frame_y *= invnorm(frame_y);
+    ts.frame_x = frame_x;
+    ts.frame_y = frame_y;
 
-        CudaVec3<float> strain = CudaVec3<float>::make (
-            ti.cy * dbx,                // ( cy,   0,  0,  0) * (dbx, dby, dcx, dcy)
-            ti.bx * dcy,                // (  0, -cx,  0, bx) * (dbx, dby, dcx, dcy)
-            ti.bx * dcx - ti.cx * dbx); // (-cx,  cy, bx,  0) * (dbx, dby, dcx, dcy)
+    float dbx = ti.bx - frame_x*ab;
+    // float dby = 0
+    float dcx = ti.cx - frame_x*ac;
+    float dcy = ti.cy - frame_y*ac;
 
-        float gammaXY = (strain.x+strain.y)*gamma;
+    //if (i == 0)
+    //{
+    //    printf("dbx: %f, dcx: %f, dcy: %f \n", dbx, dcx, dcy);
+    //}
+        
+    CudaVec3<float> strain = CudaVec3<float>::make (
+        ti.cy * dbx,                // ( cy,   0,  0,  0) * (dbx, dby, dcx, dcy)
+        ti.bx * dcy,                // (  0, -cx,  0, bx) * (dbx, dby, dcx, dcy)
+        ti.bx * dcx - ti.cx * dbx); // (-cx,  cy, bx,  0) * (dbx, dby, dcx, dcy)
 
-        CudaVec3<float> stress = CudaVec3<float>::make (
-            mu*strain.x + gammaXY,    // (gamma+mu, gamma   ,    0) * strain
-            mu*strain.y + gammaXY,    // (gamma   , gamma+mu,    0) * strain
-            (float)(0.5)*mu*strain.z); // (       0,        0, mu/2) * strain
+    float gammaXY = (strain.x+strain.y)*gamma;
 
-        ts.stress = stress;
+    //if (i == 0)
+    //{
+    //    printf("strain: %f, %f, %f \n", strain.x, strain.y, strain.z);
+    //    printf("gammaXY: %f\n", gammaXY);
+    //    printf("mu: %f\n", mu);
+    //}
 
-        stress *= ti.ss_factor;
-        //sout << "Elem" << i << ": F= " << -(ti.cy * stress[0] - ti.cx * stress[2] + ti.bx * stress[2]) << " " << -(ti.cy * stress[2] - ti.cx * stress[1] + ti.bx * stress[1]) << "  " << (ti.cy * stress[0] - ti.cx * stress[2]) << " " << (ti.cy * stress[2] - ti.cx * stress[1]) << "  " << (ti.bx * stress[2]) << " " << (ti.bx * stress[1]) << sendl;
-        CudaVec3<float> fb = frame_x * (ti.cy * stress.x - ti.cx * stress.z)  // (cy,   0, -cx) * stress
-                + frame_y * (ti.cy * stress.z - ti.cx * stress.y); // ( 0, -cx,  cy) * stress
-        CudaVec3<float> fc = frame_x * (ti.bx * stress.z)                      // ( 0,   0,  bx) * stress
-                + frame_y * (ti.bx * stress.y);                     // ( 0,  bx,   0) * stress
-        CudaVec3<float> fa = -fb-fc;
+    CudaVec3<float> stress = CudaVec3<float>::make (
+        mu*strain.x + gammaXY,    // (gamma+mu, gamma   ,    0) * strain
+        mu*strain.y + gammaXY,    // (gamma   , gamma+mu,    0) * strain
+        (float)(0.5)*mu*strain.z); // (       0,        0, mu/2) * strain
+
+    //if (i == 0)
+    //{
+    //    printf("stress: %f, %f, %f \n", stress.x, stress.y, stress.z);
+    //}
+    ts.stress = stress;
+
+    stress *= ti.ss_factor;
+
+    
+    //sout << "Elem" << i << ": F= " << -(ti.cy * stress[0] - ti.cx * stress[2] + ti.bx * stress[2]) << " " << -(ti.cy * stress[2] - ti.cx * stress[1] + ti.bx * stress[1]) << "  " << (ti.cy * stress[0] - ti.cx * stress[2]) << " " << (ti.cy * stress[2] - ti.cx * stress[1]) << "  " << (ti.bx * stress[2]) << " " << (ti.bx * stress[1]) << sendl;
+    CudaVec3<float> fb = frame_x * (ti.cy * stress.x - ti.cx * stress.z)  // (cy,   0, -cx) * stress
+            + frame_y * (ti.cy * stress.z - ti.cx * stress.y); // ( 0, -cx,  cy) * stress
+    CudaVec3<float> fc = frame_x * (ti.bx * stress.z)                      // ( 0,   0,  bx) * stress
+            + frame_y * (ti.bx * stress.y);                     // ( 0,  bx,   0) * stress
+    CudaVec3<float> fa = -fb-fc;
+
+    //if (i == 0)
+    //{
+    //    printf("fa: %f, %f, %f \n", fa.x, fa.y, fa.z);
+    //    printf("fb: %f, %f, %f \n", fb.x, fb.y, fb.z);
+    //    printf("fc: %f, %f, %f \n", fc.x, fc.y, fc.z);
+    //}
 
 #if defined(__CUDA_ARCH__) &&  __CUDA_ARCH__ < 200
         f[t.ia] += fa;
