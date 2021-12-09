@@ -1481,7 +1481,7 @@ void TriangularFEMForceField<DataTypes>::draw(const core::visual::VisualParams* 
         std::vector<sofa::type::Vector3> vertices;
         std::vector<sofa::type::RGBAColor> colorVector;
 
-        helper::ColorMap::evaluator<double> evalColor = p_drawColorMap->getEvaluator(minStress, maxStress);
+        helper::ColorMap::evaluator<Real> evalColor = p_drawColorMap->getEvaluator(minStress, maxStress);
         for(Size i=0; i<nbTriangles; ++i)
         {
             const Triangle& tri = m_topology->getTriangle(i);
