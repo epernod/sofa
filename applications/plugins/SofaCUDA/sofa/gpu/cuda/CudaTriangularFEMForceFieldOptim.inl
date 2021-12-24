@@ -67,34 +67,13 @@ void TriangularFEMForceFieldOptim<gpu::cuda::CudaVec3fTypes>::addForce(const cor
     VecDeriv& f = *d_f.beginEdit();
     const VecCoord& x = d_x.getValue();
     const VecDeriv& v = d_v.getValue();
-    data.reinit(this);
+
     VecTriangleState& triState = *d_triangleState.beginEdit();
     const VecTriangleInfo& triInfo = d_triangleInfo.getValue();
     const unsigned int nbTriangles = m_topology->getNbTriangles();
     const InternalData::VecGPUTriangleInfo& gpuTriangleInfo = data.gpuTriangleInfo;
     const Real gamma = this->gamma;
     const Real mu = this->mu;
-
-    //for (unsigned int i = 0; i < f.size(); ++i)
-    //{
-    //    std::cout << i << " f: " << f[i] << std::endl;
-    //    //std::cout << i << " triInfo: " << triInfo[i] << std::endl;
-    //}
-
-    //if (gpuTriangleInfo.size() != nbTriangles) // TODO epernod 2021-12-01: make that clean when SofaCUDA mechanisms is understood.
-    {
-        //data.reinit(this);
-    }
-
-    std::cout << "nbTriangles: " << nbTriangles << std::endl;
-    std::cout << "triState: " << triState.size() << std::endl;
-    std::cout << "triState: " << triInfo.size() << std::endl;
-    std::cout << "gpuTriangleInfo: " << gpuTriangleInfo.size() << std::endl;
-    //for (unsigned int i = 0; i < gpuTriangleInfo.size(); ++i)
-    //{
-    //    std::cout << i << " triState: " << triState[i] << std::endl;
-    //    //std::cout << i << " triInfo: " << triInfo[i] << std::endl;
-    //}
 
     f.resize(x.size());
 
@@ -104,14 +83,7 @@ void TriangularFEMForceFieldOptim<gpu::cuda::CudaVec3fTypes>::addForce(const cor
         nbTriangles,
         gpuTriangleInfo.deviceRead(),
         gamma, mu);
-    //
-    //for (unsigned int i = 0; i < f.size(); ++i)
-    //{
-    //    std::cout << i << " f: " << f[i] << std::endl;
-    //    std::cout << i << " x: " << x[i] << std::endl;
-    //}
-
-
+    
     d_triangleState.endEdit();
     d_f.endEdit();
 }
