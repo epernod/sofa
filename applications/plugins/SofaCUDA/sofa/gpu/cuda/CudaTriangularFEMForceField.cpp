@@ -19,12 +19,9 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include "CudaTypes.h"
+#include <sofa/gpu/cuda/CudaTypes.h>
 #include <sofa/core/ObjectFactory.h>
-#include <sofa/core/behavior/ForceField.inl>
-
-#include "CudaTriangularFEMForceField.inl"
-#include <SofaMiscFem/TriangularFEMForceField.inl>
+#include <sofa/gpu/cuda/CudaTriangularFEMForceField.inl>
 
 namespace sofa::component::forcefield
 {
