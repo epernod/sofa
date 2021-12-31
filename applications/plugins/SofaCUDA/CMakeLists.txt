@@ -55,6 +55,8 @@ set(HEADER_FILES
     
 
     ### FEM
+	sofa/gpu/cuda/CudaFastTetrahedralCorotationalForceField.h
+	sofa/gpu/cuda/CudaFastTetrahedralCorotationalForceField.inl
     sofa/gpu/cuda/CudaTriangularFEMForceFieldOptim.h
     sofa/gpu/cuda/CudaTriangularFEMForceFieldOptim.inl
     sofa/gpu/cuda/CudaTriangularFEMForceField.h
@@ -131,6 +133,7 @@ set(SOURCE_FILES
     sofa/gpu/cuda/CudaMeshMatrixMass.cpp
 
     ### FEM
+	sofa/gpu/cuda/CudaFastTetrahedralCorotationalForceField.cpp
     sofa/gpu/cuda/CudaTriangularFEMForceFieldOptim.cpp
     sofa/gpu/cuda/CudaTriangularFEMForceField.cpp
     sofa/gpu/cuda/CudaTetrahedronFEMForceField.cpp
@@ -193,6 +196,7 @@ set(CUDA_SOURCES
     sofa/gpu/cuda/CudaMeshMatrixMass.cu
 
     ### FEM
+	sofa/gpu/cuda/CudaFastTetrahedralCorotationalForceField.cu
     sofa/gpu/cuda/CudaTriangularFEMForceFieldOptim.cu
     sofa/gpu/cuda/CudaTriangularFEMForceField.cu
     sofa/gpu/cuda/CudaTetrahedronFEMForceField.cu
