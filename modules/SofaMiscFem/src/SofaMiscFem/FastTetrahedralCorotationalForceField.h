@@ -22,9 +22,6 @@
 #pragma once
 
 #include <SofaMiscFem/config.h>
-
-
-
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/type/fixed_array.h>
 #include <sofa/type/vector.h>
@@ -115,9 +112,13 @@ public:
         }
     };
 
-    topology::PointData<sofa::type::vector<Mat3x3> > pointInfo; ///< Internal point data
-    topology::EdgeData<sofa::type::vector<Mat3x3> > edgeInfo; ///< Internal edge data
-    topology::TetrahedronData<sofa::type::vector<TetrahedronRestInformation> > tetrahedronInfo; ///< Internal tetrahedron data
+    /// Topology Data
+    typedef typename VecCoord::template rebind<TetrahedronRestInformation>::other VecTetrahedronRestInformation;
+    typedef typename VecCoord::template rebind <Mat3x3>::other VecMat3x3;
+
+    topology::PointData<VecMat3x3 > pointInfo; ///< Internal point data
+    topology::EdgeData<VecMat3x3 > edgeInfo; ///< Internal edge data
+    topology::TetrahedronData<VecTetrahedronRestInformation > tetrahedronInfo; ///< Internal tetrahedron data
 
     /** Method to initialize @sa TetrahedronRestInformation when a new Tetrahedron is created.
     * Will be set as creation callback in the TetrahedronData @sa tetrahedronInfo
