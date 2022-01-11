@@ -105,9 +105,7 @@ void FixedConstraint<DataTypes>::init()
         l_topology.set(this->getContext()->getMeshTopologyLink());
     }
 
-    sofa::core::topology::BaseMeshTopology* _topology = l_topology.get();
-
-    if (_topology)
+    if (sofa::core::topology::BaseMeshTopology* _topology = l_topology.get())
     {
         msg_info() << "Topology path used: '" << l_topology.getLinkedPath() << "'";
 
@@ -151,7 +149,7 @@ void  FixedConstraint<DataTypes>::checkIndices()
     if (!invalidIndices.empty())
     {
         std::sort( invalidIndices.begin(), invalidIndices.end(), std::greater<Index>() );
-        int max = invalidIndices.size()-1;
+        const int max = invalidIndices.size()-1;
         for (int i=max; i>= 0; i--)
         {
             removeConstraint(invalidIndices[i]);
@@ -160,13 +158,13 @@ void  FixedConstraint<DataTypes>::checkIndices()
 }
 
 template <class DataTypes>
-void FixedConstraint<DataTypes>::projectMatrix( sofa::defaulttype::BaseMatrix* M, unsigned offset )
+void FixedConstraint<DataTypes>::projectMatrix( sofa::linearalgebra::BaseMatrix* M, unsigned offset )
 {
     static const unsigned blockSize = DataTypes::deriv_total_size;
 
     if( d_fixAll.getValue() )
     {
-        unsigned size = this->mstate->getSize();
+        const unsigned size = this->mstate->getSize();
         for( unsigned i=0; i<size; i++ )
         {
             M->clearRowsCols( offset + i * blockSize, offset + (i+1) * (blockSize) );
@@ -175,9 +173,9 @@ void FixedConstraint<DataTypes>::projectMatrix( sofa::defaulttype::BaseMatrix* M
     else
     {
         // clears the rows and columns associated with fixed particles
-        for(SetIndexArray::const_iterator it= d_indices.getValue().begin(), iend=d_indices.getValue().end(); it!=iend; it++ )
+        for (const auto id : d_indices.getValue())
         {
-            M->clearRowsCols( offset + (*it) * blockSize, offset + (*it+1) * (blockSize) );
+            M->clearRowsCols( offset + id * blockSize, offset + (id+1) * blockSize );
         }
     }
 }
@@ -283,14 +281,13 @@ template <class DataTypes>
 void FixedConstraint<DataTypes>::applyConstraint(const core::MechanicalParams* mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix)
 {
     SOFA_UNUSED(mparams);
-    core::behavior::MultiMatrixAccessor::MatrixRef r = matrix->getMatrix(this->mstate.get());
-    if(r)
+    if(core::behavior::MultiMatrixAccessor::MatrixRef r = matrix->getMatrix(this->mstate.get()))
     {
         const unsigned int N = Deriv::size();
 
         if( d_fixAll.getValue() )
         {
-            unsigned size = this->mstate->getSize();
+            const unsigned size = this->mstate->getSize();
             for(unsigned int i=0; i<size; i++)
             {
                 // Reset Fixed Row and Col
@@ -319,13 +316,13 @@ void FixedConstraint<DataTypes>::applyConstraint(const core::MechanicalParams* m
 }
 
 template <class DataTypes>
-void FixedConstraint<DataTypes>::applyConstraint(const core::MechanicalParams* mparams, defaulttype::BaseVector* vect, const sofa::core::behavior::MultiMatrixAccessor* matrix)
+void FixedConstraint<DataTypes>::applyConstraint(const core::MechanicalParams* mparams, linearalgebra::BaseVector* vect, const sofa::core::behavior::MultiMatrixAccessor* matrix)
 {
     SOFA_UNUSED(mparams);
-    int o = matrix->getGlobalOffset(this->mstate.get());
+    const int o = matrix->getGlobalOffset(this->mstate.get());
     if (o >= 0)
     {
-        unsigned int offset = (unsigned int)o;
+        const unsigned int offset = (unsigned int)o;
         const unsigned int N = Deriv::size();
 
         if( d_fixAll.getValue() )

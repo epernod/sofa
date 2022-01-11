@@ -140,7 +140,7 @@ void BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::init ( 
     const type::vector<Element>& elements = getElements();
     for ( unsigned int i=0; i<out.size(); i++ )
     {
-        Vector3 outPos = Out::getCPos(out[i]);
+        const auto& outPos = Out::getCPos(out[i]);
         NearestParams nearestParams;
 
         // Search nearest element in grid cell
@@ -152,7 +152,7 @@ void BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::init ( 
         {
             for(auto entry : it_entries->second)
             {
-                Vector3 inPos = in[elements[entry][0]];
+                const auto& inPos = in[elements[entry][0]];
                 checkDistanceFromElement(entry, outPos, inPos, nearestParams);
             }
         }
@@ -161,7 +161,7 @@ void BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::init ( 
         {
             for ( unsigned int e = 0; e < elements.size(); e++ )
             {
-                Vector3 inPos = in[elements[e][0]];
+                const auto& inPos = in[elements[e][0]];
                 checkDistanceFromElement(e, outPos, inPos, nearestParams);
             }
             addPointInElement(nearestParams.elementId, nearestParams.baryCoords.ptr());
@@ -223,7 +223,7 @@ void BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::checkDi
                                                                                                   NearestParams& nearestParams)
 {
     Vector3 bary = m_bases[e] * ( outPos - inPos);
-    double dist;
+    SReal dist;
     computeDistance(dist, bary);
     if ( dist>0 )
         dist = ( outPos-m_centers[e] ).norm2();
@@ -269,7 +269,7 @@ void BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::applyJT
 
 
 template <class In, class Out, class MappingDataType, class Element>
-const defaulttype::BaseMatrix* BarycentricMapperTopologyContainer<In,Out,MappingDataType, Element>::getJ(int outSize, int inSize)
+const linearalgebra::BaseMatrix* BarycentricMapperTopologyContainer<In,Out,MappingDataType, Element>::getJ(int outSize, int inSize)
 {
     if (m_matrixJ && !m_updateJ)
         return m_matrixJ;

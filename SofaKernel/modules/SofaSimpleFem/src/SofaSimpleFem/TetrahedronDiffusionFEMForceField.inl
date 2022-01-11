@@ -24,7 +24,7 @@
 
 #include <sofa/core/visual/VisualParams.h>
 
-#include <SofaBaseTopology/TopologyData.inl>
+#include <sofa/core/topology/TopologyData.inl>
 
 #include <sofa/core/behavior/ForceField.inl>
 #include <sofa/core/behavior/MultiMatrixAccessor.h>
@@ -35,7 +35,6 @@ namespace sofa::component::forcefield
 {
 
    using namespace sofa::defaulttype;
-   using namespace sofa::component::topology;
    using namespace core::topology;
    using namespace core::objectmodel;
    using core::topology::BaseMeshTopology;
@@ -397,7 +396,7 @@ void TetrahedronDiffusionFEMForceField<DataTypes>::addKToMatrix(const core::Mech
     sofa::helper::AdvancedTimer::stepBegin("addKToMatrix");
     const auto N = defaulttype::DataTypeInfo<Deriv>::size();
     sofa::core::behavior::MultiMatrixAccessor::MatrixRef r = matrix->getMatrix(this->mstate);
-    sofa::defaulttype::BaseMatrix* mat = r.matrix;
+    sofa::linearalgebra::BaseMatrix* mat = r.matrix;
 
     if((sofa::Size)(mat->colSize()) != (m_topology->getNbPoints()*N) || (sofa::Size)(mat->rowSize()) != (m_topology->getNbPoints()*N))
     {
@@ -489,7 +488,7 @@ void TetrahedronDiffusionFEMForceField<DataTypes>::draw(const core::visual::Visu
             auto tetraColor = sofa::type::RGBAColor(0.0f, float(Ratio), 0.5f-float(Ratio), 1.0f);
 
             Tetrahedron tetra = m_topology->getTetrahedron(i);
-            sofa::type::Vec<3,SReal> point[4];
+            sofa::type::Vec3 point[4];
 
             for (sofa::Index j = 0; j<4; j++)
                 point[j] = restPosition[tetra[j]];

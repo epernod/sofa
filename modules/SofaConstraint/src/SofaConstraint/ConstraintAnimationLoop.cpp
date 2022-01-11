@@ -81,7 +81,7 @@ using sofa::simulation::mechanicalvisitor::MechanicalResetConstraintVisitor;
 namespace sofa::component::animationloop
 {
 
-using namespace sofa::component::linearsolver;
+using namespace sofa::linearalgebra;
 using namespace sofa::defaulttype;
 using namespace helper::system::thread;
 using namespace core::behavior;
@@ -801,9 +801,11 @@ void ConstraintAnimationLoop::gaussSeidelConstraint(int dim, double* dfree, doub
         i += res[i]->getNbLines();
     }
 
-    std::map < std::string, sofa::type::vector<double> >* graphs = d_graphForces.beginEdit();
-    graphs->clear();
-    d_graphForces.endEdit();
+    {
+        auto* graphs = d_graphForces.beginEdit();
+        graphs->clear();
+        d_graphForces.endEdit();
+    }
 
     if(d_schemeCorrection.getValue())
     {

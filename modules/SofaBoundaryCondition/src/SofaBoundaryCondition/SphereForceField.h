@@ -62,7 +62,8 @@ protected:
         int index;
         Coord normal;
         Real fact;
-        Contact( int index=0, Coord normal=Coord(),Real fact=Real(0))
+
+        explicit Contact( int index=0, Coord normal=Coord(),Real fact=Real(0))
             : index(index),normal(normal),fact(fact)
         {
         }
@@ -110,7 +111,7 @@ public:
     SReal getPotentialEnergy(const core::MechanicalParams* /*mparams*/, const DataVecCoord&  /* x */) const override;
     virtual void updateStiffness( const VecCoord& x );
 
-    void addKToMatrix(sofa::defaulttype::BaseMatrix *, SReal, unsigned int &) override;
+    void addKToMatrix(sofa::linearalgebra::BaseMatrix *, SReal, unsigned int &) override;
 
     void draw(const core::visual::VisualParams* vparams) override;
 };

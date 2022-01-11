@@ -27,7 +27,7 @@
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/core/objectmodel/Data.h>
 #include <sofa/core/objectmodel/Link.h>
-#include <SofaBaseLinearSolver/CompressedRowSparseMatrix.h>
+#include <sofa/linearalgebra/CompressedRowSparseMatrix.h>
 #include <SofaBaseLinearSolver/DefaultMultiMatrixAccessor.h>
 
 #include <sofa/core/topology/BaseMeshTopology.h>
@@ -40,14 +40,14 @@ namespace sofa::component::interactionforcefield
 {
 
 using sofa::core::objectmodel::BaseObject ;
-using sofa::component::linearsolver::CompressedRowSparseMatrix ;
+using sofa::linearalgebra::CompressedRowSparseMatrix ;
 using sofa::core::behavior::MixedInteractionForceField ;
 using sofa::core::behavior::BaseForceField ;
 using sofa::core::behavior::BaseMass ;
 using sofa::core::behavior::BaseMechanicalState ;
 using sofa::core::behavior::MultiMatrixAccessor ;
 using sofa::component::linearsolver::DefaultMultiMatrixAccessor ;
-using sofa::defaulttype::BaseMatrix ;
+using sofa::linearalgebra::BaseMatrix ;
 using sofa::core::MechanicalParams ;
 using sofa::core::objectmodel::ComponentState ;
 
@@ -187,7 +187,7 @@ public:
     void addKToMatrix(const MechanicalParams* mparams,
                               const MultiMatrixAccessor* matrix ) override;
 
-    double getPotentialEnergy(const MechanicalParams* mparams,
+    SReal getPotentialEnergy(const MechanicalParams* mparams,
                                       const DataVecCoord1& x1, const DataVecCoord2& x2) const override;
     ///////////////////////////////////////////////////////////////////////////
 

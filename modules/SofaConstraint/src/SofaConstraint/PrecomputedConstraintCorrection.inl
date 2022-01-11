@@ -29,7 +29,7 @@
 
 #include <SofaImplicitOdeSolver/EulerImplicitSolver.h>
 
-#include <SofaBaseLinearSolver/SparseMatrix.h>
+#include <sofa/linearalgebra/SparseMatrix.h>
 #include <SofaBaseLinearSolver/CGLinearSolver.h>
 
 #include <sofa/core/behavior/RotationFinder.h>
@@ -379,7 +379,7 @@ void PrecomputedConstraintCorrection<DataTypes>::bwdInit()
 
 
 template< class DataTypes >
-void PrecomputedConstraintCorrection< DataTypes >::addComplianceInConstraintSpace(const sofa::core::ConstraintParams *cparams, sofa::defaulttype::BaseMatrix* W)
+void PrecomputedConstraintCorrection< DataTypes >::addComplianceInConstraintSpace(const sofa::core::ConstraintParams *cparams, sofa::linearalgebra::BaseMatrix* W)
 {
     m_activeDofs.clear();
 
@@ -653,7 +653,7 @@ void PrecomputedConstraintCorrection<DataTypes>::applyVelocityCorrection(const s
 
 
 template<class DataTypes>
-void PrecomputedConstraintCorrection<DataTypes>::applyContactForce(const defaulttype::BaseVector *f)
+void PrecomputedConstraintCorrection<DataTypes>::applyContactForce(const linearalgebra::BaseVector *f)
 {
     helper::WriteAccessor<Data<VecDeriv> > forceData = *this->mstate->write(core::VecDerivId::force());
     helper::WriteAccessor<Data<VecDeriv> > dxData    = *this->mstate->write(core::VecDerivId::dx());
@@ -676,7 +676,7 @@ void PrecomputedConstraintCorrection<DataTypes>::applyContactForce(const default
     force.clear();
     force.resize(x_free.size());
 
-    std::list<int> activeDof;
+    std::list<int> activeDofs;
 
     MatrixDerivRowConstIterator rowItEnd = c.end();
 
@@ -692,39 +692,34 @@ void PrecomputedConstraintCorrection<DataTypes>::applyContactForce(const default
             {
                 unsigned int dof = colIt.index();
                 force[dof] += colIt.val() * fC1;
-                activeDof.push_back(dof);
+                activeDofs.push_back(dof);
             }
         }
     }
 
-    activeDof.sort();
-    activeDof.unique();
+    activeDofs.sort();
+    activeDofs.unique();
 
-
-    std::list<int>::iterator IterateurListe;
-    unsigned int i;
     unsigned int offset, offset2;
-    for (IterateurListe = activeDof.begin(); IterateurListe != activeDof.end(); ++IterateurListe)
+    for (const auto dofId : activeDofs)
     {
-        int f = (*IterateurListe);
-
-        for (i=0; i< dof_on_node; i++)
+        for (unsigned int i=0; i< dof_on_node; i++)
         {
-            Fbuf[i] = force[f][i];
+            Fbuf[i] = force[dofId][i];
         }
 
-        for(unsigned int v = 0 ; v < dx.size() ; v++)
+        for(unsigned int i = 0 ; i < dx.size() ; i++)
         {
-            offset =  v * dof_on_node * nbCols + f*dof_on_node;
+            offset =  i * dof_on_node * nbCols + dofId * dof_on_node;
             for (unsigned int j=0; j< dof_on_node; j++)
             {
                 offset2 = offset+ j*nbCols;
                 DXbuf=0.0;
-                for (i = 0; i < dof_on_node; i++)
+                for (unsigned int k = 0; k < dof_on_node; k++)
                 {
-                    DXbuf += appCompliance[ offset2 + i ] * Fbuf[i];
+                    DXbuf += appCompliance[ offset2 + k ] * Fbuf[k];
                 }
-                dx[v][j]+=DXbuf;
+                dx[i][j]+=DXbuf;
             }
         }
     }
@@ -747,7 +742,7 @@ void PrecomputedConstraintCorrection<DataTypes>::applyContactForce(const default
 
 
 template<class DataTypes>
-void PrecomputedConstraintCorrection<DataTypes>::getComplianceMatrix(defaulttype::BaseMatrix* m) const
+void PrecomputedConstraintCorrection<DataTypes>::getComplianceMatrix(linearalgebra::BaseMatrix* m) const
 {
     m->resize(dimensionAppCompliance,dimensionAppCompliance);
 
@@ -1219,7 +1214,7 @@ void PrecomputedConstraintCorrection<DataTypes>::setConstraintDForce(double * /*
 }
 
 template<class DataTypes>
-void PrecomputedConstraintCorrection<DataTypes>::getBlockDiagonalCompliance(defaulttype::BaseMatrix* W, int begin, int end)
+void PrecomputedConstraintCorrection<DataTypes>::getBlockDiagonalCompliance(linearalgebra::BaseMatrix* W, int begin, int end)
 {
 #ifdef NEW_METHOD_UNBUILT
 

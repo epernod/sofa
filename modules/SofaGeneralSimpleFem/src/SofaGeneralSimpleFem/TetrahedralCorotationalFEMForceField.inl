@@ -24,7 +24,7 @@
 #include <sofa/core/visual/VisualParams.h>
 #include <SofaBaseTopology/GridTopology.h>
 #include <sofa/helper/decompose.h>
-#include <SofaBaseTopology/TopologyData.inl>
+#include <sofa/core/topology/TopologyData.inl>
 #include <cassert>
 #include <iostream>
 #include <set>
@@ -38,7 +38,7 @@ template< class DataTypes>
 void TetrahedralCorotationalFEMForceField<DataTypes>::createTetrahedronInformation(Index tetrahedronIndex, TetrahedronInformation& tInfo,
         const core::topology::BaseMeshTopology::Tetrahedron& tetra,
         const sofa::type::vector<Index>& ancestors,
-        const sofa::type::vector<double>& coefs)
+        const sofa::type::vector<SReal>& coefs)
 {
     const core::topology::BaseMeshTopology::Tetrahedron t=this->m_topology->getTetrahedron(tetrahedronIndex);
     Index a = t[0];
@@ -136,14 +136,14 @@ void TetrahedralCorotationalFEMForceField<DataTypes>::reinit()
     {
         createTetrahedronInformation(i, tetrahedronInf[i],
                 m_topology->getTetrahedron(i),  (const std::vector< Index > )0,
-                (const std::vector< double >)0);
+                (const std::vector< SReal >)0);
     }
 
     tetrahedronInfo.createTopologyHandler(m_topology);
     tetrahedronInfo.setCreationCallback([this](Index tetrahedronIndex, TetrahedronInformation& tInfo,
         const core::topology::BaseMeshTopology::Tetrahedron& tetra,
         const sofa::type::vector<Index>& ancestors,
-        const sofa::type::vector<double>& coefs)
+        const sofa::type::vector<SReal>& coefs)
     {
         createTetrahedronInformation(tetrahedronIndex, tInfo, tetra, ancestors, coefs);
     });
@@ -1315,7 +1315,7 @@ void TetrahedralCorotationalFEMForceField<DataTypes>::draw(const core::visual::V
 
 
 template<class DataTypes>
-void TetrahedralCorotationalFEMForceField<DataTypes>::addKToMatrix(sofa::defaulttype::BaseMatrix *mat, SReal k, unsigned int &offset)
+void TetrahedralCorotationalFEMForceField<DataTypes>::addKToMatrix(sofa::linearalgebra::BaseMatrix *mat, SReal k, unsigned int &offset)
 {
     // Build Matrix Block for this ForceField
     Transformation Rot;

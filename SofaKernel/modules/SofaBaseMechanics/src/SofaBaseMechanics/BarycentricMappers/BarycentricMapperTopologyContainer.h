@@ -22,7 +22,7 @@
 #pragma once
 #include <SofaBaseMechanics/BarycentricMappers/TopologyBarycentricMapper.h>
 
-#include <SofaBaseTopology/TopologyData.inl>
+#include <sofa/core/topology/TopologyData.inl>
 #include <unordered_map>
 
 namespace sofa::component::mapping::_barycentricmappertopologycontainer_
@@ -31,8 +31,7 @@ namespace sofa::component::mapping::_barycentricmappertopologycontainer_
 using sofa::type::Mat3x3d;
 using sofa::type::Vector3;
 using sofa::type::Vec3i;
-using sofa::defaulttype::Vec3dTypes;
-using sofa::defaulttype::Vec3fTypes;
+using sofa::defaulttype::Vec3Types;
 typedef typename sofa::core::topology::BaseMeshTopology::Edge Edge;
 typedef typename sofa::core::topology::BaseMeshTopology::Triangle Triangle;
 typedef typename sofa::core::topology::BaseMeshTopology::Quad Quad;
@@ -73,7 +72,7 @@ public:
     void applyJ( typename Out::VecDeriv& out, const typename In::VecDeriv& in ) override;
     void applyJT( typename In::VecDeriv& out, const typename Out::VecDeriv& in ) override;
     void applyJT( typename In::MatrixDeriv& out, const typename Out::MatrixDeriv& in ) override;
-    const sofa::defaulttype::BaseMatrix* getJ(int outSize, int inSize) override;
+    const sofa::linearalgebra::BaseMatrix* getJ(int outSize, int inSize) override;
 
     template<class I, class O, class MDType, class E>
     friend std::istream& operator >> ( std::istream& in, BarycentricMapperTopologyContainer<I, O, MDType, E> &b );
@@ -119,18 +118,18 @@ protected:
     {
         NearestParams()
         {
-            distance = std::numeric_limits<double>::max();
+            distance = std::numeric_limits<SReal>::max();
             elementId = std::numeric_limits<unsigned int>::max();
         }
 
-        Vector3 baryCoords;
-        double distance;
+        sofa::type::Vec3 baryCoords;
+        SReal distance;
         unsigned int elementId;
     };
 
     using Inherit1::m_fromTopology;
 
-    topology::PointData< type::vector<MappingDataType > > d_map;
+    core::topology::PointData< type::vector<MappingDataType > > d_map;
     MatrixType* m_matrixJ {nullptr};
     bool m_updateJ {false};
 
@@ -153,7 +152,7 @@ protected:
     virtual void computeBase(Mat3x3d& base, const typename In::VecCoord& in, const Element& element)=0;
     virtual void computeCenter(Vector3& center, const typename In::VecCoord& in, const Element& element)=0;
     virtual void addPointInElement(const Index elementIndex, const SReal* baryCoords)=0;
-    virtual void computeDistance(double& d, const Vector3& v)=0;
+    virtual void computeDistance(SReal& d, const Vector3& v)=0;
 
     /// Compute the distance between outPos and the element e. If this distance is smaller than the previously stored one,
     /// update nearestParams.
@@ -181,11 +180,11 @@ protected:
 };
 
 #if !defined(SOFA_COMPONENT_MAPPING_BARYCENTRICMAPPERTOPOLOGYCONTAINER_CPP)
-extern template class SOFA_SOFABASEMECHANICS_API BarycentricMapperTopologyContainer< Vec3dTypes, Vec3dTypes , typename BarycentricMapper<Vec3dTypes, Vec3dTypes>::MappingData1D, Edge>;
-extern template class SOFA_SOFABASEMECHANICS_API BarycentricMapperTopologyContainer< Vec3dTypes, Vec3dTypes , typename BarycentricMapper<Vec3dTypes, Vec3dTypes>::MappingData2D, Triangle>;
-extern template class SOFA_SOFABASEMECHANICS_API BarycentricMapperTopologyContainer< Vec3dTypes, Vec3dTypes , typename BarycentricMapper<Vec3dTypes, Vec3dTypes>::MappingData2D, Quad>;
-extern template class SOFA_SOFABASEMECHANICS_API BarycentricMapperTopologyContainer< Vec3dTypes, Vec3dTypes , typename BarycentricMapper<Vec3dTypes, Vec3dTypes>::MappingData3D, Tetrahedron>;
-extern template class SOFA_SOFABASEMECHANICS_API BarycentricMapperTopologyContainer< Vec3dTypes, Vec3dTypes , typename BarycentricMapper<Vec3dTypes, Vec3dTypes>::MappingData3D, Hexahedron>;
+extern template class SOFA_SOFABASEMECHANICS_API BarycentricMapperTopologyContainer< Vec3Types, Vec3Types , typename BarycentricMapper<Vec3Types, Vec3Types>::MappingData1D, Edge>;
+extern template class SOFA_SOFABASEMECHANICS_API BarycentricMapperTopologyContainer< Vec3Types, Vec3Types , typename BarycentricMapper<Vec3Types, Vec3Types>::MappingData2D, Triangle>;
+extern template class SOFA_SOFABASEMECHANICS_API BarycentricMapperTopologyContainer< Vec3Types, Vec3Types , typename BarycentricMapper<Vec3Types, Vec3Types>::MappingData2D, Quad>;
+extern template class SOFA_SOFABASEMECHANICS_API BarycentricMapperTopologyContainer< Vec3Types, Vec3Types , typename BarycentricMapper<Vec3Types, Vec3Types>::MappingData3D, Tetrahedron>;
+extern template class SOFA_SOFABASEMECHANICS_API BarycentricMapperTopologyContainer< Vec3Types, Vec3Types , typename BarycentricMapper<Vec3Types, Vec3Types>::MappingData3D, Hexahedron>;
 
 
 #endif

@@ -114,8 +114,8 @@ public:
     //void applyJT( typename In::MatrixDeriv& out, const typename Out::MatrixDeriv& in );
 
     // additional Compliant methods
-    const type::vector<sofa::defaulttype::BaseMatrix*>* getJs() override;
-    const sofa::defaulttype::BaseMatrix* getJ() override;
+    const type::vector<sofa::linearalgebra::BaseMatrix*>* getJs() override;
+    const sofa::linearalgebra::BaseMatrix* getJ() override;
 
     SeqTriangles triangles; // Topology of toModel (used for weight display)
     void draw(const core::visual::VisualParams* vparams) override;
@@ -123,7 +123,7 @@ public:
 };
 
 #if  !defined(SOFA_COMPONENT_MAPPING_SKINNINGMAPPING_CPP)
-extern template class SOFA_SOFAGENERALRIGID_API SkinningMapping< sofa::defaulttype::Rigid3Types, sofa::defaulttype::Vec3dTypes >;
+extern template class SOFA_SOFAGENERALRIGID_API SkinningMapping< sofa::defaulttype::Rigid3Types, sofa::defaulttype::Vec3Types >;
 
 #endif // !defined(SOFA_COMPONENT_MAPPING_SKINNINGMAPPING_CPP)
 

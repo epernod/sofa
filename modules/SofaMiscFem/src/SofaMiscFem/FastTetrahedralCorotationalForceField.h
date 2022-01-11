@@ -23,11 +23,11 @@
 
 #include <SofaMiscFem/config.h>
 #include <sofa/core/behavior/ForceField.h>
+#include <sofa/core/topology/TopologyData.h>
 #include <sofa/type/fixed_array.h>
 #include <sofa/type/vector.h>
 #include <sofa/type/Vec.h>
 #include <sofa/type/Mat.h>
-#include <SofaBaseTopology/TopologyData.h>
 
 
 namespace sofa::component::forcefield
@@ -116,9 +116,9 @@ public:
     typedef typename VecCoord::template rebind<TetrahedronRestInformation>::other VecTetrahedronRestInformation;
     typedef typename VecCoord::template rebind <Mat3x3>::other VecMat3x3;
 
-    topology::PointData<VecMat3x3 > pointInfo; ///< Internal point data
-    topology::EdgeData<VecMat3x3 > edgeInfo; ///< Internal edge data
-    topology::TetrahedronData<VecTetrahedronRestInformation > tetrahedronInfo; ///< Internal tetrahedron data
+    core::topology::PointData<VecMat3x3 > pointInfo; ///< Internal point data
+    core::topology::EdgeData<VecMat3x3 > edgeInfo; ///< Internal edge data
+    core::topology::TetrahedronData<VecTetrahedronRestInformation > tetrahedronInfo; ///< Internal tetrahedron data
 
     /** Method to initialize @sa TetrahedronRestInformation when a new Tetrahedron is created.
     * Will be set as creation callback in the TetrahedronData @sa tetrahedronInfo
@@ -126,7 +126,7 @@ public:
     void createTetrahedronRestInformation(Index, TetrahedronRestInformation& t,
         const core::topology::BaseMeshTopology::Tetrahedron&,
         const sofa::type::vector<Index>&,
-        const sofa::type::vector<double>&);
+        const sofa::type::vector<SReal>&);
 
     sofa::core::topology::BaseMeshTopology* m_topology;
     VecCoord  _initialPoints;///< the intial positions of the points
@@ -168,7 +168,7 @@ public:
         return 0.0;
     }
 
-    void addKToMatrix(sofa::defaulttype::BaseMatrix *m, SReal kFactor, unsigned int &offset) override;
+    void addKToMatrix(sofa::linearalgebra::BaseMatrix *m, SReal kFactor, unsigned int &offset) override;
     void addKToMatrix(const core::MechanicalParams* /*mparams*/, const sofa::core::behavior::MultiMatrixAccessor* /*matrix*/ ) override;
 
     void updateTopologyInformation();
@@ -176,13 +176,13 @@ public:
     virtual Real getLambda() const { return lambda;}
     virtual Real getMu() const { return mu;}
 
-    void setYoungModulus(const double modulus)
+    void setYoungModulus(const Real modulus)
     {
-        f_youngModulus.setValue((Real)modulus);
+        f_youngModulus.setValue(modulus);
     }
-    void setPoissonRatio(const double ratio)
+    void setPoissonRatio(const Real ratio)
     {
-        f_poissonRatio.setValue((Real)ratio);
+        f_poissonRatio.setValue(ratio);
     }
     void setRotationDecompositionMethod( const RotationDecompositionMethod m)
     {
@@ -196,7 +196,8 @@ public:
 
 protected :
     static void computeQRRotation( Mat3x3 &r, const Coord *dp);
-
+    core::topology::EdgeData<VecMat3x3> &getEdgeInfo() {return edgeInfo;}
+    
     typedef FastTetrahedralCorotationalForceFieldData<DataTypes> ExtraData;
     ExtraData m_data;
 };

@@ -28,9 +28,8 @@ namespace sofa::component::mapping
 /// Groupe the using as early as possible to make very obvious what are the
 /// external dependencies of the following code.
 using core::visual::VisualParams;
-using sofa::defaulttype::BaseMatrix;
-using sofa::defaulttype::Vec3dTypes;
-using sofa::defaulttype::Vec3fTypes;
+using sofa::linearalgebra::BaseMatrix;
+using sofa::defaulttype::Vec3Types;
 
 /// Class allowing barycentric mapping computation on a MeshTopology
 template<class In, class Out>
@@ -104,7 +103,7 @@ private:
 };
 
 #if !defined(SOFA_COMPONENT_MAPPING_BARYCENTRICMAPPERMESHTOPOLOGY_CPP)
-extern template class SOFA_SOFABASEMECHANICS_API BarycentricMapperMeshTopology< Vec3dTypes, Vec3dTypes >;
+extern template class SOFA_SOFABASEMECHANICS_API BarycentricMapperMeshTopology< Vec3Types, Vec3Types >;
 
 
 #endif

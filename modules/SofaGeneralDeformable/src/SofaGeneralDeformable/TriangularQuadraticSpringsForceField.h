@@ -27,7 +27,7 @@
 #include <sofa/core/topology/BaseMeshTopology.h>
 #include <sofa/type/Vec.h>
 #include <sofa/type/Mat.h>
-#include <SofaBaseTopology/TopologyData.h>
+#include <sofa/core/topology/TopologyData.h>
 
 
 namespace sofa::component::forcefield
@@ -151,11 +151,11 @@ public:
     virtual Real getLambda() const { return lambda;}
     virtual Real getMu() const { return mu;}
 
-    void setYoungModulus(const double modulus)
+    void setYoungModulus(const Real modulus)
     {
         f_youngModulus.setValue((Real)modulus);
     }
-    void setPoissonRatio(const double ratio)
+    void setPoissonRatio(const Real ratio)
     {
         f_poissonRatio.setValue((Real)ratio);
     }
@@ -175,7 +175,7 @@ public:
         EdgeRestInformation& ei,
         const core::topology::BaseMeshTopology::Edge& edge,
         const sofa::type::vector< Index >& ancestors,
-        const sofa::type::vector< double >& coefs);
+        const sofa::type::vector< SReal >& coefs);
 
     /** Method to initialize @sa TriangleRestInformation when a new triangle is created.
     * Will be set as creation callback in the TriangleData @sa triangleInfo
@@ -183,7 +183,7 @@ public:
     void applyTriangleCreation(Index triangleIndex, TriangleRestInformation& tinfo,
         const core::topology::BaseMeshTopology::Triangle& triangle,
         const sofa::type::vector<Index>& ancestors,
-        const sofa::type::vector<double>& coefs);
+        const sofa::type::vector<SReal>& coefs);
 
     /** Method to update @sa triangleInfo when a triangle is removed.
     * Will be set as destruction callback in the TriangleData @sa triangleInfo
@@ -191,10 +191,10 @@ public:
     void applyTriangleDestruction(Index triangleIndex, TriangleRestInformation& tinfo);
 
 protected :
-    sofa::component::topology::TriangleData<sofa::type::vector<TriangleRestInformation> > triangleInfo; ///< Internal triangle data
-    sofa::component::topology::EdgeData<sofa::type::vector<EdgeRestInformation> > edgeInfo; ///< Internal edge data
+    sofa::core::topology::TriangleData<sofa::type::vector<TriangleRestInformation> > triangleInfo; ///< Internal triangle data
+    sofa::core::topology::EdgeData<sofa::type::vector<EdgeRestInformation> > edgeInfo; ///< Internal edge data
 
-    sofa::component::topology::EdgeData<sofa::type::vector<EdgeRestInformation> > &getEdgeInfo() {return edgeInfo;}
+    sofa::core::topology::EdgeData<sofa::type::vector<EdgeRestInformation> > &getEdgeInfo() {return edgeInfo;}
 
     /// Pointer to the current topology
     sofa::core::topology::BaseMeshTopology* m_topology;

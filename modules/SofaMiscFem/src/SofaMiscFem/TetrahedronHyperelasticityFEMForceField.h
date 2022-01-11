@@ -31,7 +31,7 @@
 #include <sofa/type/Mat.h>
 #include <sofa/type/MatSym.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
-#include <SofaBaseTopology/TopologyData.h>
+#include <sofa/core/topology/TopologyData.h>
 #include <string>
 #include <map>
 
@@ -40,7 +40,6 @@ namespace sofa::component::forcefield
 
 using namespace sofa::type;
 using namespace sofa::defaulttype;
-using namespace sofa::component::topology;
 using namespace sofa::core::topology;
 
 //***************** Tetrahedron FEM code for several elastic models: TotalLagrangianForceField************************//
@@ -172,7 +171,7 @@ public:
     * Will be set as creation callback in the TetrahedronData @sa m_tetrahedronInfo
     */
     void createTetrahedronRestInformation(Index, TetrahedronRestInformation& t, const Tetrahedron&,
-        const sofa::type::vector<Index>&, const sofa::type::vector<double>&);
+        const sofa::type::vector<Index>&, const sofa::type::vector<SReal>&);
 
 protected:
    TetrahedronHyperelasticityFEMForceField();
@@ -187,13 +186,13 @@ public:
     void addForce(const core::MechanicalParams* mparams /* PARAMS FIRST */, DataVecDeriv& d_f, const DataVecCoord& d_x, const DataVecDeriv& d_v) override;
     void addDForce(const core::MechanicalParams* mparams /* PARAMS FIRST */, DataVecDeriv& d_df, const DataVecDeriv& d_dx) override;
     SReal getPotentialEnergy(const core::MechanicalParams*, const DataVecCoord&) const override;
-    void addKToMatrix(sofa::defaulttype::BaseMatrix *mat, SReal k, unsigned int &offset) override;
+    void addKToMatrix(sofa::linearalgebra::BaseMatrix *mat, SReal k, unsigned int &offset) override;
 
     void draw(const core::visual::VisualParams* vparams) override;
 
     void computeBBox(const core::ExecParams* params, bool onlyVisible) override;
 
-    Mat<3,3,double> getPhi( int tetrahedronIndex);
+    Mat<3,3, SReal> getPhi( int tetrahedronIndex);
 
 
   protected:
@@ -207,12 +206,9 @@ public:
     void updateTangentMatrix();
 };
 
-using sofa::defaulttype::Vec3dTypes;
-using sofa::defaulttype::Vec3fTypes;
-
 #if  !defined(SOFA_COMPONENT_FORCEFIELD_TETRAHEDRONHYPERELASTICITYFEMFORCEFIELD_CPP)
 
-extern template class SOFA_SOFAMISCFEM_API TetrahedronHyperelasticityFEMForceField<Vec3Types>;
+extern template class SOFA_SOFAMISCFEM_API TetrahedronHyperelasticityFEMForceField<defaulttype::Vec3Types>;
 
 
 #endif //  !defined(SOFA_COMPONENT_FORCEFIELD_TETRAHEDRONHYPERELASTICITYFEMFORCEFIELD_CPP)

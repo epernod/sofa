@@ -31,7 +31,7 @@
 #include <sofa/type/Mat.h>
 
 #include <sofa/type/Mat.h>
-#include <SofaBaseTopology/TopologyData.h>
+#include <sofa/core/topology/TopologyData.h>
 
 #define LOCAL_OPTIM
 
@@ -81,7 +81,7 @@ public:
 
     void addForce(const core::MechanicalParams* mparams, DataVecDeriv& d_f, const DataVecCoord& d_x, const DataVecDeriv& d_v) override;
     void addDForce(const core::MechanicalParams* mparams, DataVecDeriv& d_df, const DataVecDeriv& d_dx) override;
-    void addKToMatrix(sofa::defaulttype::BaseMatrix *mat, SReal k, unsigned int &offset) override; // compute and add all the element stiffnesses to the global stiffness matrix
+    void addKToMatrix(sofa::linearalgebra::BaseMatrix *mat, SReal k, unsigned int &offset) override; // compute and add all the element stiffnesses to the global stiffness matrix
     SReal getPotentialEnergy(const core::MechanicalParams* mparams, const DataVecCoord& d_x) const override;
 
     void draw(const core::visual::VisualParams* vparams) override;
@@ -115,7 +115,6 @@ protected:
         // Optimized version of addDForce
         void addDForce( VecDeriv& df, const VecDeriv& dp, Real kfactor) const
         {
-            using namespace sofa::component::topology;
             if( !is_activated ) return;
 
             Deriv dpKfact[4];
@@ -144,7 +143,7 @@ protected:
 #endif
 
         /// Stiffness matrix assembly
-        void addStiffness( sofa::defaulttype::BaseMatrix *bm, unsigned int offset, SReal scale, core::behavior::ForceField< _DataTypes>* ff ) const;
+        void addStiffness( sofa::linearalgebra::BaseMatrix *bm, unsigned int offset, SReal scale, core::behavior::ForceField< _DataTypes>* ff ) const;
         /// Compliant stiffness matrix assembly
         void getStiffness( StiffnessMatrix &K ) const;
         /// replace a vertex index with another one
@@ -166,7 +165,7 @@ protected:
     };
 
     /// The list of edge springs, one for each edge between two triangles
-    sofa::component::topology::EdgeData<type::vector<EdgeSpring> > d_edgeSprings;
+    sofa::core::topology::EdgeData<type::vector<EdgeSpring> > d_edgeSprings;
 
     /** Method to initialize @sa EdgeSpring when a new edge is created.
     * Will be set as creation callback in the EdgeData @sa d_edgeSprings
@@ -174,7 +173,7 @@ protected:
     void applyEdgeCreation(Index edgeIndex,
         EdgeSpring& ei,
         const core::topology::BaseMeshTopology::Edge&, const sofa::type::vector< Index >&,
-        const sofa::type::vector< double >&);
+        const sofa::type::vector< SReal >&);
 
     /** Method to update @sa d_edgeSprings when a new triangle is created.
     * Will be set as callback in the EdgeData @sa d_edgeSprings when TRIANGLESADDED event is fired
@@ -183,7 +182,7 @@ protected:
     void applyTriangleCreation(const sofa::type::vector<Index>& triangleAdded,
         const sofa::type::vector<core::topology::BaseMeshTopology::Triangle>&,
         const sofa::type::vector<sofa::type::vector<Index> >&,
-        const sofa::type::vector<sofa::type::vector<double> >&);
+        const sofa::type::vector<sofa::type::vector<SReal> >&);
 
     /** Method to update @sa d_edgeSprings when a triangle is removed.
     * Will be set as callback in the EdgeData @sa d_edgeSprings when TRIANGLESREMOVED event is fired
@@ -204,7 +203,7 @@ protected:
 
     virtual ~FastTriangularBendingSprings();
 
-    sofa::component::topology::EdgeData<type::vector<EdgeSpring> > &getEdgeInfo() {return d_edgeSprings;}
+    sofa::core::topology::EdgeData<type::vector<EdgeSpring> > &getEdgeInfo() {return d_edgeSprings;}
 
     SReal m_potentialEnergy;
 };

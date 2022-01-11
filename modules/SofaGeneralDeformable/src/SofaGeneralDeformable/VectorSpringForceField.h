@@ -28,7 +28,7 @@
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/type/Mat.h>
-#include <SofaBaseTopology/TopologyData.h>
+#include <sofa/core/topology/TopologyData.h>
 #include <sofa/core/objectmodel/DataFileName.h>
 
 
@@ -95,14 +95,14 @@ protected:
 public:
 
     /// where the springs information are stored
-    sofa::component::topology::EdgeData<sofa::type::vector<Spring> > springArray;
+    sofa::core::topology::EdgeData<sofa::type::vector<Spring> > springArray;
 
     /// the filename where to load the spring information
     sofa::core::objectmodel::DataFileName m_filename;
     /// By default, assume that all edges have the same stiffness
-    Data<double> m_stiffness;
+    Data<SReal> m_stiffness;
     /// By default, assume that all edges have the same viscosity
-    Data<double> m_viscosity;
+    Data<SReal> m_viscosity;
 
     Data<bool> m_useTopology; ///< Activate/Desactivate topology mode of the component (springs on each edge)
 
@@ -124,7 +124,7 @@ protected:
     void createEdgeInformation(Index, Spring& t,
         const core::topology::BaseMeshTopology::Edge& e,
         const sofa::type::vector<Index>& ancestors,
-        const sofa::type::vector<double>& coefs);
+        const sofa::type::vector<SReal>& coefs);
 
 public:
     bool load(const char *filename);
@@ -151,7 +151,7 @@ public:
     {
         return Real(m_viscosity.getValue());
     }
-    const topology::EdgeData<sofa::type::vector<Spring> >& getSpringArray() const
+    const core::topology::EdgeData<sofa::type::vector<Spring> >& getSpringArray() const
     {
         return springArray;
     }

@@ -104,7 +104,7 @@ public:
 
     void applyJT(const core::ConstraintParams *cparams, Data<InMatrixDeriv>& out, const Data<MatrixDeriv>& in) override;
 
-    const sofa::defaulttype::BaseMatrix* getJ() override;
+    const sofa::linearalgebra::BaseMatrix* getJ() override;
 
     void handleTopologyChange() override;
 
@@ -114,7 +114,7 @@ protected:
     typedef linearalgebra::EigenSparseMatrix<TIn, TOut> eigen_type;
     eigen_type J;
 
-    typedef type::vector< defaulttype::BaseMatrix* > js_type;
+    typedef type::vector< linearalgebra::BaseMatrix* > js_type;
     js_type Js;
 
 public:
@@ -125,14 +125,14 @@ public:
 
 #if  !defined(SOFA_COMPONENT_MAPPING_IDENTITYMAPPING_CPP)
 
-extern template class SOFA_SOFABASEMECHANICS_API IdentityMapping< defaulttype::Vec3dTypes, defaulttype::Vec3dTypes >;
+extern template class SOFA_SOFABASEMECHANICS_API IdentityMapping< defaulttype::Vec3Types, defaulttype::Vec3Types >;
 extern template class SOFA_SOFABASEMECHANICS_API IdentityMapping< defaulttype::Vec2Types, defaulttype::Vec2Types >;
 extern template class SOFA_SOFABASEMECHANICS_API IdentityMapping< defaulttype::Vec1Types, defaulttype::Vec1Types >;
 extern template class SOFA_SOFABASEMECHANICS_API IdentityMapping< defaulttype::Vec6Types, defaulttype::Vec6Types >;
-extern template class SOFA_SOFABASEMECHANICS_API IdentityMapping< defaulttype::Vec6Types, defaulttype::Vec3dTypes >;
+extern template class SOFA_SOFABASEMECHANICS_API IdentityMapping< defaulttype::Vec6Types, defaulttype::Vec3Types >;
 extern template class SOFA_SOFABASEMECHANICS_API IdentityMapping< defaulttype::Rigid3Types, defaulttype::Rigid3Types >;
 extern template class SOFA_SOFABASEMECHANICS_API IdentityMapping< defaulttype::Rigid2Types, defaulttype::Rigid2Types >;
-extern template class SOFA_SOFABASEMECHANICS_API IdentityMapping< defaulttype::Rigid3Types, defaulttype::Vec3dTypes >;
+extern template class SOFA_SOFABASEMECHANICS_API IdentityMapping< defaulttype::Rigid3Types, defaulttype::Vec3Types >;
 extern template class SOFA_SOFABASEMECHANICS_API IdentityMapping< defaulttype::Rigid2Types, defaulttype::Vec2Types >;
 
 #endif

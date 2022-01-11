@@ -336,13 +336,13 @@ void BarycentricMapping<TIn, TOut>::applyJT (const core::MechanicalParams * mpar
 
 
 template <class TIn, class TOut>
-const sofa::defaulttype::BaseMatrix* BarycentricMapping<TIn, TOut>::getJ()
+const sofa::linearalgebra::BaseMatrix* BarycentricMapping<TIn, TOut>::getJ()
 {
     if (d_mapper!=nullptr )
     {
         const size_t outStateSize = this->toModel->getSize();
         const size_t inStateSize = this->fromModel->getSize();
-        const sofa::defaulttype::BaseMatrix* matJ = d_mapper->getJ((int)outStateSize, (int)inStateSize);
+        const sofa::linearalgebra::BaseMatrix* matJ = d_mapper->getJ((int)outStateSize, (int)inStateSize);
 
         return matJ;
     }
@@ -481,10 +481,10 @@ void BarycentricMapperTriangleSetTopology<In,Out>::handleTopologyChange(core::to
 #endif // BARYCENTRIC_MAPPER_TOPOCHANGE_REINIT
 
 template<class TIn, class TOut>
-const type::vector< defaulttype::BaseMatrix*>* BarycentricMapping<TIn, TOut>::getJs()
+const type::vector< linearalgebra::BaseMatrix*>* BarycentricMapping<TIn, TOut>::getJs()
 {
     typedef typename Mapper::MatrixType mat_type;
-    const sofa::defaulttype::BaseMatrix* matJ = getJ();
+    const sofa::linearalgebra::BaseMatrix* matJ = getJ();
 
     const auto * mat = dynamic_cast<const mat_type*>(matJ);
     if(mat==nullptr)

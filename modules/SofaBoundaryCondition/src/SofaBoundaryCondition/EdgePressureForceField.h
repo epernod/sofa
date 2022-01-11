@@ -23,7 +23,7 @@
 #include <SofaBoundaryCondition/config.h>
 
 #include <sofa/core/behavior/ForceField.h>
-#include <SofaBaseTopology/TopologySubsetData.h>
+#include <sofa/core/topology/TopologySubsetData.h>
 
 namespace sofa::component::forcefield
 {
@@ -76,7 +76,7 @@ protected:
         }
     };
 
-    sofa::component::topology::EdgeSubsetData<sofa::type::vector< EdgePressureInformation> > edgePressureMap; ///< map between edge indices and their pressure
+    sofa::core::topology::EdgeSubsetData<sofa::type::vector< EdgePressureInformation> > edgePressureMap; ///< map between edge indices and their pressure
 
     sofa::core::topology::BaseMeshTopology* _completeTopology{nullptr};
 

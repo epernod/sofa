@@ -22,7 +22,7 @@
 #pragma once
 
 #include <SofaBoundaryCondition/PointConstraint.h>
-#include <SofaBaseLinearSolver/SparseMatrix.h>
+#include <sofa/linearalgebra/SparseMatrix.h>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/simulation/Simulation.h>
 #include <sofa/defaulttype/RigidTypes.h>
@@ -59,10 +59,10 @@ void PointConstraint<DataTypes>::init()
 
 /// Update and return the jacobian. @todo update it when needed using topological engines instead of recomputing it at each call.
 template <class DataTypes>
-const sofa::defaulttype::BaseMatrix*  PointConstraint<DataTypes>::getJ(const core::MechanicalParams* )
+const sofa::linearalgebra::BaseMatrix*  PointConstraint<DataTypes>::getJ(const core::MechanicalParams* )
 {
-    unsigned numBlocks = this->mstate->getSize();
-    unsigned blockSize = DataTypes::deriv_total_size;
+    const unsigned numBlocks = this->mstate->getSize();
+    const unsigned blockSize = DataTypes::deriv_total_size;
     jacobian.resize( numBlocks*blockSize,numBlocks*blockSize );
 
     for(unsigned i=0; i<numBlocks*blockSize; i++ )
@@ -132,8 +132,7 @@ template <class DataTypes>
 void PointConstraint<DataTypes>::applyConstraint(const core::MechanicalParams* mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix)
 {
     SOFA_UNUSED(mparams);
-    core::behavior::MultiMatrixAccessor::MatrixRef r = matrix->getMatrix(this->mstate.get());
-    if(r)
+    if(const core::behavior::MultiMatrixAccessor::MatrixRef r = matrix->getMatrix(this->mstate.get()))
     {
         const unsigned int N = Deriv::size();
         const SetIndexArray & indices = f_indices.getValue();
@@ -151,13 +150,13 @@ void PointConstraint<DataTypes>::applyConstraint(const core::MechanicalParams* m
 }
 
 template <class DataTypes>
-void PointConstraint<DataTypes>::applyConstraint(const core::MechanicalParams* mparams, defaulttype::BaseVector* vector, const sofa::core::behavior::MultiMatrixAccessor* matrix)
+void PointConstraint<DataTypes>::applyConstraint(const core::MechanicalParams* mparams, linearalgebra::BaseVector* vector, const sofa::core::behavior::MultiMatrixAccessor* matrix)
 {
     SOFA_UNUSED(mparams);
-    int o = matrix->getGlobalOffset(this->mstate.get());
+    const int o = matrix->getGlobalOffset(this->mstate.get());
     if (o >= 0)
     {
-        unsigned int offset = (unsigned int)o;
+        const unsigned int offset = (unsigned int)o;
         const unsigned int N = Deriv::size();
 
         const SetIndexArray & indices = f_indices.getValue();

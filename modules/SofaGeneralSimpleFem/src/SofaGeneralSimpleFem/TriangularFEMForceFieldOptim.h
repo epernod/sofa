@@ -25,7 +25,7 @@
 #include <sofa/core/topology/BaseMeshTopology.h>
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/type/Mat.h>
-#include <SofaBaseTopology/TopologyData.h>
+#include <sofa/core/topology/TopologyData.h>
 
 namespace sofa::component::forcefield
 {
@@ -84,6 +84,7 @@ public:
 
 protected:
     typedef type::Mat<2, 3, Real > Transformation;				    ///< matrix for rigid transformations like rotations
+    typedef type::Mat<3, 3, Real> MaterialStiffness;
     enum { DerivSize = DataTypes::deriv_total_size };
     typedef type::Mat<DerivSize, DerivSize, Real> MatBloc;
 
@@ -96,6 +97,9 @@ protected:
 
     virtual ~TriangularFEMForceFieldOptim();
 public:
+    Real getPoisson() { return d_poisson.getValue(); }
+    Real getYoung() { return d_young.getValue(); }
+
     void init() override;
     void reinit() override;
     void addForce(const core::MechanicalParams* mparams, DataVecDeriv& f, const DataVecCoord& x, const DataVecDeriv& v) override;
@@ -176,8 +180,8 @@ public:
     /// Topology Data
     typedef typename VecCoord::template rebind<TriangleInfo>::other VecTriangleInfo;
     typedef typename VecCoord::template rebind<TriangleState>::other VecTriangleState;
-    topology::TriangleData<VecTriangleInfo> d_triangleInfo; ///< Internal triangle data (persistent)
-    topology::TriangleData<VecTriangleState> d_triangleState; ///< Internal triangle data (time-dependent)
+    core::topology::TriangleData<VecTriangleInfo> d_triangleInfo; ///< Internal triangle data (persistent)
+    core::topology::TriangleData<VecTriangleState> d_triangleState; ///< Internal triangle data (time-dependent)
 
     /** Method to create @sa TriangleInfo when a new triangle is created.
     * Will be set as creation callback in the TriangleData @sa d_triangleInfo
@@ -185,7 +189,7 @@ public:
     void createTriangleInfo(Index triangleIndex, TriangleInfo&, 
         const Triangle& t,
         const sofa::type::vector< Index >&,
-        const sofa::type::vector< double >&);
+        const sofa::type::vector< SReal >&);
 
     /** Method to create @sa TriangleState when a new triangle is created.
     * Will be set as creation callback in the TriangleData @sa d_triangleState
@@ -193,7 +197,7 @@ public:
     void createTriangleState(Index triangleIndex, TriangleState&, 
         const Triangle& t,
         const sofa::type::vector< Index > &,
-        const sofa::type::vector< double > &);
+        const sofa::type::vector< SReal > &);
 
     void initTriangleInfo(Index triangleIndex, TriangleInfo& ti, const Triangle t, const VecCoord& x0);
     void initTriangleState(Index triangleIndex, TriangleState& ti, const Triangle t, const VecCoord& x);
@@ -213,6 +217,13 @@ public:
 
     void getTriangleVonMisesStress(Index i, Real& stressValue);
     void getTrianglePrincipalStress(Index i, Real& stressValue, Deriv& stressDirection, Real& stressValue2, Deriv& stressDirection2);
+
+    /// Public methods to access FEM information per element. Those method should not be used internally as they add check on element id.
+    type::fixed_array <Coord, 3> getRotatedInitialElement(Index elemId);
+    Transformation getRotationMatrix(Index elemId);
+    MaterialStiffness getMaterialStiffness(Index elemId);
+    type::Vec3 getStrainDisplacementFactors(Index elemId);
+    Real getTriangleFactor(Index elemId);
 
 public:
 

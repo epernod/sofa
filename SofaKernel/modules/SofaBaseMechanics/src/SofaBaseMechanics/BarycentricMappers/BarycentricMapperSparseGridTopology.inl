@@ -89,14 +89,14 @@ void BarycentricMapperSparseGridTopology<In,Out>::init ( const typename Out::Vec
     {
         for ( unsigned int i=0; i<out.size(); i++ )
         {
-            Vector3 coefs;
-            Index cube = m_fromTopology->findCube ( Vector3 ( Out::getCPos(out[i]) ), coefs[0], coefs[1], coefs[2] );
+            sofa::type::Vec3 coefs;
+            Index cube = m_fromTopology->findCube ( Out::getCPos(out[i]), coefs[0], coefs[1], coefs[2] );
             if ( cube==sofa::InvalidID )
             {
-                cube = m_fromTopology->findNearestCube ( Vector3 ( Out::getCPos(out[i]) ), coefs[0], coefs[1], coefs[2] );
+                cube = m_fromTopology->findNearestCube ( Out::getCPos(out[i]), coefs[0], coefs[1], coefs[2] );
             }
-            Vector3 baryCoords = coefs;
-            this->addPointInCube ( cube, baryCoords.ptr() );
+
+            this->addPointInCube ( cube, coefs.ptr() );
         }
     }
 }
@@ -143,7 +143,7 @@ void BarycentricMapperSparseGridTopology<In,Out>::draw  (const VisualParams* vpa
 
 
 template <class In, class Out>
-const sofa::defaulttype::BaseMatrix* BarycentricMapperSparseGridTopology<In,Out>::getJ(int outSize, int inSize)
+const sofa::linearalgebra::BaseMatrix* BarycentricMapperSparseGridTopology<In,Out>::getJ(int outSize, int inSize)
 {
     if (m_matrixJ && !m_updateJ)
         return m_matrixJ;
