@@ -24,30 +24,15 @@
 #include "CudaTypes.h"
 #include <SofaMiscFem/TriangularFEMForceField.h>
 
-namespace sofa
+namespace sofa::component::forcefield
 {
 
-namespace gpu
-{
-
-namespace cuda
-{
-
-} // namespace cuda
-
-} // namespace gpu
-
-namespace component
-{
-
-namespace forcefield
-{
-
-template <>
-class TriangularFEMForceFieldInternalData<sofa::gpu::cuda::CudaVec3fTypes>
+template <class TCoord, class TDeriv, class TReal>
+class TriangularFEMForceFieldInternalData< gpu::cuda::CudaVectorTypes<TCoord, TDeriv, TReal> >
 {
 public:
-    typedef TriangularFEMForceField<gpu::cuda::CudaVec3fTypes> Main;
+    typedef gpu::cuda::CudaVectorTypes<TCoord, TDeriv, TReal> DataTypes;
+    typedef TriangularFEMForceField<DataTypes> Main;
     struct GPUTriangleInfo
     {
         int ia, ib, ic;
@@ -82,8 +67,4 @@ template <>
 void TriangularFEMForceField<gpu::cuda::CudaVec3fTypes>::addDForce(const core::MechanicalParams* mparams, DataVecDeriv& d_df, const DataVecDeriv& d_dx);
 
 
-} // namespace forcefield
-
-} // namespace component
-
-} // namespace sofa
+} // namespace sofa::component::forcefield
