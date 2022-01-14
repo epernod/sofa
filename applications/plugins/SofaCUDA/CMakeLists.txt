@@ -207,7 +207,6 @@ set(CUDA_SOURCES
     sofa/gpu/cuda/CudaTetrahedronTLEDForceField.cu
     sofa/gpu/cuda/CudaTriangularFEMForceField.cu
     sofa/gpu/cuda/CudaTriangularFEMForceFieldOptim.cu
-    
 
     ### ForceFields
     sofa/gpu/cuda/CudaEllipsoidForceField.cu
@@ -243,7 +242,7 @@ else()
     )
 endif()
 
-set(README_FILES SofaCUDA.txt)
+set(README_FILES README.md)
 
 find_package(CUDA REQUIRED)
 
