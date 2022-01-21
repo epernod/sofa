@@ -30,6 +30,8 @@ namespace sofa::gpu::cuda
 using CudaSphereCollisionModel = sofa::component::collision::SphereCollisionModel<CudaVec3Types>;
 using CudaSphereCollisionModelf1 = sofa::component::collision::SphereCollisionModel<CudaVec3f1Types>;
 
+using CudaSphere = sofa::component::collision::TSphere<CudaVec3fTypes>;
+
 } // namespace sofa::gpu::cuda
 
 
