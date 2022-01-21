@@ -48,17 +48,10 @@
 #include <sofa/core/Mapping.inl>
 #include <fstream>
 
-namespace sofa
-{
-
-namespace component
-{
-
-namespace collision
+namespace sofa::component::collision
 {
 
 using namespace sofa::gpu::cuda;
-
 
 template class SOFA_GPU_CUDA_API MouseInteractor<CudaVec3fTypes>;
 template class SOFA_GPU_CUDA_API TComponentMouseInteraction< CudaVec3fTypes >;
@@ -89,16 +82,10 @@ using FixParticlePerformerCuda3d = FixParticlePerformer<gpu::cuda::CudaVec3Types
 int triangleFixParticle = FixParticlePerformerCuda3d::RegisterSupportedModel<TriangleCollisionModel<gpu::cuda::Vec3Types>>(&FixParticlePerformerCuda3d::getFixationPointsTriangle<TriangleCollisionModel<gpu::cuda::Vec3Types>>);
 
 
-} //namespace collision
+} //namespace sofa::component::collision
 
 
-} //namespace component
-
-
-namespace gpu
-{
-
-namespace cuda
+namespace sofa::gpu::cuda
 {
 
 
@@ -192,8 +179,4 @@ int CudaProximityIntersectionClass = core::RegisterObject("GPGPU Proximity Inter
 
 sofa::helper::Creator<core::collision::Contact::Factory, component::collision::RayContact<sofa::component::collision::SphereCollisionModel<gpu::cuda::CudaVec3Types>> > RayCudaSphereContactClass("RayContact",true);
 
-} // namespace cuda
-
-} // namespace gpu
-
-} // namespace sofa
+} // namespace sofa::gpu::cuda
