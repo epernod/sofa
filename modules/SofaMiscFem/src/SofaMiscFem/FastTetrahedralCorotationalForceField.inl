@@ -41,7 +41,7 @@ void FastTetrahedralCorotationalForceField<DataTypes>::createTetrahedronRestInfo
         const sofa::type::vector<SReal> &)
 {
     const std::vector< Tetrahedron > &tetrahedronArray=this->m_topology->getTetrahedra() ;
-    //		const std::vector< Edge> &edgeArray=m_topology->getEdges() ;
+
     unsigned int j,k,l,m,n;
     typename DataTypes::Real lambda=getLambda();
     typename DataTypes::Real mu=getMu();

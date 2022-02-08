@@ -19,55 +19,37 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include "CudaTypes.h"
+#include <sofa/gpu/cuda/CudaTypes.h>
 #include <sofa/core/ObjectFactory.h>
 #include <SofaGeneralEngine/NearestPointROI.inl>
-#include <sofa/defaulttype/VecTypes.h>
-#include <sofa/defaulttype/RigidTypes.h>
 
 namespace sofa
 {
 
-namespace component
+namespace component::engine
 {
 
-namespace engine
-{
-template class SOFA_GPU_CUDA_API NearestPointROI<gpu::cuda::CudaVec2fTypes>;
 template class SOFA_GPU_CUDA_API NearestPointROI<gpu::cuda::CudaVec3fTypes>;
 template class SOFA_GPU_CUDA_API NearestPointROI<gpu::cuda::CudaVec3f1Types>;
-template class SOFA_GPU_CUDA_API NearestPointROI<gpu::cuda::CudaRigid3fTypes>;
 #ifdef SOFA_GPU_CUDA_DOUBLE
-template class SOFA_GPU_CUDA_API NearestPointROI<gpu::cuda::CudaVec2dTypes>;
 template class SOFA_GPU_CUDA_API NearestPointROI<gpu::cuda::CudaVec3dTypes>;
 template class SOFA_GPU_CUDA_API NearestPointROI<gpu::cuda::CudaVec3d1Types>;
 #endif // SOFA_GPU_CUDA_DOUBLE
 
-} // namespace engine
+} // namespace component::engine
 
-} // namespace component
-
-namespace gpu
-{
-
-namespace cuda
+namespace gpu::cuda
 {
 
 int NearestPointROICudaClass = core::RegisterObject("Supports GPU-side computations using CUDA")
-        .add< component::engine::NearestPointROI<CudaVec2fTypes> >()
         .add< component::engine::NearestPointROI<CudaVec3fTypes> >()
         .add< component::engine::NearestPointROI<CudaVec3f1Types> >()
-        .add< component::engine::NearestPointROI<CudaRigid3fTypes> >()
 #ifdef SOFA_GPU_CUDA_DOUBLE
-        .add< component::engine::NearestPointROI<CudaVec2dTypes> >()
         .add< component::engine::NearestPointROI<CudaVec3dTypes> >()
         .add< component::engine::NearestPointROI<CudaVec3d1Types> >()
-        .add< component::engine::NearestPointROI<CudaRigid3dTypes> >()
 #endif // SOFA_GPU_CUDA_DOUBLE
         ;
 
-} // namespace cuda
-
-} // namespace gpu
+} // namespace gpu::cuda
 
 } // namespace sofa

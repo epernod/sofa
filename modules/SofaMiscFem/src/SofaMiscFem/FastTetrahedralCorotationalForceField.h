@@ -106,10 +106,6 @@ public:
         {
             return in;
         }
-
-        TetrahedronRestInformation()
-        {
-        }
     };
 
     /// Topology Data
@@ -196,7 +192,8 @@ public:
 
 protected :
     static void computeQRRotation( Mat3x3 &r, const Coord *dp);
-    core::topology::EdgeData<VecMat3x3> &getEdgeInfo() {return edgeInfo;}
+
+    core::topology::EdgeData< VecMat3x3 > &getEdgeInfo() {return edgeInfo;}
     
     typedef FastTetrahedralCorotationalForceFieldData<DataTypes> ExtraData;
     ExtraData m_data;

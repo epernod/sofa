@@ -7,11 +7,12 @@ ignore "CudaTetrahedronTLEDForceField.scn"
 ignore "liver-CUDA.scn"
 ignore "quadSelfCollisCUDA.scn"
 ignore "quadSpringSphere2CUDA.scn"
-ignore "quadSpringSphereCUDA.scn"
+
 
 iterations "raptor-cpu.scn" "10"
 timeout "raptor-cpu.scn" "60"
 ignore "raptor-cuda.scn"
+
 
 iterations "raptor-surface-cpu.scn" "10"
 timeout "raptor-surface-cpu.scn" "60"
