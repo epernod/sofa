@@ -166,6 +166,7 @@ public:
 
     using Inherit1::l_topology;
 
+protected:
     FastTetrahedralCorotationalForceField();
 
     virtual ~FastTetrahedralCorotationalForceField();
