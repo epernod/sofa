@@ -23,6 +23,7 @@
 * User of this library should read the documentation
 * in the logging.h file.
 ******************************************************************************/
+#include <sofa/component/sceneutility/config.h>
 #include <sofa/core/ObjectFactory.h>
 using sofa::core::RegisterObject ;
 
@@ -47,11 +48,11 @@ using sofa::helper::logging::RichConsoleStyleMessageFormatter ;
 #include <sofa/helper/logging/Messaging.h>
 using sofa::helper::logging::MessageDispatcher;
 
-#include <SofaBaseUtils/messageHandlerComponent.h>
+#include <sofa/component/sceneutility/MessageHandlerComponent.h>
 
 using std::string;
 
-namespace sofa::component::logging
+namespace sofa::component::sceneutility
 {
 
 MessageHandlerComponent::MessageHandlerComponent() :
@@ -156,4 +157,4 @@ int FileMessageHandlerComponentClass = RegisterObject("This component dump all t
                                                       "a file.")
         .add< FileMessageHandlerComponent >()
         ;
-} // namespace sofa::component::logging
+} // namespace sofa::component::sceneutility

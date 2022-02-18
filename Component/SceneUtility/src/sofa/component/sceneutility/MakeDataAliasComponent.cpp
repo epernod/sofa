@@ -19,39 +19,53 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
+#include <sofa/component/sceneutility/config.h>
 #include <sofa/core/ObjectFactory.h>
 using sofa::core::RegisterObject ;
 using sofa::core::ObjectFactory ;
 
 using sofa::core::objectmodel::ComponentState ;
 
-#include <SofaBaseUtils/MakeAliasComponent.h>
+#include <sofa/component/sceneutility/MakeDataAliasComponent.h>
 
 using std::string;
 
-namespace sofa::component::makealiascomponent
+namespace sofa::component::sceneutility::makedataaliascomponent
 {
 
-MakeAliasComponent::MakeAliasComponent() :
-   d_targetcomponent(initData(&d_targetcomponent, "targetcomponent", "The component class for which to create an alias."))
-  ,d_alias(initData(&d_alias, "alias", "The new alias of the component."))
+MakeDataAliasComponent::MakeDataAliasComponent() :
+   d_componentname(initData(&d_componentname, "componentname", "The component class for which to create an alias."))
+  ,d_dataname(initData(&d_dataname, "dataname", "The data field for which to create an alias."))
+  ,d_alias(initData(&d_alias, "alias", "The alias of the data field."))
 {
     d_componentState.setValue(ComponentState::Invalid) ;
 }
 
-void MakeAliasComponent::parse ( core::objectmodel::BaseObjectDescription* arg )
+void MakeDataAliasComponent::parse ( core::objectmodel::BaseObjectDescription* arg )
 {
     BaseObject::parse(arg) ;
 
-    const char* target=arg->getAttribute("targetcomponent") ;
-    if(target==nullptr)
+    const char* component=arg->getAttribute("componentname") ;
+    if(component==nullptr)
     {
-        msg_error(this) << "The mandatory 'targetcomponent' attribute is missing.  "
+        msg_error(this) << "The mandatory 'componentname' attribute is missing.  "
                            "The component is disabled.  "
                            "To remove this error message you need to add a targetcomponent attribute pointing to a valid component's ClassName.";
         return ;
     }
-    string starget(target) ;
+    string scomponent(component) ;
+
+
+    const char* dataname=arg->getAttribute("dataname") ;
+    if(dataname==nullptr)
+    {
+        msg_error(this) << "The mandatory 'dataname' attribute is missing.  "
+                           "The component is disabled.  "
+                           "To remove this error message you need to add a targetcomponent attribute pointing to a valid component's ClassName.";
+        return ;
+    }
+    string sdataname(dataname) ;
+
 
     const char* alias=arg->getAttribute("alias") ;
     if(alias==nullptr)
@@ -63,21 +77,24 @@ void MakeAliasComponent::parse ( core::objectmodel::BaseObjectDescription* arg )
     }
     string salias(alias);
 
-    if(!ObjectFactory::getInstance()->hasCreator(starget))
-    {
-        msg_error(this) << "The provided attribute 'targetcomponent= "<< starget << "' does not correspond to a valid component ClassName  "
+    if(!ObjectFactory::getInstance()->hasCreator(scomponent)){
+        msg_error(this) << "The value '"<< scomponent << "' for 'componentname' does not correspond to a valid name.  "
                            "The component is disabled.  "
-                           "To remove this error message you need to fix your scene and provide a valid component ClassName in the 'targetcomponent' attribute. ";
+                           "To remove this error message you need to add a targetcomponent attribute pointing to a valid component's ClassName.";
         return ;
     }
 
-    ObjectFactory::getInstance()->addAlias(salias, starget);
+    ObjectFactory::ClassEntry& creatorentry = ObjectFactory::getInstance()->getEntry(scomponent);
+    if(creatorentry.m_dataAlias.find(dataname) != creatorentry.m_dataAlias.end()){
+        creatorentry.m_dataAlias[dataname] = std::vector<std::string>();
+    }
+    creatorentry.m_dataAlias[dataname].push_back(salias) ;
 
     d_componentState.setValue(ComponentState::Valid) ;
 }
 
-int MakeAliasComponentClass = RegisterObject("This object create an alias to a component name to make the scene more readable. ")
-        .add< MakeAliasComponent >()
+int MakeDataAliasComponentClass = RegisterObject("This object create an alias to a data field. ")
+        .add< MakeDataAliasComponent >()
         ;
 
-} // namespace sofa::component::makealiascomponent
+} // namespace sofa::component::sceneutility::makedataaliascomponent

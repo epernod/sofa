@@ -47,7 +47,6 @@ extern "C"
 
 } // namespace sofa::gpu::cuda
 
-
 namespace sofa::component::collision
 {
 
@@ -192,7 +191,6 @@ public:
     }
 };
 
-
 template<class DataTypes>
 class ContactMapper<CudaTriangleCollisionModel, DataTypes> : public BarycentricContactMapper<CudaTriangleCollisionModel, DataTypes>
 {
@@ -200,7 +198,6 @@ public:
     typedef typename DataTypes::Real Real;
     typedef typename DataTypes::Coord Coord;
     using Index = sofa::Index;
-
     Index addPoint(const Coord& P, Index index, Real&)
     {
         auto nbt = this->model->getCollisionTopology()->getNbTriangles();
@@ -222,7 +219,6 @@ public:
             }
         }
     }
-
     Index addPointB(const Coord& P, Index index, Real& /*r*/, const type::Vec3& baryP)
     {
         auto nbt = this->model->getCollisionTopology()->getNbTriangles();
@@ -243,10 +239,8 @@ public:
             }
         }
     }
-
     inline Index addPointB(const Coord& P, Index index, Real& r) { return addPoint(P, index, r); }
 };
-
 
 
 } // namespace sofa::component::collision
