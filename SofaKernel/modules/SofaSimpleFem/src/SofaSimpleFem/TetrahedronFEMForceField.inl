@@ -43,8 +43,8 @@ TetrahedronFEMForceField<DataTypes>::TetrahedronFEMForceField()
     , m_VonMisesColorMap(nullptr)
     , _initialPoints(initData(&_initialPoints, "initialPoints", "Initial Position"))
     , f_method(initData(&f_method,std::string("large"),"method","\"small\", \"large\" (by QR), \"polar\" or \"svd\" displacements"))
-    , _poissonRatio(initData(&_poissonRatio,(Real)0.45f,"poissonRatio","FEM Poisson Ratio [0,0.5["))
-    , _youngModulus(initData(&_youngModulus,"youngModulus","FEM Young Modulus"))
+    , _poissonRatio(initData(&_poissonRatio,(Real)0.45f,"poissonRatio","FEM Poisson Ratio in Hooke's law [0,0.5["))
+    , _youngModulus(initData(&_youngModulus,"youngModulus","FEM Young's Modulus in Hooke's law"))
     , _localStiffnessFactor(initData(&_localStiffnessFactor, "localStiffnessFactor","Allow specification of different stiffness per element. If there are N element and M values are specified, the youngModulus factor for element i would be localStiffnessFactor[i*M/N]"))
     , _updateStiffnessMatrix(initData(&_updateStiffnessMatrix,false,"updateStiffnessMatrix",""))
     , _assembling(initData(&_assembling,false,"computeGlobalMatrix",""))
@@ -840,17 +840,10 @@ inline void TetrahedronFEMForceField<DataTypes>::computeRotationLarge( Transform
     // second vector in the plane of the two first edges
     // third vector orthogonal to first and second
 
-    Coord edgex = p[b]-p[a];
-    edgex.normalize();
-
-    Coord edgey = p[c]-p[a];
-    edgey.normalize();
-
-    Coord edgez = cross( edgex, edgey );
-    edgez.normalize();
-
-    edgey = cross( edgez, edgex );
-    edgey.normalize();
+    const Coord edgex = (p[b]-p[a]).normalized();
+          Coord edgey = p[c]-p[a];
+    const Coord edgez = cross( edgex, edgey ).normalized();
+                edgey = cross( edgez, edgex ); //edgey is unit vector because edgez and edgex are orthogonal unit vectors
 
     r[0][0] = edgex[0];
     r[0][1] = edgex[1];

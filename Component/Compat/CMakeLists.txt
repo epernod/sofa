@@ -8,6 +8,15 @@ include(Sofa.Component.ODESolver.Forward.cmake)
 include(Sofa.Component.IO.Mesh.cmake)
 include(Sofa.Component.Playback.cmake)
 include(Sofa.Component.SceneUtility.cmake)
+include(Sofa.Component.Topology.Container.Constant.cmake)
+include(Sofa.Component.Topology.Container.Dynamic.cmake)
+include(Sofa.Component.Topology.Container.Grid.cmake)
+include(Sofa.Component.Topology.Mapping.cmake)
+include(Sofa.Component.Topology.Utility.cmake)
+include(Sofa.Component.Visual.cmake)
+include(Sofa.Component.LinearSolver.Iterative.cmake)
+include(Sofa.Component.LinearSolver.Direct.cmake)
+include(Sofa.Component.LinearSolver.Preconditioner.cmake)
 
 set(SOURCE_FILES
     ${SOFACOMPONENTCOMPATSRC_ROOT}/init.cpp
