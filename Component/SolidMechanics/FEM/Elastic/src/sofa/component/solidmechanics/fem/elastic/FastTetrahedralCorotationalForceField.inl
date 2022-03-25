@@ -141,8 +141,8 @@ FastTetrahedralCorotationalForceField<DataTypes>::FastTetrahedralCorotationalFor
     , _initialPoints(0)
     , updateMatrix(true)
     , f_method(initData(&f_method,std::string("qr"),"method"," method for rotation computation :\"qr\" (by QR) or \"polar\" or \"polar2\" or \"none\" (Linear elastic) "))
-    , f_poissonRatio(initData(&f_poissonRatio,Real(0.3),"poissonRatio","Poisson ratio in Hooke's law"))
-    , f_youngModulus(initData(&f_youngModulus,Real(1000.),"youngModulus","Young modulus in Hooke's law"))
+    , f_poissonRatio(initData(&f_poissonRatio,Real(0.45),"poissonRatio","Poisson ratio in Hooke's law"))
+    , f_youngModulus(initData(&f_youngModulus,Real(5000.),"youngModulus","Young modulus in Hooke's law"))
     , lambda(0)
     , mu(0)
     , f_drawing(initData(&f_drawing, true, "drawing", " draw the forcefield if true"))
@@ -152,7 +152,8 @@ FastTetrahedralCorotationalForceField<DataTypes>::FastTetrahedralCorotationalFor
     , drawColor4(initData(&drawColor4, sofa::type::RGBAColor(0.5f, 1.0f, 1.0f, 1.0f), "drawColor4", " draw color for faces 4"))
     , l_topology(initLink("topology", "link to the topology container"))
 {
-
+    f_poissonRatio.setRequired(true);
+    f_youngModulus.setRequired(true);
 }
 
 template <class DataTypes> 
