@@ -40,7 +40,6 @@ template class SOFA_GL_API BasicShapesGL_FakeSphere< sofa::type::Vector3 >;
 
 
 using namespace sofa::type;
-using namespace sofa::defaulttype;
 using sofa::type::RGBAColor;
 
 DrawToolGL::DrawToolGL()
@@ -953,9 +952,9 @@ void DrawToolGL::drawQuads(const std::vector<Vector3> &points, const std::vector
             const RGBAColor& col_d = colors[ 4*i+3 ];
 
             RGBAColor average_color;
-            for(int i=0; i<4; i++)
+            for(int jj=0; jj<4; jj++)
             {
-                average_color[i] = (col_a[i]+col_b[i]+col_c[i]+col_d[i])*0.25f;
+                average_color[jj] = (col_a[jj]+col_b[jj]+col_c[jj]+col_d[jj])*0.25f;
             }
 
             Vector3 n = cross((b-a),(c-a));
