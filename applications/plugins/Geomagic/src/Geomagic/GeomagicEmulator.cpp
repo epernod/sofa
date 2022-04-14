@@ -52,7 +52,6 @@ GeomagicEmulatorTask::MemoryAlloc GeomagicEmulatorTask::run()
     Vector3 currentForce;
     Vector3 pos_in_world;
     bool contact = false;    
-
     if (m_driver->m_terminate == false)
     {
         TaskScheduler::getInstance()->addTask(new GeomagicEmulatorTask(m_driver, &m_driver->_simStepStatus));

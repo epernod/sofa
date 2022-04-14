@@ -121,18 +121,18 @@ MechanicalObject<DataTypes>::MechanicalObject()
     rotation2       .setGroup("Transformation");
     scale           .setGroup("Transformation");
 
-    setVecCoord(core::VecCoordId::position().index, &x);
-    setVecCoord(core::VecCoordId::freePosition().index, &xfree);
-    setVecCoord(core::VecCoordId::restPosition().index, &x0);
-    setVecCoord(core::VecCoordId::resetPosition().index, &reset_position);
-    setVecDeriv(core::VecDerivId::velocity().index, &v);
-    setVecDeriv(core::VecDerivId::force().index, &f);
-    setVecDeriv(core::VecDerivId::externalForce().index, &externalForces);
-    setVecDeriv(core::VecDerivId::dx().index, &dx);
-    setVecDeriv(core::VecDerivId::freeVelocity().index, &vfree);
-    setVecDeriv(core::VecDerivId::resetVelocity().index, &reset_velocity);
-    setVecMatrixDeriv(core::MatrixDerivId::constraintJacobian().index, &c);
-    setVecMatrixDeriv(core::MatrixDerivId::mappingJacobian().index, &m);
+    setVecCoord(core::VecCoordId::position(), &x);
+    setVecCoord(core::VecCoordId::freePosition(), &xfree);
+    setVecCoord(core::VecCoordId::restPosition(), &x0);
+    setVecCoord(core::VecCoordId::resetPosition(), &reset_position);
+    setVecDeriv(core::VecDerivId::velocity(), &v);
+    setVecDeriv(core::VecDerivId::force(), &f);
+    setVecDeriv(core::VecDerivId::externalForce(), &externalForces);
+    setVecDeriv(core::VecDerivId::dx(), &dx);
+    setVecDeriv(core::VecDerivId::freeVelocity(), &vfree);
+    setVecDeriv(core::VecDerivId::resetVelocity(), &reset_velocity);
+    setVecMatrixDeriv(core::MatrixDerivId::constraintJacobian(), &c);
+    setVecMatrixDeriv(core::MatrixDerivId::mappingJacobian(), &m);
 
     // These vectors are set as modified as they are mandatory in the MechanicalObject.
     x               .forceSet();
@@ -1362,7 +1362,15 @@ Data<typename MechanicalObject<DataTypes>::VecCoord>* MechanicalObject<DataTypes
     {
         vectorsCoord[v.index] = new Data< VecCoord >;
         vectorsCoord[v.index]->setName(v.getName());
-        vectorsCoord[v.index]->setGroup("Vector");
+        const auto group = v.getGroup();
+        if (!group.empty())
+        {
+            vectorsCoord[v.index]->setGroup(group);
+        }
+        else
+        {
+            vectorsCoord[v.index]->setGroup("Vector");
+        }
         this->addData(vectorsCoord[v.index]);
         if (f_reserve.getValue() > 0)
         {
@@ -1428,7 +1436,15 @@ Data<typename MechanicalObject<DataTypes>::VecDeriv>* MechanicalObject<DataTypes
     {
         vectorsDeriv[v.index] = new Data< VecDeriv >;
         vectorsDeriv[v.index]->setName(v.getName());
-        vectorsDeriv[v.index]->setGroup("Vector");
+        const auto group = v.getGroup();
+        if (!group.empty())
+        {
+            vectorsDeriv[v.index]->setGroup(group);
+        }
+        else
+        {
+            vectorsDeriv[v.index]->setGroup("Vector");
+        }
         this->addData(vectorsDeriv[v.index]);
         if (f_reserve.getValue() > 0)
         {
@@ -1494,7 +1510,15 @@ Data<typename MechanicalObject<DataTypes>::MatrixDeriv>* MechanicalObject<DataTy
     {
         vectorsMatrixDeriv[v.index] = new Data< MatrixDeriv >;
         vectorsMatrixDeriv[v.index]->setName(v.getName());
-        vectorsMatrixDeriv[v.index]->setGroup("Vector");
+        const auto group = v.getGroup();
+        if (!group.empty())
+        {
+            vectorsMatrixDeriv[v.index]->setGroup(group);
+        }
+        else
+        {
+            vectorsMatrixDeriv[v.index]->setGroup("Vector");
+        }
         this->addData(vectorsMatrixDeriv[v.index]);
     }
 
@@ -1515,37 +1539,58 @@ const Data<typename MechanicalObject<DataTypes>::MatrixDeriv>* MechanicalObject<
 }
 
 template <class DataTypes>
-void MechanicalObject<DataTypes>::setVecCoord(unsigned int index, Data< VecCoord > *v)
+void MechanicalObject<DataTypes>::setVecCoord(core::ConstVecCoordId vecId, Data< VecCoord > *v)
 {
+    const auto index = vecId.getIndex();
     if (index >= vectorsCoord.size())
     {
         vectorsCoord.resize(index + 1, 0);
     }
 
     vectorsCoord[index] = v;
+
+    const auto group = vecId.getGroup();
+    if (!group.empty())
+    {
+        v->setGroup(group);
+    }
 }
 
 template <class DataTypes>
-void MechanicalObject<DataTypes>::setVecDeriv(unsigned int index, Data< VecDeriv > *v)
+void MechanicalObject<DataTypes>::setVecDeriv(core::ConstVecDerivId vecId, Data< VecDeriv > *v)
 {
+    const auto index = vecId.getIndex();
     if (index >= vectorsDeriv.size())
     {
         vectorsDeriv.resize(index + 1, 0);
     }
 
     vectorsDeriv[index] = v;
+
+    const auto group = vecId.getGroup();
+    if (!group.empty())
+    {
+        v->setGroup(group);
+    }
 }
 
 
 template <class DataTypes>
-void MechanicalObject<DataTypes>::setVecMatrixDeriv(unsigned int index, Data < MatrixDeriv > *m)
+void MechanicalObject<DataTypes>::setVecMatrixDeriv(core::ConstMatrixDerivId vecId, Data < MatrixDeriv > *m)
 {
+    const auto index = vecId.getIndex();
     if (index >= vectorsMatrixDeriv.size())
     {
         vectorsMatrixDeriv.resize(index + 1, 0);
     }
 
     vectorsMatrixDeriv[index] = m;
+
+    const auto group = vecId.getGroup();
+    if (!group.empty())
+    {
+        m->setGroup(group);
+    }
 }
 
 template <class DataTypes>
@@ -1569,7 +1614,7 @@ void MechanicalObject<DataTypes>::vAvail(const core::ExecParams* /* params */, c
 }
 
 template <class DataTypes>
-void MechanicalObject<DataTypes>::vAlloc(const core::ExecParams* params, core::VecCoordId v)
+void MechanicalObject<DataTypes>::vAlloc(const core::ExecParams* params, core::VecCoordId v, const core::VecIdProperties& properties)
 {
     SOFA_UNUSED(params);
 
@@ -1578,13 +1623,15 @@ void MechanicalObject<DataTypes>::vAlloc(const core::ExecParams* params, core::V
         Data<VecCoord>* vec_d = this->write(v);
         vec_d->beginEdit()->resize(d_size.getValue());
         vec_d->endEdit();
+
+        setVecIdProperties(v, properties, vec_d);
     }
 
     //vOp(v); // clear vector
 }
 
 template <class DataTypes>
-void MechanicalObject<DataTypes>::vAlloc(const core::ExecParams* params, core::VecDerivId v)
+void MechanicalObject<DataTypes>::vAlloc(const core::ExecParams* params, core::VecDerivId v, const core::VecIdProperties& properties)
 {
     SOFA_UNUSED(params);
 
@@ -1593,13 +1640,15 @@ void MechanicalObject<DataTypes>::vAlloc(const core::ExecParams* params, core::V
         Data<VecDeriv>* vec_d = this->write(v);
         vec_d->beginEdit()->resize(d_size.getValue());
         vec_d->endEdit();
+
+        setVecIdProperties(v, properties, vec_d);
     }
 
     //vOp(v); // clear vector
 }
 
 template <class DataTypes>
-void MechanicalObject<DataTypes>::vRealloc(const core::ExecParams* params, core::VecCoordId v)
+void MechanicalObject<DataTypes>::vRealloc(const core::ExecParams* params, core::VecCoordId v, const core::VecIdProperties& properties)
 {
     SOFA_UNUSED(params);
 
@@ -1610,10 +1659,12 @@ void MechanicalObject<DataTypes>::vRealloc(const core::ExecParams* params, core:
         vec_d->beginEdit()->resize(d_size.getValue());
         vec_d->endEdit();
     }
+
+    setVecIdProperties(v, properties, vec_d);
 }
 
 template <class DataTypes>
-void MechanicalObject<DataTypes>::vRealloc(const core::ExecParams* params, core::VecDerivId v)
+void MechanicalObject<DataTypes>::vRealloc(const core::ExecParams* params, core::VecDerivId v, const core::VecIdProperties& properties)
 {
     SOFA_UNUSED(params);
 
@@ -1623,6 +1674,31 @@ void MechanicalObject<DataTypes>::vRealloc(const core::ExecParams* params, core:
     {
         vec_d->beginEdit()->resize(d_size.getValue());
         vec_d->endEdit();
+    }
+
+    setVecIdProperties(v, properties, vec_d);
+}
+
+template <class DataTypes>
+template <core::VecType vtype, core::VecAccess vaccess>
+void MechanicalObject<DataTypes>::setVecIdProperties(core::TVecId<vtype, vaccess> v, const core::VecIdProperties& properties, core::BaseData* vec_d)
+{
+    if (!properties.label.empty())
+    {
+        vec_d->setName(properties.label + core::VecTypeLabels.at(core::V_COORD));
+        vec_d->setHelp("VecId: " + v.getName());
+    }
+    if (!properties.group.empty())
+    {
+        vec_d->setGroup(properties.group);
+    }
+    else
+    {
+        const auto group = v.getGroup();
+        if (!group.empty())
+        {
+            vec_d->setGroup(group);
+        }
     }
 }
 

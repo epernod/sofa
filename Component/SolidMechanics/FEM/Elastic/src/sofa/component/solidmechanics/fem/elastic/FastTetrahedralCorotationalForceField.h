@@ -77,7 +77,6 @@ public:
     typedef core::topology::BaseMeshTopology::Tetra Tetrahedron;
     typedef sofa::Index Index;
     
-
 public:
     /// data structure stored for each tetrahedron
     class TetrahedronRestInformation
