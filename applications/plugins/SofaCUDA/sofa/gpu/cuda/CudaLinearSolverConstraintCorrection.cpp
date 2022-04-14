@@ -22,20 +22,19 @@
 #include <sofa/gpu/cuda/CudaTypes.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/ConstraintCorrection.inl>
-#include <SofaConstraint/LinearSolverConstraintCorrection.h>
-#include <SofaConstraint/LinearSolverConstraintCorrection.inl>
+#include <sofa/component/constraint/lagrangian/correction/LinearSolverConstraintCorrection.inl>
 
-namespace sofa::component::constraintset
+namespace sofa::component::constraint::lagrangian::correction
 {
 using namespace sofa::gpu::cuda;
 
 template class SOFA_GPU_CUDA_API LinearSolverConstraintCorrection< CudaVec3fTypes >;
 template class SOFA_GPU_CUDA_API LinearSolverConstraintCorrection< CudaVec3f1Types >;
-} // namespace sofa::component::constraintset
+} // namespace sofa::component::constraint::lagrangian::correction
 
 namespace sofa::gpu::cuda
 {
-using namespace sofa::component::constraintset;
+    using namespace sofa::component::constraint::lagrangian::correction;
 
 const int CudaLinearSolverConstraintCorrectionClass = core::RegisterObject("Supports GPU-side computations using CUDA.")
 .add< LinearSolverConstraintCorrection< CudaVec3fTypes > >()
