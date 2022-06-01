@@ -74,6 +74,7 @@ using namespace sofa::component::collision;
 using namespace sofa::component::collision::geometry;
 using namespace sofa::component::collision::response::mapper;
 
+sofa::component::collision::response::mapper::ContactMapperCreator< sofa::component::collision::response::mapper::ContactMapper<CudaSphereCollisionModel> > CudaSphereContactMapperClass("PenalityContactForceField",true);
 
 //response::mapper::ContactMapperCreator< response::mapper::ContactMapper<CudaSphereCollisionModel> > CudaSphereContactMapperClass("PenalityContactForceField", true);
 
