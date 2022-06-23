@@ -19,8 +19,7 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_GPU_CUDA_CUDATYPES_H
-#define SOFA_GPU_CUDA_CUDATYPES_H
+#pragma once
 
 #include "CudaCommon.h"
 #include "mycuda.h"
@@ -857,5 +856,3 @@ namespace sofa::component::mass
 
 } // namespace sofa::component::mass
 
-
-#endif
