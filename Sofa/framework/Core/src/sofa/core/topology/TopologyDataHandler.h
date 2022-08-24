@@ -88,6 +88,13 @@ public:
     void linkToTetrahedronDataArray() override;
     void linkToHexahedronDataArray() override;
 
+    void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Point*) override;
+    void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Edge*) override;
+    void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Triangle*) override;
+    void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Quad*) override;
+    void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Tetrahedron*) override;
+    void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Hexahedron*) override;
+
     bool isTopologyDataRegistered() override;
 
     using TopologyHandler::ApplyTopologyChange;

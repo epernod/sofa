@@ -151,6 +151,13 @@ public:
     virtual void linkToTetrahedronDataArray() {}
     virtual void linkToHexahedronDataArray() {}
 
+    virtual void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Point*) {}
+    virtual void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Edge*) {}
+    virtual void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Triangle*) {}
+    virtual void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Quad*) {}
+    virtual void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Tetrahedron*) {}
+    virtual void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Hexahedron*) {}
+
     void setNamePrefix(const std::string& s) { m_prefix = s; }
     std::string getName() { return m_prefix + m_data_name; }
 
