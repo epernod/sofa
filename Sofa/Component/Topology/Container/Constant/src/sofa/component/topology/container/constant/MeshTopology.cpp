@@ -511,7 +511,6 @@ MeshTopology::MeshTopology()
 
 void MeshTopology::init()
 {
-
     BaseMeshTopology::init();
 
     const auto hexahedra = sofa::helper::getReadAccessor(seqHexahedra);
@@ -535,6 +534,17 @@ void MeshTopology::init()
     else
         m_upperElementType = sofa::geometry::ElementType::POINT;
 
+
+    initContainers();
+}
+
+void MeshTopology::initContainers()
+{
+    const auto hexahedra = sofa::helper::getReadAccessor(seqHexahedra);
+    const auto tetrahedra = sofa::helper::getReadAccessor(seqTetrahedra);
+    const auto quads = sofa::helper::getReadAccessor(seqQuads);
+    const auto triangles = sofa::helper::getReadAccessor(seqTriangles);
+    const auto edges = sofa::helper::getReadAccessor(seqEdges);
 
     // compute the number of points, if the topology is charged from the scene or if it was loaded from a MeshLoader without any points data.
     if (nbPoints==0)
