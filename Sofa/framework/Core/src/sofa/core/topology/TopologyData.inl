@@ -94,7 +94,7 @@ void TopologyData <TopologyElementType, VecT>::linkToPointDataArray()
 {
     if (this->m_topologyHandler && m_isTopologyDynamic)
     {
-        this->m_topologyHandler->linkToPointDataArray();
+        this->m_topologyHandler->linkToTopologyDataArray(sofa::geometry::ElementType::POINT);
         msg_info(this->getOwner()) << "TopologyData: " << this->getName() << " linkToPointDataArray ";
     }
     else
@@ -107,7 +107,7 @@ void TopologyData <TopologyElementType, VecT>::linkToEdgeDataArray()
 {
     if (this->m_topologyHandler && m_isTopologyDynamic)
     {
-        this->m_topologyHandler->linkToEdgeDataArray();
+        this->m_topologyHandler->linkToTopologyDataArray(sofa::geometry::ElementType::EDGE);
         msg_info(this->getOwner()) << "TopologyData: " << this->getName() << " linkToEdgeDataArray ";
     }
     else
@@ -120,7 +120,7 @@ void TopologyData <TopologyElementType, VecT>::linkToTriangleDataArray()
 {
     if (this->m_topologyHandler && m_isTopologyDynamic)
     {
-        this->m_topologyHandler->linkToTriangleDataArray();
+        this->m_topologyHandler->linkToTopologyDataArray(sofa::geometry::ElementType::TRIANGLE);
         msg_info(this->getOwner()) << "TopologyData: " << this->getName() << " linkToTriangleDataArray ";
     }
     else
@@ -133,7 +133,7 @@ void TopologyData <TopologyElementType, VecT>::linkToQuadDataArray()
 {
     if (this->m_topologyHandler && m_isTopologyDynamic)
     {
-        this->m_topologyHandler->linkToQuadDataArray();
+        this->m_topologyHandler->linkToTopologyDataArray(sofa::geometry::ElementType::QUAD);
         msg_info(this->getOwner()) << "TopologyData: " << this->getName() << " linkToQuadDataArray ";
     }
     else
@@ -146,7 +146,7 @@ void TopologyData <TopologyElementType, VecT>::linkToTetrahedronDataArray()
 {
     if (this->m_topologyHandler && m_isTopologyDynamic)
     {
-        this->m_topologyHandler->linkToTetrahedronDataArray();
+        this->m_topologyHandler->linkToTopologyDataArray(sofa::geometry::ElementType::TETRAHEDRON);
         msg_info(this->getOwner()) << "TopologyData: " << this->getName() << " linkToTetrahedronDataArray ";
     }
     else
@@ -159,7 +159,7 @@ void TopologyData <TopologyElementType, VecT>::linkToHexahedronDataArray()
 {
     if (this->m_topologyHandler && m_isTopologyDynamic)
     {
-        this->m_topologyHandler->linkToHexahedronDataArray();
+        this->m_topologyHandler->linkToTopologyDataArray(sofa::geometry::ElementType::HEXAHEDRON);
         msg_info(this->getOwner()) << "TopologyData: " << this->getName() << " linkToHexahedronDataArray ";
     }
     else

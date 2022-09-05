@@ -144,12 +144,8 @@ public:
 
     size_t getNumberOfTopologicalChanges();
 
-    virtual void linkToPointDataArray() {}
-    virtual void linkToEdgeDataArray() {}
-    virtual void linkToTriangleDataArray() {}
-    virtual void linkToQuadDataArray() {}
-    virtual void linkToTetrahedronDataArray() {}
-    virtual void linkToHexahedronDataArray() {}
+
+    virtual void linkToTopologyDataArray(sofa::geometry::ElementType elementType);
 
     virtual void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Point*) {}
     virtual void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Edge*) {}
