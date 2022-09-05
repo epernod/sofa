@@ -90,8 +90,6 @@ public:
     void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Tetrahedron*) override;
     void unlinkToElementDataArray(sofa::core::topology::BaseMeshTopology::Hexahedron*) override;
 
-    bool isTopologyDataRegistered() override;
-
     using TopologyHandler::ApplyTopologyChange;
 
     /// Apply swap between indices elements.
@@ -112,14 +110,6 @@ public:
 
 protected:
     t_topologicalData* m_topologyData;
-
-public:
-    bool m_pointsLinked;
-    bool m_edgesLinked;
-    bool m_trianglesLinked;
-    bool m_quadsLinked;
-    bool m_tetrahedraLinked;
-    bool m_hexahedraLinked;
 
 };
 
