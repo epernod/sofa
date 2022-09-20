@@ -242,7 +242,7 @@ public:
 
     /** \brief Adds a TopologyHandler, linked to a certain type of Element.
     */
-    bool addTopologyHandler(TopologyHandler* _TopologyHandler, sofa::geometry::ElementType elementType);
+    [[nodiscard]] bool addTopologyHandler(TopologyHandler* _TopologyHandler, sofa::geometry::ElementType elementType);
 
     /** \brief Remove a TopologyHandler, linked to a certain type of Element.
     */
