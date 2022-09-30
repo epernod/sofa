@@ -159,7 +159,7 @@ void CarvingManager::doCarve()
             if (c.value < carvDist)
             {
                 auto elementIdx = (c.elem.first.getCollisionModel() == toolCollisionModel ? c.elem.second.getIndex() : c.elem.first.getIndex());
-                elemsToRemove.push_back(triangleIdx);
+                elemsToRemove.push_back(elementIdx);
             }
         }
 
