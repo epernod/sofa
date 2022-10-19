@@ -49,9 +49,8 @@ using namespace sofa::component::topology::mapping;
 using namespace sofa::core::topology;
 
 // Register in the Factory
-int Edge2QuadTopologicalMappingClass = core::RegisterObject("Special case of mapping where EdgeSetTopology is converted to QuadSetTopology.")
+const int Edge2QuadTopologicalMappingClass = core::RegisterObject("Special case of mapping where EdgeSetTopology is converted to QuadSetTopology.")
         .add< Edge2QuadTopologicalMapping >()
-
         ;
 
 // Implementation
@@ -86,6 +85,19 @@ void Edge2QuadTopologicalMapping::init()
         msg_warning() << "Focal Radius is zero or negative";
     }
 
+    if (!fromModel)
+    {
+        msg_error() << "fromModel is missing";
+        return;
+    }
+
+    if (!toModel)
+    {
+        msg_error() << "toModel is missing";
+        return;
+    }
+
+
     SReal rho = d_radius.getValue();
 
     bool ellipse = false;
@@ -99,173 +111,156 @@ void Edge2QuadTopologicalMapping::init()
     unsigned int N = d_nbPointsOnEachCircle.getValue();
 
     // INITIALISATION of QUADULAR mesh from EDGE mesh :
-    core::behavior::MechanicalState<Rigid3Types>* from_mstate = dynamic_cast<core::behavior::MechanicalState<Rigid3Types>*>(fromModel->getContext()->getMechanicalState());
-    core::behavior::MechanicalState<Vec3Types>* to_mstate = dynamic_cast<core::behavior::MechanicalState<Vec3Types>*>(toModel->getContext()->getMechanicalState());
+    auto from_mstate = dynamic_cast<core::behavior::MechanicalState<Rigid3Types>*>(fromModel->getContext()->getMechanicalState());
+    auto to_mstate = dynamic_cast<core::behavior::MechanicalState<Vec3Types>*>(toModel->getContext()->getMechanicalState());
 
-    if (fromModel)
-    {
-        msg_info() << "Edge2QuadTopologicalMapping - from = edge";
+    
+    container::dynamic::QuadSetTopologyModifier *to_modifier;
+    toModel->getContext()->get(to_modifier);
 
-        if (toModel)
-        {
-            msg_info() << "Edge2QuadTopologicalMapping - to = quad";
+    container::dynamic::QuadSetTopologyContainer *to_container;
+    toModel->getContext()->get(to_container);
+           
+    auto Loc2GlobVec = sofa::helper::getWriteOnlyAccessor(Loc2GlobDataVec);
+    Loc2GlobVec.clear();
+    In2OutMap.clear();
 
-            container::dynamic::QuadSetTopologyModifier *to_modifier;
-            toModel->getContext()->get(to_modifier);
+    // CREATION of the points (new DOFs for the output topology) along the circles around each point of the input topology
 
-            container::dynamic::QuadSetTopologyContainer *to_container;
-            toModel->getContext()->get(to_container);
+    Vec3 X0(1.,0.,0.);
+    Vec3 Y0;
+    Vec3 Z0;
 
-            const sofa::type::vector<Edge>& edgeArray = fromModel->getEdges();
-            
-            auto Loc2GlobVec = sofa::helper::getWriteOnlyAccessor(Loc2GlobDataVec);
-            Loc2GlobVec.clear();
-            In2OutMap.clear();
-
-            // CREATION of the points (new DOFs for the output topology) along the circles around each point of the input topology
-
-            Vec3 X0(1.,0.,0.);
-            Vec3 Y0;
-            Vec3 Z0;
-
-            if (ellipse){
-                Z0 = d_focalAxis.getValue();
-                Z0.normalize();
-                Y0 = cross(Z0,X0);
-            } else {
-                Y0[0] = (SReal) (0.0); Y0[1] = (SReal) (1.0); Y0[2] = (SReal) (0.0);
-                Z0[0] = (SReal) (0.0); Z0[1] = (SReal) (0.0); Z0[2] = (SReal) (1.0);
-            }
-
-            if (to_mstate)
-            {
-                to_mstate->resize(fromModel->getNbPoints() * N);
-            }
-
-            to_container->clear();
-
-            toModel->setNbPoints(fromModel->getNbPoints() * N);
-
-            if (to_mstate)
-            {
-                for (unsigned int i=0; i<(unsigned int) fromModel->getNbPoints(); ++i)
-                {
-                    unsigned int p0=i;
-
-                    Mat3x3 rotation;
-                    (from_mstate->read(core::ConstVecCoordId::position())->getValue())[p0].writeRotationMatrix(rotation);
-
-                    Vec3 t;
-                    t=(from_mstate->read(core::ConstVecCoordId::position())->getValue())[p0].getCenter();
-
-                    Vec3 Y;
-                    Vec3 Z;
-
-                    Y = rotation * Y0;
-                    Z = rotation * Z0;
-
-                    helper::WriteAccessor< Data< Vec3Types::VecCoord > > to_x = *to_mstate->write(core::VecCoordId::position());
-
-                    for(unsigned int j=0; j<N; ++j)
-                    {
-                        Vec3 x;
-                        if(ellipse){
-                            x = t + Y*cos((SReal) (2.0*j*M_PI/N))*((SReal) rho) + Z*sin((SReal) (2.0*j*M_PI/N))*((SReal) rhoFocal);
-                        } else {
-                            x = t + (Y*cos((SReal) (2.0*j*M_PI/N)) + Z*sin((SReal) (2.0*j*M_PI/N)))*((SReal) rho);
-                        }
-                        to_x[p0*N+j] = x;
-                    }
-                }
-            }
-
-
-            // CREATION of the quads based on the circles
-            sofa::type::vector< Quad > quads_to_create;
-            sofa::type::vector< Index > quadsIndexList;
-            if(d_edgeList.getValue().size()==0)
-            {
-
-                unsigned int nb_elems = (unsigned int)toModel->getNbQuads();
-
-                for (unsigned int i=0; i<edgeArray.size(); ++i)
-                {
-
-                    unsigned int p0 = edgeArray[i][0];
-                    unsigned int p1 = edgeArray[i][1];
-
-                    sofa::type::vector<Index> out_info;
-
-                    for(unsigned int j=0; j<N; ++j)
-                    {
-
-                        unsigned int q0 = p0*N+j;
-                        unsigned int q1 = p1*N+j;
-                        unsigned int q2 = p1*N+((j+1)%N);
-                        unsigned int q3 = p0*N+((j+1)%N);
-
-                        if (d_flipNormals.getValue())
-                        {
-                            Quad q = Quad((unsigned int) q3, (unsigned int) q2, (unsigned int) q1, (unsigned int) q0);
-                            quads_to_create.push_back(q);
-                            quadsIndexList.push_back(nb_elems);
-                        }
-
-                        else
-                        {
-                            Quad q = Quad((unsigned int) q0, (unsigned int) q1, (unsigned int) q2, (unsigned int) q3);
-                            quads_to_create.push_back(q);
-                            quadsIndexList.push_back(nb_elems);
-                        }
-
-                        Loc2GlobVec.push_back(i);
-                        out_info.push_back((unsigned int)Loc2GlobVec.size()-1);
-                    }
-
-
-                    nb_elems++;
-
-                    In2OutMap[i]=out_info;
-                }
-            }
-            else
-            {
-                for (const auto i : d_edgeList.getValue())
-                {
-                    const Index p0 = edgeArray[i][0];
-                    const Index p1 = edgeArray[i][1];
-
-                    sofa::type::vector<Index> out_info;
-
-                    for(unsigned int j=0; j<N; ++j)
-                    {
-                        const Index q0 = p0*N+j;
-                        const Index q1 = p1*N+j;
-                        const Index q2 = p1*N+((j+1)%N);
-                        const Index q3 = p0*N+((j+1)%N);
-
-                        if(d_flipNormals.getValue())
-                            to_modifier->addQuadProcess(Quad(q0, q3, q2, q1));
-                        else
-                            to_modifier->addQuadProcess(Quad(q0, q1, q2, q3));
-                        Loc2GlobVec.push_back(i);
-                        out_info.push_back((unsigned int)Loc2GlobVec.size()-1);
-                    }
-
-                    In2OutMap[i]=out_info;
-                }
-
-            }
-
-            to_modifier->addQuads(quads_to_create);
-
-            // Need to fully init the target topology
-            to_modifier->init();
-
-            d_componentState.setValue(sofa::core::objectmodel::ComponentState::Valid);
-        }
-
+    if (ellipse){
+        Z0 = d_focalAxis.getValue();
+        Z0.normalize();
+        Y0 = cross(Z0,X0);
+    } else {
+        Y0[0] = (SReal) (0.0); Y0[1] = (SReal) (1.0); Y0[2] = (SReal) (0.0);
+        Z0[0] = (SReal) (0.0); Z0[1] = (SReal) (0.0); Z0[2] = (SReal) (1.0);
     }
+
+    if (to_mstate)
+    {
+        to_mstate->resize(fromModel->getNbPoints() * N);
+    }
+    to_container->clear();
+
+    toModel->setNbPoints(fromModel->getNbPoints() * N);
+
+    if (to_mstate)
+    {
+        for (unsigned int i=0; i<(unsigned int) fromModel->getNbPoints(); ++i)
+        {
+            unsigned int p0=i;
+
+            Mat3x3 rotation;
+            (from_mstate->read(core::ConstVecCoordId::position())->getValue())[p0].writeRotationMatrix(rotation);
+
+            Vec3 t;
+            t=(from_mstate->read(core::ConstVecCoordId::position())->getValue())[p0].getCenter();
+
+            Vec3 Y;
+            Vec3 Z;
+
+            Y = rotation * Y0;
+            Z = rotation * Z0;
+
+            helper::WriteAccessor< Data< Vec3Types::VecCoord > > to_x = *to_mstate->write(core::VecCoordId::position());
+
+            for(unsigned int j=0; j<N; ++j)
+            {
+                Vec3 x;
+                if(ellipse){
+                    x = t + Y*cos((SReal) (2.0*j*M_PI/N))*((SReal) rho) + Z*sin((SReal) (2.0*j*M_PI/N))*((SReal) rhoFocal);
+                } else {
+                    x = t + (Y*cos((SReal) (2.0*j*M_PI/N)) + Z*sin((SReal) (2.0*j*M_PI/N)))*((SReal) rho);
+                }
+                to_x[p0*N+j] = x;
+            }
+        }
+    }
+
+
+    // CREATION of the quads based on the circles
+    sofa::type::vector< Quad > quads_to_create;
+    const sofa::type::vector<Edge>& edgeArray = fromModel->getEdges();
+    const bool flipN = d_flipNormals.getValue();
+    if (d_edgeList.getValue().size() == 0)
+    {
+        Size nb_elems = toModel->getNbQuads();
+
+        Index edgeId = 0;
+        for (const auto edge : edgeArray)
+        {
+            const Index p0 = edge[0];
+            const Index p1 = edge[1];
+            sofa::type::vector<Index> out_info;
+
+            for(Index j=0; j<N; ++j)
+            {
+                const Index q0 = p0 * N + j;
+                const Index q1 = p1 * N + j;
+                const Index q2 = p1 * N + ((j + 1) % N);
+                const Index q3 = p0 * N + ((j + 1) % N);
+
+                if (flipN)
+                {
+                    quads_to_create.emplace_back(Quad(q3, q2, q1, q0));
+                }
+                else
+                {
+                    quads_to_create.emplace_back(Quad(q0, q1, q2, q3));
+                }
+
+                Loc2GlobVec.push_back(edgeId);
+                out_info.push_back(Index(Loc2GlobVec.size() - 1));
+            }
+
+            In2OutMap[edgeId] = out_info;
+            nb_elems++;
+            edgeId++;
+        }
+    }
+    else
+    {
+        for (const auto edgeId : d_edgeList.getValue())
+        {
+            const Index p0 = edgeArray[edgeId][0];
+            const Index p1 = edgeArray[edgeId][1];
+
+            sofa::type::vector<Index> out_info;
+
+            for(unsigned int j=0; j<N; ++j)
+            {
+                const Index q0 = p0 * N + j;
+                const Index q1 = p1 * N + j;
+                const Index q2 = p1 * N + ((j + 1) % N);
+                const Index q3 = p0 * N + ((j + 1) % N);
+
+                if (flipN)
+                {
+                    quads_to_create.emplace_back(Quad(q3, q2, q1, q0));
+                }
+                else
+                {
+                    quads_to_create.emplace_back(Quad(q0, q1, q2, q3));
+                }
+
+                Loc2GlobVec.push_back(edgeId);
+                out_info.push_back(Index(Loc2GlobVec.size() - 1));
+            }
+
+            In2OutMap[edgeId]=out_info;
+        }
+    }
+
+    to_modifier->addQuads(quads_to_create);
+
+    // Need to fully init the target topology
+    to_modifier->init();
+
+    d_componentState.setValue(sofa::core::objectmodel::ComponentState::Valid);
 }
 
 
@@ -282,16 +277,13 @@ void Edge2QuadTopologicalMapping::updateTopologicalMappingTopDown()
     unsigned int N = d_nbPointsOnEachCircle.getValue();
 
     // INITIALISATION of QUADULAR mesh from EDGE mesh :
-
     if (fromModel)
     {
-
         container::dynamic::QuadSetTopologyModifier *to_modifier;
         toModel->getContext()->get(to_modifier);
 
         if (toModel)
         {
-
             std::list<const TopologyChange *>::const_iterator itBegin=fromModel->beginChange();
             std::list<const TopologyChange *>::const_iterator itEnd=fromModel->endChange();
             sofa::type::vector<Index>& Loc2GlobVec = *(Loc2GlobDataVec.beginEdit());

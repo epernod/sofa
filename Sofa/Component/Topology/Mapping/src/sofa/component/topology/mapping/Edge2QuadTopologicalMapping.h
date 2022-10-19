@@ -68,8 +68,7 @@ protected:
     *
     * Does nothing.
     */
-    ~Edge2QuadTopologicalMapping() override
-    {}
+    ~Edge2QuadTopologicalMapping() override = default;
 
 public:
     /** \brief Initializes the target BaseTopology from the source BaseTopology.
