@@ -1089,6 +1089,9 @@ void TriangularFEMForceField<DataTypes>::accumulateForceLarge(VecCoord& f, const
         const Coord deforme_b = R_0_2 * (pB - pA);
         const Coord deforme_c = R_0_2 * (pC - pA);
 
+        const Real determinant = deforme_b[0] * deforme_c[1];
+        tInfo.area = determinant * 0.5;
+
         // Strain-displacement matrix
         StrainDisplacement J(type::NOINIT);
         try
