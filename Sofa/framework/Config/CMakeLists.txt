@@ -130,6 +130,20 @@ set(SOFACONFIG_LINK_OPTIONS "")
 set(SOFACONFIG_LINK_OPTIONS_DEBUG "")
 set(SOFACONFIG_LINK_OPTIONS_RELEASE "")
 
+include(CheckIPOSupported)
+check_ipo_supported(RESULT IS_IPO_SUPPORTED OUTPUT IPO_ERROR)
+
+## Link-time optimization
+if (IS_IPO_SUPPORTED)
+    # Focus on max speed with link-time optimization
+    option(SOFA_ENABLE_LINK_TIME_OPTIMIZATION "Enable interprocedural optimization" OFF)
+    if (SOFA_ENABLE_LINK_TIME_OPTIMIZATION)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE PARENT_SCOPE)
+    endif()
+else()
+    message(STATUS "IPO / LTO not supported: <${IPO_ERROR}>")
+endif()
+
 ## GCC-specific
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
     ## Find out the version of g++ (and save it in GCXX_VERSION)
@@ -167,12 +181,23 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR ${CMAKE_CXX_COMPILER_ID} MATCHES "C
 endif()
 
 ## Windows-specific
-if(WIN32)    
+if(WIN32)
     list(APPEND SOFACONFIG_COMPILE_OPTIONS "-D_USE_MATH_DEFINES")
     list(APPEND SOFACONFIG_COMPILE_OPTIONS "-D_CRT_SECURE_NO_WARNINGS")
     list(APPEND SOFACONFIG_COMPILE_OPTIONS "-D_CRT_NONSTDC_NO_DEPRECATE")
 
-    list(APPEND SOFACONFIG_COMPILE_OPTIONS "/MP;/wd4250;/wd4251;/wd4275;/wd4675;/wd4661")
+    set(SOFA_MSVC_NB_COMPILER_PROCESSES "0" CACHE STRING "The maximum number of processes that the compiler can create. 0 (default) for the number of effective processors on the computer")
+    if (SOFA_MSVC_NB_COMPILER_PROCESSES EQUAL "0")
+        list(APPEND SOFACONFIG_COMPILE_OPTIONS "/MP")
+    else()
+        if (SOFA_MSVC_NB_COMPILER_PROCESSES MATCHES "^[0-9]+$")
+            list(APPEND SOFACONFIG_COMPILE_OPTIONS "/MP${SOFA_MSVC_NB_COMPILER_PROCESSES}")
+        else()
+            message(FATAL_ERROR "A number is expected for SOFA_MSVC_NB_COMPILER_PROCESSES")
+        endif()
+    endif()
+
+    list(APPEND SOFACONFIG_COMPILE_OPTIONS "/wd4250;/wd4251;/wd4275;/wd4675;/wd4661")
     # 4661: no suitable definition provided for explicit template instantiation request
     # it happens because we put explicit instantiation in a separate translation unit
     # it is by design, so this warning is irrelevant in our project
@@ -180,15 +205,6 @@ if(WIN32)
     if(MSVC_TOOLSET_VERSION GREATER 140) # > VS 2015
         list(APPEND SOFACONFIG_COMPILE_OPTIONS "/Zc:__cplusplus")
     endif()
-
-    # Focus on max speed in Release Mode with link-time optimization
-    option(SOFA_ENABLE_LINK_TIME_OPTIMIZATION "Enable LTCG IN release mode (MSVC only for now) [Warning, use a lot of disk space!]" OFF)
-
-    if(SOFA_ENABLE_LINK_TIME_OPTIMIZATION)
-        list(APPEND SOFACONFIG_COMPILE_OPTIONS_RELEASE "/GL")
-        list(APPEND SOFACONFIG_LINK_OPTIONS_RELEASE "/LTCG")
-    endif()
-
 
     # Experimental: compilation with MSVC/Clang-cl
     if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")

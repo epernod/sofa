@@ -254,7 +254,7 @@ set(SOURCE_FILES
     ${SRC_ROOT}/mechanicalvisitor/MechanicalVSizeVisitor.cpp
 )
 
-find_package(Sofa.Core REQUIRED)
+sofa_find_package(Sofa.Core REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
@@ -280,7 +280,7 @@ sofa_create_package_with_targets(
 # Tests
 # If SOFA_BUILD_TESTS exists and is OFF, then these tests will be auto-disabled
 cmake_dependent_option(SOFA_SIMULATION_CORE_BUILD_TESTS "Compile the automatic tests" ON "SOFA_BUILD_TESTS OR NOT DEFINED SOFA_BUILD_TESTS" OFF)
-if(SOFA_SIMULATION_GRAPH_BUILD_TESTS)
+if(SOFA_SIMULATION_CORE_BUILD_TESTS)
     add_subdirectory(test)
     add_subdirectory(simutest)
 endif()
