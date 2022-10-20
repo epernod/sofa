@@ -186,7 +186,7 @@ void TopologyContainer::resetTopologyHandlerList()
     {
         std::for_each(topologyHandlerList.begin(), topologyHandlerList.end(), [](TopologyHandler* topoHandler) 
         {
-            topoHandler->unRegisteredTopologyHandler();
+            topoHandler->unregisterTopologyHandler();
             topoHandler = nullptr;
         });
 
