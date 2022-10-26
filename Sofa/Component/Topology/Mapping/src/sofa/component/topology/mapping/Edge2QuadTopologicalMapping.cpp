@@ -63,6 +63,8 @@ Edge2QuadTopologicalMapping::Edge2QuadTopologicalMapping()
     , d_edgeList(initData(&d_edgeList, "edgeList", "list of input edges for the topological mapping: by default, all considered"))
     , d_flipNormals(initData(&d_flipNormals, bool(false), "flipNormals", "Flip Normal ? (Inverse point order when creating quad)"))
 {
+    m_inputType = TopologyElementType::EDGE;
+    m_outputType = TopologyElementType::QUAD;
 }
 
 void Edge2QuadTopologicalMapping::init()
