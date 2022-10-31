@@ -531,22 +531,21 @@ void MeshTopology::parse(core::objectmodel::BaseObjectDescription* arg)
 
 void MeshTopology::init()
 {
-
     BaseMeshTopology::init();
-    if (nbPoints==0)
-    {
-        // looking for upper topology
-        if (!seqHexahedra.getValue().empty())
-            m_upperElementType = core::topology::TopologyElementType::HEXAHEDRON;
-        else if (!seqTetrahedra.getValue().empty())
-            m_upperElementType = sofa::core::topology::TopologyElementType::TETRAHEDRON;
-        else if (!seqQuads.getValue().empty())
-            m_upperElementType = sofa::core::topology::TopologyElementType::QUAD;
-        else if (!seqTriangles.getValue().empty())
-            m_upperElementType = sofa::core::topology::TopologyElementType::TRIANGLE;
-        else
-            m_upperElementType = sofa::core::topology::TopologyElementType::EDGE;
-    }
+
+    // looking for upper topology
+    if (!seqHexahedra.getValue().empty())
+        m_upperElementType = core::topology::TopologyElementType::HEXAHEDRON;
+    else if (!seqTetrahedra.getValue().empty())
+        m_upperElementType = sofa::core::topology::TopologyElementType::TETRAHEDRON;
+    else if (!seqQuads.getValue().empty())
+        m_upperElementType = sofa::core::topology::TopologyElementType::QUAD;
+    else if (!seqTriangles.getValue().empty())
+        m_upperElementType = sofa::core::topology::TopologyElementType::TRIANGLE;
+    else if (!seqEdges.getValue().empty())
+        m_upperElementType = sofa::core::topology::TopologyElementType::EDGE;
+    else
+        m_upperElementType = sofa::core::topology::TopologyElementType::POINT;
 
     initContainers();
 }
@@ -601,6 +600,63 @@ void MeshTopology::initContainers()
         nbPoints = n;
     }
 
+    if (!seqHexahedra.getValue().empty()) // Create hexahedron cross element buffers.
+    {
+        createHexahedraAroundVertexArray();
+
+        if (!seqQuads.getValue().empty())
+        {
+            createQuadsInHexahedronArray();
+            createHexahedraAroundQuadArray();
+        }
+
+        if (!seqEdges.getValue().empty())
+        {
+            createEdgesInHexahedronArray();
+            createHexahedraAroundEdgeArray();
+        }
+    }
+    if (!seqTetrahedra.getValue().empty()) // Create tetrahedron cross element buffers.
+    {
+        createTetrahedraAroundVertexArray();
+        
+        if (!seqTriangles.getValue().empty())
+        {
+            createTrianglesInTetrahedronArray();
+            createTetrahedraAroundTriangleArray();
+        }
+        
+        if (!seqEdges.getValue().empty())
+        {
+            createEdgesInTetrahedronArray();
+            createTetrahedraAroundEdgeArray();
+        }
+    }
+    if (!seqQuads.getValue().empty()) // Create triangle cross element buffers.
+    {
+        createQuadsAroundVertexArray();
+        
+        if (!seqEdges.getValue().empty())
+        {
+            createEdgesInQuadArray();
+            createQuadsAroundEdgeArray();
+        }
+    }
+    if (!seqTriangles.getValue().empty()) // Create triangle cross element buffers.
+    {
+        createTrianglesAroundVertexArray();
+
+        if (!seqEdges.getValue().empty())
+        {
+            createEdgesInTriangleArray();
+            createTrianglesAroundEdgeArray();
+        }
+    }
+    if (!seqEdges.getValue().empty())
+    {
+        createEdgesAroundVertexArray();
+    }
+    
     if (seqEdges.getValue().empty())
     {
         if (seqEdges.getParent() != nullptr)
