@@ -547,10 +547,10 @@ void MeshTopology::init()
     else
         m_upperElementType = sofa::core::topology::TopologyElementType::POINT;
 
-    initContainers();
+    computeCrossElementBuffers();
 }
 
-void MeshTopology::initContainers()
+void MeshTopology::computeCrossElementBuffers()
 {
     // compute the number of points, if the topology is charged from the scene or if it was loaded from a MeshLoader without any points data.
     if (nbPoints == 0)
