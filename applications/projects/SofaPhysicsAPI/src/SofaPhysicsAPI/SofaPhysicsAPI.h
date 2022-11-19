@@ -22,6 +22,7 @@
 #pragma once
 
 #include <SofaPhysicsAPI/config.h>
+#include <string>
 
 class SofaPhysicsOutputMesh;
 class SofaPhysicsDataMonitor;
@@ -34,7 +35,7 @@ typedef void* ID;           ///< Type used for IDs
 // Exit code
 #define API_SUCCESS EXIT_SUCCESS
 #define API_NULL -1
-
+#define API_SCENE_FAILED -10
 
 /// Internal implementation sub-class
 class SofaPhysicsSimulation;
@@ -49,6 +50,9 @@ public:
 
     /// Load an XML file containing the main scene description
     bool load(const char* filename);
+    int unload();
+
+    std::string loadSofaIni(const char* pathIni);
 
     virtual const char* APIName();
 

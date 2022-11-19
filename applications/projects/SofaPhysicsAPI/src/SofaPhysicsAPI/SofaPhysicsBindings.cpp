@@ -87,12 +87,27 @@ int sofaPhysicsAPI_loadScene(void* ptr, const char* filename)
 
 int sofaPhysicsAPI_unloadScene(void* ptr)
 {
-    //SofaPhysicsAPI* api = (SofaPhysicsAPI*)ptr;
-    //if (api) {
-    //    return api->unloa
-    //}
-    //else
-    return API_NULL;
+    SofaPhysicsAPI* api = (SofaPhysicsAPI*)ptr;
+    if (api) {
+        return api->unload();
+    }
+    else
+        return API_NULL;
+}
+
+const char* sofaPhysicsAPI_loadSofaIni(void* ptr, const char* pathIni)
+{
+    SofaPhysicsAPI* api = (SofaPhysicsAPI*)ptr;
+    if (api) {
+        std::string value = api->loadSofaIni(pathIni);
+        char* cstr = new char[value.length() + 1];
+#if defined(_MSC_VER)
+        std::strcpy(cstr, value.c_str());
+#endif
+        return cstr;
+    }
+    else
+        return "Error: API_NULL";
 }
 
 
