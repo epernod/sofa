@@ -50,6 +50,8 @@ public:
 
     int load(const char* filename);
     int unload();
+
+    int loadPlugin(const char* pluginName);
     void createScene();
 
     void start();

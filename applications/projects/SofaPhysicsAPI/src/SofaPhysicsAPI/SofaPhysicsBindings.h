@@ -53,6 +53,7 @@ EXPORT_API int sofaPhysicsAPI_createScene(void* ptr);
 EXPORT_API int sofaPhysicsAPI_loadScene(void* ptr, const char* filename);
 EXPORT_API int sofaPhysicsAPI_unloadScene(void* ptr);
 EXPORT_API const char* sofaPhysicsAPI_loadSofaIni(void* ptr, const char* pluginName);
+EXPORT_API int sofaPhysicsAPI_loadPlugin(void* ptr, const char* pluginName);
 
 // API for animation loop
 EXPORT_API void sofaPhysicsAPI_start(void* ptr);

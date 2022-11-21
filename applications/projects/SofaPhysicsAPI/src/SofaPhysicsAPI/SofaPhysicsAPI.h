@@ -37,6 +37,10 @@ typedef void* ID;           ///< Type used for IDs
 #define API_NULL -1
 #define API_SCENE_NULL -11
 #define API_SCENE_FAILED -10
+#define API_PLUGIN_INVALID_LOADING -20
+#define API_PLUGIN_MISSING_SYMBOL -21
+#define API_PLUGIN_FILE_NOT_FOUND -22
+#define API_PLUGIN_LOADING_FAILED -23
 
 /// Internal implementation sub-class
 class SofaPhysicsSimulation;
@@ -54,6 +58,7 @@ public:
     int unload();
 
     std::string loadSofaIni(const char* pathIni);
+    int loadPlugin(const char* pluginName);
 
     virtual const char* APIName();
 
