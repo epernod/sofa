@@ -48,7 +48,7 @@ public:
 
     const char* APIName();
 
-    bool load(const char* filename);
+    int load(const char* filename);
     int unload();
     void createScene();
 
@@ -141,7 +141,7 @@ protected:
     double currentFPS;
 
     void update();
-    void updateOutputMeshes();
+    int updateOutputMeshes();
     void updateCurrentFPS();
     void beginStep();
     void endStep();
