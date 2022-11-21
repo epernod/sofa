@@ -128,6 +128,13 @@ public:
     int getGravity(double* values) const;
     void setGravity(double* gravity);
 
+    // message API
+    int activateMessageHandler(bool value);
+    int getNbMessages();
+    std::string getMessage(int messageId, int& msgType);
+    int clearMessages();
+
+
     /// Return the number of currently active data monitors
     unsigned int getNbDataMonitors();
 

@@ -67,6 +67,12 @@ EXPORT_API void sofaPhysicsAPI_setTimeStep(void* ptr, double value);
 EXPORT_API int sofaPhysicsAPI_getGravity(void* ptr, double* values);
 EXPORT_API int sofaPhysicsAPI_setGravity(void* ptr, double* values);
 
+// API for message logging
+EXPORT_API int sofaPhysicsAPI_activateMessageHandler(void* ptr, bool value);
+EXPORT_API int sofaPhysicsAPI_getNbMessages(void* ptr);
+EXPORT_API const char* sofaPhysicsAPI_getMessage(void* ptr, int messageId, int* msgType);
+EXPORT_API int sofaPhysicsAPI_clearMessages(void* ptr);
+
 
 //////////////////////////////////////////////////////////
 //////////////    VisualModel Bindings    ////////////////
