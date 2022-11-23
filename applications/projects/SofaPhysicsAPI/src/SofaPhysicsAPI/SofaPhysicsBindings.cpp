@@ -300,7 +300,10 @@ int sofaVisualModel_getNbVertices(void* ptr, const char* name)
     if (api)
     {
         SofaPhysicsOutputMesh* mesh = api->getOutputMeshPtr(name);
-        return mesh->getNbVertices();
+        if (mesh == nullptr)
+            return API_MESH_NULL;
+        else
+            return mesh->getNbVertices();
     }
 
     return API_NULL;
@@ -313,7 +316,10 @@ int sofaVisualModel_getVertices(void* ptr, const char* name, float* buffer)
     if (api)
     {
         SofaPhysicsOutputMesh* mesh = api->getOutputMeshPtr(name);
-        return mesh->getVPositions(buffer);
+        if (mesh == nullptr)
+            return API_MESH_NULL;
+        else
+            return mesh->getVPositions(buffer);
     }
 
     return API_NULL;
@@ -326,7 +332,10 @@ int sofaVisualModel_getNormals(void* ptr, const char* name, float* buffer)
     if (api)
     {
         SofaPhysicsOutputMesh* mesh = api->getOutputMeshPtr(name);
-        return mesh->getVNormals(buffer);
+        if (mesh == nullptr)
+            return API_MESH_NULL;
+        else
+            return mesh->getVNormals(buffer);
     }
 
     return API_NULL;
@@ -339,7 +348,10 @@ int sofaVisualModel_getTexCoords(void* ptr, const char* name, float* buffer)
     if (api)
     {
         SofaPhysicsOutputMesh* mesh = api->getOutputMeshPtr(name);
-        return mesh->getVTexCoords(buffer);
+        if (mesh == nullptr)
+            return API_MESH_NULL;
+        else
+            return mesh->getVTexCoords(buffer);
     }
 
     return API_NULL;
@@ -353,7 +365,10 @@ int sofaVisualModel_getNbEdges(void* ptr, const char* name)
     if (api)
     {
         SofaPhysicsOutputMesh* mesh = api->getOutputMeshPtr(name);
-        return mesh->getNbLines();
+        if (mesh == nullptr)
+            return API_MESH_NULL;
+        else
+            return mesh->getNbLines();
     }
 
     return API_NULL;
@@ -375,7 +390,10 @@ int sofaVisualModel_getNbTriangles(void* ptr, const char* name)
     if (api)
     {
         SofaPhysicsOutputMesh* mesh = api->getOutputMeshPtr(name);
-        return mesh->getNbTriangles();
+        if (mesh == nullptr)
+            return API_MESH_NULL;
+        else
+            return mesh->getNbTriangles();
     }
 
     return API_NULL;
@@ -388,7 +406,10 @@ int sofaVisualModel_getTriangles(void* ptr, const char* name, int* buffer)
     if (api)
     {
         SofaPhysicsOutputMesh* mesh = api->getOutputMeshPtr(name);
-        return mesh->getTriangles(buffer);
+        if (mesh == nullptr)
+            return API_MESH_NULL;
+        else
+            return mesh->getTriangles(buffer);
     }
 
     return API_NULL;
@@ -402,7 +423,10 @@ int sofaVisualModel_getNbQuads(void* ptr, const char* name)
     if (api)
     {
         SofaPhysicsOutputMesh* mesh = api->getOutputMeshPtr(name);
-        return mesh->getNbQuads();
+        if (mesh == nullptr)
+            return API_MESH_NULL;
+        else
+            return mesh->getNbQuads();
     }
 
     return API_NULL;
@@ -415,7 +439,10 @@ int sofaVisualModel_getQuads(void* ptr, const char* name, int* buffer)
     if (api)
     {
         SofaPhysicsOutputMesh* mesh = api->getOutputMeshPtr(name);
-        return mesh->getQuads(buffer);
+        if (mesh == nullptr)
+            return API_MESH_NULL;
+        else
+            return mesh->getQuads(buffer);
     }
 
     return API_NULL;
