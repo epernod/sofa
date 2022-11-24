@@ -63,7 +63,7 @@ EXPORT_API void sofaPhysicsAPI_reset(void* ptr);
 
 EXPORT_API float sofaPhysicsAPI_time(void* ptr);
 EXPORT_API float sofaPhysicsAPI_timeStep(void* ptr);
-EXPORT_API void sofaPhysicsAPI_setTimeStep(void* ptr, double value);
+EXPORT_API void sofaPhysicsAPI_setTimeStep(void* ptr, float value);
 
 EXPORT_API int sofaPhysicsAPI_getGravity(void* ptr, double* values);
 EXPORT_API int sofaPhysicsAPI_setGravity(void* ptr, double* values);

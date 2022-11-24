@@ -162,10 +162,10 @@ float sofaPhysicsAPI_time(void* ptr)
 {
     SofaPhysicsAPI* api = (SofaPhysicsAPI*)ptr;
     if (api) {
-        return api->getTime();
+        return float(api->getTime());
     }
     else
-        return -1.0;
+        return -1.f;
 }
 
 
@@ -173,18 +173,18 @@ float sofaPhysicsAPI_timeStep(void* ptr)
 {
     SofaPhysicsAPI* api = (SofaPhysicsAPI*)ptr;
     if (api) {
-        return api->getTime();
+        return float(api->getTimeStep());
     }
     else
         return -1.0;
 }
 
 
-void sofaPhysicsAPI_setTimeStep(void* ptr, double value)
+void sofaPhysicsAPI_setTimeStep(void* ptr, float value)
 {
     SofaPhysicsAPI* api = (SofaPhysicsAPI*)ptr;
     if (api) {
-        return api->setTimeStep(value);
+        return api->setTimeStep(double(value));
     }
 }
 
