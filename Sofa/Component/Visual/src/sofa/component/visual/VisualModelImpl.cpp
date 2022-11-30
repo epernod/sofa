@@ -1002,7 +1002,7 @@ void VisualModelImpl::initFromTopology()
                 SOFA_UNUSED(pointIndex);
                 SOFA_UNUSED(point);
 
-                VecTexCoord& texcoords = *m_vtexcoords.beginWriteOnly();
+                const VecTexCoord& texcoords = m_vtexcoords.getValue();
                 tCoord = TexCoord(0, 0);
                 for (Index i = 0; i < ancestors.size(); i++)
                 {

@@ -547,7 +547,7 @@ void MeshTopology::init()
     else
         m_upperElementType = sofa::core::topology::TopologyElementType::POINT;
 
-    computeCrossElementBuffers();
+   // computeCrossElementBuffers();
 }
 
 void MeshTopology::computeCrossElementBuffers()
