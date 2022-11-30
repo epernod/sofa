@@ -215,6 +215,9 @@ void GeomagicDriver::init()
 
 void GeomagicDriver::clearDevice()
 {
+    if (sofa::core::objectmodel::BaseObject::d_componentState.getValue() != sofa::core::objectmodel::ComponentState::Valid)
+        return;
+
 #if GEOMAGIC_HAVE_OPENHAPTICS
     if (m_hHD != HD_INVALID_HANDLE)
         hdMakeCurrentDevice(m_hHD);
