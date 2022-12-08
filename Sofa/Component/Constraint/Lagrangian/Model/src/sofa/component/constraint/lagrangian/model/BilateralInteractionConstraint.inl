@@ -372,20 +372,6 @@ Index BilateralInteractionConstraint<DataTypes>::indexOfElemConstraint(const Sub
 }
 
 
-    else if (objectId == 1)
-    {
-        const SubsetIndices& cIndices = m2.getValue();
-        for (int i = 0; i < cIndices.size(); ++i)
-        {
-            if (cIndices[i] == Id)
-                return Index(i);
-        }
-    }
-    
-    return sofa::InvalidID;
-}
-
-
 template<class DataTypes>
 void BilateralInteractionConstraint<DataTypes>::draw(const core::visual::VisualParams* vparams)
 {

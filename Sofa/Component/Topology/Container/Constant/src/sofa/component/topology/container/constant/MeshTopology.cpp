@@ -531,7 +531,6 @@ void MeshTopology::parse(core::objectmodel::BaseObjectDescription* arg)
 
 void MeshTopology::init()
 {
-
     BaseMeshTopology::init();
 
     const auto hexahedra = sofa::helper::getReadAccessor(seqHexahedra);
@@ -539,7 +538,6 @@ void MeshTopology::init()
     const auto quads = sofa::helper::getReadAccessor(seqQuads);
     const auto triangles = sofa::helper::getReadAccessor(seqTriangles);
     const auto edges = sofa::helper::getReadAccessor(seqEdges);
-
 
     // looking for upper topology
     if (!hexahedra.empty())
@@ -555,6 +553,16 @@ void MeshTopology::init()
     else
         m_upperElementType = sofa::core::topology::TopologyElementType::POINT;
 
+    computeCrossElementBuffers();
+}
+
+void MeshTopology::computeCrossElementBuffers()
+{
+    const auto hexahedra = sofa::helper::getReadAccessor(seqHexahedra);
+    const auto tetrahedra = sofa::helper::getReadAccessor(seqTetrahedra);
+    const auto quads = sofa::helper::getReadAccessor(seqQuads);
+    const auto triangles = sofa::helper::getReadAccessor(seqTriangles);
+    const auto edges = sofa::helper::getReadAccessor(seqEdges);
 
     // compute the number of points, if the topology is charged from the scene or if it was loaded from a MeshLoader without any points data.
     if (nbPoints == 0)
@@ -583,9 +591,68 @@ void MeshTopology::init()
         nbPoints = n;
     }
 
-    if(edges.empty() )
+
+    if (!hexahedra.empty()) // Create hexahedron cross element buffers.
     {
-        if(seqEdges.getParent() != nullptr )
+        createHexahedraAroundVertexArray();
+
+        if (!quads.empty())
+        {
+            createQuadsInHexahedronArray();
+            createHexahedraAroundQuadArray();
+        }
+
+        if (!edges.empty())
+        {
+            createEdgesInHexahedronArray();
+            createHexahedraAroundEdgeArray();
+        }
+    }
+    if (!tetrahedra.empty()) // Create tetrahedron cross element buffers.
+    {
+        createTetrahedraAroundVertexArray();
+
+        if (!triangles.empty())
+        {
+            createTrianglesInTetrahedronArray();
+            createTetrahedraAroundTriangleArray();
+        }
+
+        if (!edges.empty())
+        {
+            createEdgesInTetrahedronArray();
+            createTetrahedraAroundEdgeArray();
+        }
+    }
+    if (!quads.empty()) // Create triangle cross element buffers.
+    {
+        createQuadsAroundVertexArray();
+
+        if (!edges.empty())
+        {
+            createEdgesInQuadArray();
+            createQuadsAroundEdgeArray();
+        }
+    }
+    if (!triangles.empty()) // Create triangle cross element buffers.
+    {
+        createTrianglesAroundVertexArray();
+
+        if (!edges.empty())
+        {
+            createEdgesInTriangleArray();
+            createTrianglesAroundEdgeArray();
+        }
+    }
+    if (!edges.empty())
+    {
+        createEdgesAroundVertexArray();
+    }
+
+
+    if (edges.empty())
+    {
+        if (seqEdges.getParent() != nullptr)
         {
             seqEdges.delInput(seqEdges.getParent());
         }
@@ -593,7 +660,7 @@ void MeshTopology::init()
         edgeUpdate->setName("edgeUpdate");
         this->addSlave(edgeUpdate);
     }
-    if(triangles.empty() )
+    if (triangles.empty())
     {
         if (seqTriangles.getParent() != nullptr)
         {
@@ -603,7 +670,7 @@ void MeshTopology::init()
         triangleUpdate->setName("triangleUpdate");
         this->addSlave(triangleUpdate);
     }
-    if(quads.empty() )
+    if (quads.empty())
     {
         if (seqQuads.getParent() != nullptr)
         {

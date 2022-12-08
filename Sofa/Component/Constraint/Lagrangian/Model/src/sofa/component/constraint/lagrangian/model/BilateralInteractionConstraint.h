@@ -106,11 +106,8 @@ protected:
     Data<bool> keepOrientDiff; ///< keep the initial difference in orientation (only for rigids)
 
 
-    /// Link to be set to the topology container in the component graph.
-    SingleLink<BilateralInteractionConstraint<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology1;
-
-    /// Link to be set to the topology container in the component graph.
-    SingleLink<BilateralInteractionConstraint<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology2;
+    SingleLink<BilateralInteractionConstraint<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology1; ///< Link to be set to the first topology container in order to support topological changes
+    SingleLink<BilateralInteractionConstraint<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology2; ///< Link to be set to the second topology container in order to support topological changes
 
     std::vector<Vec3d> prevForces;
 
@@ -151,6 +148,7 @@ public:
             msg_warning() << "input Data 'derivative' has been deprecated. Its behavior was unused, undocumented, untested, and unclear (see PR #3328).";
         }
     }
+
     void buildConstraintMatrix(const ConstraintParams* cParams,
                                        DataMatrixDeriv &c1, DataMatrixDeriv &c2,
                                        unsigned int &cIndex,

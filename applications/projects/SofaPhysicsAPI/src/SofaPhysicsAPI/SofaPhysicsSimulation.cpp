@@ -791,45 +791,6 @@ int SofaPhysicsSimulation::clearMessages()
 }
 
 
-
-int SofaPhysicsSimulation::activateMessageHandler(bool value)
-{
-    if (value)
-        m_msgHandler->activate();
-    else
-        m_msgHandler->deactivate();
-
-    m_msgIsActivated = value;
-
-    return API_SUCCESS;
-}
-
-int SofaPhysicsSimulation::getNbMessages()
-{
-    return static_cast<int>(m_msgHandler->getMessages().size());
-}
-
-std::string SofaPhysicsSimulation::getMessage(int messageId, int& msgType)
-{
-    const std::vector<sofa::helper::logging::Message>& msgs = m_msgHandler->getMessages();
-
-    if (messageId >= msgs.size()) {
-        msgType = -1;
-        return "Error messageId out of bounds";
-    }
-
-    msgType = static_cast<int>(msgs[messageId].type());
-    return msgs[messageId].messageAsString();
-}
-
-int SofaPhysicsSimulation::clearMessages()
-{
-    m_msgHandler->reset();
-
-    return API_SUCCESS;
-}
-
-
 unsigned int SofaPhysicsSimulation::getNbDataMonitors()
 {
 

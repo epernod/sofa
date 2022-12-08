@@ -211,9 +211,6 @@ protected:
 
     TopologyElementType m_inputType = TopologyElementType::UNKNOWN;
     TopologyElementType m_outputType = TopologyElementType::UNKNOWN;
-
-    TopologyElementType m_inputType = TopologyElementType::UNKNOWN;
-    TopologyElementType m_outputType = TopologyElementType::UNKNOWN;
 };
 } // namespace sofa::core::topology
 
