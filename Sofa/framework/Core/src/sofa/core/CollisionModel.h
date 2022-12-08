@@ -19,8 +19,7 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_CORE_COLLISIONMODEL_H
-#define SOFA_CORE_COLLISIONMODEL_H
+#pragma once
 
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/core/CollisionElement.h>
@@ -28,10 +27,7 @@
 //todo(dmarchal 2018-06-19) I really wonder why a collision model has a dependency to a RGBAColors.
 #include <sofa/type/RGBAColor.h>
 
-namespace sofa
-{
-
-namespace core
+namespace sofa::core
 {
 
 namespace visual
@@ -94,7 +90,7 @@ public:
 
     typedef CollisionElementIterator Iterator;
     typedef topology::BaseMeshTopology Topology;
-    typedef sofa::type::Vector3::value_type Real;
+    typedef sofa::type::Vec3::value_type Real;
     using Index = sofa::Index;
     using Size = sofa::Size;
 
@@ -437,9 +433,4 @@ public:
     bool removeInNode( objectmodel::BaseNode* node ) override;
 
 };
-
-} // namespace core
-
-} // namespace sofa
-
-#endif
+} // namespace sofa::core

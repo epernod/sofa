@@ -19,12 +19,12 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include "AnimationLoopParallelScheduler.h"
+#include <MultiThreading/AnimationLoopParallelScheduler.h>
 
 #include <sofa/simulation/TaskScheduler.h>
-#include "AnimationLoopTasks.h"
+#include <MultiThreading/AnimationLoopTasks.h>
 #include <sofa/simulation/InitTasks.h>
-#include "DataExchange.h"
+#include <MultiThreading/DataExchange.h>
 
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/ConstraintSolver.h>
@@ -62,133 +62,116 @@
 #include <sofa/helper/AdvancedTimer.h>
 
 #include <sofa/core/visual/VisualParams.h>
+#include <sofa/simulation/MainTaskSchedulerFactory.h>
 
 #include <cstdlib>
 #include <cmath>
 #include <algorithm>
 
-
-#include <boost/pool/pool.hpp>
-
-
-
-
-namespace sofa
+namespace sofa::simulation
 {
 
-namespace simulation
+int AnimationLoopParallelSchedulerClass = core::RegisterObject("parallel animation loop, using intel tbb library")
+        .add< AnimationLoopParallelScheduler >()
+        ;
+
+AnimationLoopParallelScheduler::AnimationLoopParallelScheduler(simulation::Node* _gnode)
+    : Inherit()
+    , schedulerName(initData(&schedulerName, "scheduler", "name of the scheduler to use"))
+    , threadNumber(initData(&threadNumber, (unsigned int)0, "threadNumber", "number of thread") )
+    , mNbThread(0)
+    , gnode(_gnode)
+    , _taskScheduler(nullptr)
+{}
+
+AnimationLoopParallelScheduler::~AnimationLoopParallelScheduler() = default;
+
+void AnimationLoopParallelScheduler::init()
 {
+    if (!gnode)
+        gnode = dynamic_cast<simulation::Node*>(this->getContext());
 
-	int AnimationLoopParallelSchedulerClass = core::RegisterObject("parallel animation loop, using intel tbb library")
-		.add< AnimationLoopParallelScheduler >()
-		;
+    if ( threadNumber.getValue() )
+    {
+        mNbThread = threadNumber.getValue();
+    }
 
-
-
-
-
-
-	AnimationLoopParallelScheduler::AnimationLoopParallelScheduler(simulation::Node* _gnode)
-		: Inherit()
-        , schedulerName(initData(&schedulerName, "scheduler", "name of the scheduler to use"))
-		, threadNumber(initData(&threadNumber, (unsigned int)0, "threadNumber", "number of thread") )
-		, mNbThread(0)
-		, gnode(_gnode)
-        , _taskScheduler(nullptr)
-	{
-		//assert(gnode);
-
-
-	}
-
-	AnimationLoopParallelScheduler::~AnimationLoopParallelScheduler()
-	{
-        
-	}
-
-	void AnimationLoopParallelScheduler::init()
-	{
-		if (!gnode)
-			gnode = dynamic_cast<simulation::Node*>(this->getContext());
-
-		if ( threadNumber.getValue() )
-		{
-			mNbThread = threadNumber.getValue();
-		}
-
-        _taskScheduler = TaskScheduler::getInstance();
-
-        if (TaskScheduler::getCurrentName() != schedulerName.getValue())
+    if (schedulerName.isSet())
+    {
+        _taskScheduler = MainTaskSchedulerFactory::createInRegistry(schedulerName.getValue() );
+        if (!_taskScheduler)
         {
-            _taskScheduler = TaskScheduler::create(schedulerName.getValue().c_str());
-        }        
-        _taskScheduler->init( mNbThread );
-	}
-
-
-
-	void AnimationLoopParallelScheduler::bwdInit()
-	{
-		initThreadLocalData();
-	}
-
-
-	void AnimationLoopParallelScheduler::reinit()
-	{
-        if ( threadNumber.getValue() != _taskScheduler->getThreadCount() )
-        {
-            mNbThread = threadNumber.getValue();
-            _taskScheduler->init(mNbThread);
-            initThreadLocalData();
+            msg_error() << "'" << schedulerName.getValue()
+                << "' is not a valid name for a task scheduler. Falling back to the default "
+                "task scheduler. The list of available schedulers is: ["
+                << sofa::helper::join(MainTaskSchedulerFactory::getAvailableSchedulers(), ',')
+                << "]";
         }
-	}
+    }
 
-	void AnimationLoopParallelScheduler::cleanup()
-	{
-        _taskScheduler->stop();
-	}
+    if (!_taskScheduler)
+    {
+        _taskScheduler = MainTaskSchedulerFactory::createInRegistry();
+    }
 
-	void AnimationLoopParallelScheduler::step(const core::ExecParams* params, SReal dt)
-	{
+    if (_taskScheduler)
+    {
+        _taskScheduler->init( mNbThread );
+    }
+    else
+    {
+        this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
+    }
+}
 
-		//static boost::pool<> task_pool(sizeof(StepTask));
+void AnimationLoopParallelScheduler::bwdInit()
+{
+    initThreadLocalData();
+}
 
-		if (dt == 0)
-			dt = this->gnode->getDt();
+void AnimationLoopParallelScheduler::reinit()
+{
+    if ( threadNumber.getValue() != _taskScheduler->getThreadCount() )
+    {
+        mNbThread = threadNumber.getValue();
+        _taskScheduler->init(mNbThread);
+        initThreadLocalData();
+    }
+}
+
+void AnimationLoopParallelScheduler::cleanup()
+{
+    _taskScheduler->stop();
+}
+
+void AnimationLoopParallelScheduler::step(const core::ExecParams* params, SReal dt)
+{
+    if (dt == 0)
+        dt = this->gnode->getDt();
+
+    simulation::CpuTask::Status status;
+
+    for (const auto& it : gnode->child)
+    {
+        if ( core::behavior::BaseAnimationLoop* aloop = it->getAnimationLoop() )
+        {
+            _taskScheduler->addTask(new StepTask(aloop, dt, &status));
+        }
+    }
+
+    _taskScheduler->workUntilDone(&status);
+
+    double startTime = gnode->getTime();
+    gnode->setTime ( startTime + dt );
+
+    // exchange data event
+    core::DataExchangeEvent ev ( dt );
+    PropagateEventVisitor act ( params, &ev );
+    gnode->execute ( act );
 
 
-		simulation::CpuTask::Status status;
+    // it doesn't call the destructor
+    //task_pool.purge_memory();
+}
 
-		typedef Node::Sequence<simulation::Node,true>::iterator ChildIterator;
-		for (ChildIterator it = gnode->child.begin(), itend = gnode->child.end(); it != itend; ++it)
-		{
-			if ( core::behavior::BaseAnimationLoop* aloop = (*it)->getAnimationLoop() )
-			{
-				//thread->addTask( new( task_pool.malloc()) StepTask( aloop, dt, &status ) );
-                _taskScheduler->addTask(new StepTask(aloop, dt, &status));
-
-			}
-
-		}
-
-        _taskScheduler->workUntilDone(&status);
-
-
-
-		double startTime = gnode->getTime();
-		gnode->setTime ( startTime + dt );
-
-		// exchange data event
-        core::DataExchangeEvent ev ( dt );
-		PropagateEventVisitor act ( params, &ev );
-		gnode->execute ( act );
-
-
-		// it doesn't call the destructor
-		//task_pool.purge_memory();
-	}
-
-
-} // namespace simulation
-
-} // namespace sofa
+} // namespace sofa::simulation

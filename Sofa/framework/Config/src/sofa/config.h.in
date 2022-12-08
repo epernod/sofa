@@ -243,15 +243,32 @@ class DeprecatedAndRemoved {};
         "v21.06 (PR#1808)", "v21.12", \
         "replace std::cout << myaccessor by std::cout << myaccessor.ref() ")
 
+#define SOFA_ATTRIBUTE_DISABLED__TYPEMEMBER(type) \
+    SOFA_ATTRIBUTE_DISABLED( \
+        "v22.12 (PR#3357)", "v23.12", \
+        "Class's member type alias " sofa_tostring(type) " was not needed.") \
+        DeprecatedAndRemoved type
+
+#define SOFA_ATTRIBUTE_REPLACED__TYPEMEMBER(type, newtype) \
+    SOFA_ATTRIBUTE_DEPRECATED( \
+        "v22.12 (PR#3357)", "v23.12", \
+        "This type member " sofa_tostring(type) " is now deprecated. To update your code please replace it with " sofa_tostring(newtype)) \
+        typedef newtype type
+
 #define SOFA_ATTRIBUTE_DEPRECATED__SOFAOSTREAM() \
     SOFA_ATTRIBUTE_DEPRECATED( \
         "v21.12 (PR#2292)", "v22.06", \
         "Use the Messaging API instead of using SofaOStream and sout/serr/sendl.")
 
+#define SOFA_ATTRIBUTE_DEPRECATED__VECTOR(msg) \
+    SOFA_ATTRIBUTE_DEPRECATED( \
+        "v22.12 (PR#3299)", "v23.06", \
+        "Long aliases for VectorX will be removed. " msg)
+
 #define SOFA_ATTRIBUTE_DEPRECATED__READX_PARAMS(msg) \
     SOFA_ATTRIBUTE_DEPRECATED( \
         "v22.12 (PR#3304)", "v23.06", \
-        "Calling ReadX with SingleLin's argument will be removed." msg)
+        "Calling ReadX with SingleLink's argument will be removed." msg)
 
 /**********************************************/
 

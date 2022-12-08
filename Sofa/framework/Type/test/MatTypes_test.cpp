@@ -132,15 +132,15 @@ void test_transformInverse(Matrix4 const& M)
 TEST(MatTypesTest, transformInverse)
 {
     test_transformInverse(Matrix4::s_identity);
-    test_transformInverse(Matrix4::transformTranslation(Vector3(1.,2.,3.)));
-    test_transformInverse(Matrix4::transformScale(Vector3(1.,2.,3.)));
+    test_transformInverse(Matrix4::transformTranslation(Vec3(1.,2.,3.)));
+    test_transformInverse(Matrix4::transformScale(Vec3(1.,2.,3.)));
     test_transformInverse(Matrix4::transformRotation(Quat<SReal>::fromEuler(M_PI_4,M_PI_2,M_PI/3.)));
 }
 
 TEST(MatTypesTest, setsub_vec)
 {
     Matrix3 M = Matrix3::s_identity;
-    Vector2 v(1.,2.);
+    Vec2 v(1.,2.);
     M.setsub(1,2,v);
     double exp[9]={1.,0.,0.,
                    0.,1.,1.,
@@ -312,4 +312,15 @@ TEST(MatTypesTest, identity)
             EXPECT_FLOATINGPOINT_EQ(id(i,j), static_cast<SReal>(i == j))
         }
     }
+}
+
+TEST(MatTypesTest, conversionToReal)
+{
+    const sofa::type::Mat<1, 1, SReal>& id = sofa::type::Mat<1, 1, SReal>::Identity();
+
+    const SReal r = id;
+    EXPECT_EQ(r, 1_sreal);
+
+    const SReal p = id.toReal();
+    EXPECT_EQ(p, 1_sreal);
 }

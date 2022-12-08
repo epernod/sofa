@@ -19,18 +19,11 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_CORE_TOPOLOGY_TOPOLOGICALMAPPING_H
-#define SOFA_CORE_TOPOLOGY_TOPOLOGICALMAPPING_H
+#pragma once
 
 #include <sofa/core/topology/BaseMeshTopology.h>
 
-namespace sofa
-{
-
-namespace core
-{
-
-namespace topology
+namespace sofa::core::topology
 {
 
 /**
@@ -95,7 +88,6 @@ public:
 
     /// Accessor to index maps :
     const std::map<Index, Index>& getGlob2LocMap() { return Glob2LocMap;}
-
     virtual Index getGlobIndex(Index ind);
 
     virtual Index getFromIndex(Index ind);
@@ -219,12 +211,9 @@ protected:
 
     TopologyElementType m_inputType = TopologyElementType::UNKNOWN;
     TopologyElementType m_outputType = TopologyElementType::UNKNOWN;
+
+    TopologyElementType m_inputType = TopologyElementType::UNKNOWN;
+    TopologyElementType m_outputType = TopologyElementType::UNKNOWN;
 };
+} // namespace sofa::core::topology
 
-} // namespace topology
-
-} // namespace core
-
-} // namespace sofa
-
-#endif

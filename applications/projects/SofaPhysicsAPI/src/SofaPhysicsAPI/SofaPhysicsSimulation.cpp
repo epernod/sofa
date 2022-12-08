@@ -83,9 +83,9 @@ int SofaPhysicsAPI::unload()
     return impl->unload();
 }
 
-std::string SofaPhysicsAPI::loadSofaIni(const char* pathIni)
+std::string SofaPhysicsAPI::loadSofaIni(const char* pathIniFile)
 {
-    const std::string sofaIniFilePath = std::string(pathIni);
+    auto sofaIniFilePath = std::string(pathIniFile);
 
     std::map<std::string, std::string> iniFileValues = sofa::helper::Utils::readBasicIniFile(sofaIniFilePath);
     std::string shareDir = "SHARE_DIR Path Not found";
@@ -115,9 +115,9 @@ std::string SofaPhysicsAPI::loadSofaIni(const char* pathIni)
     return shareDir;
 }
 
-int SofaPhysicsAPI::loadPlugin(const char* pluginName)
+int SofaPhysicsAPI::loadPlugin(const char* pluginPath)
 {
-    return impl->loadPlugin(pluginName);
+    return impl->loadPlugin(pluginPath);
 }
 
 void SofaPhysicsAPI::createScene()
@@ -160,17 +160,17 @@ void SofaPhysicsAPI::drawGL()
     impl->drawGL();
 }
 
-unsigned int SofaPhysicsAPI::getNbOutputMeshes()
+unsigned int SofaPhysicsAPI::getNbOutputMeshes() const
 {
     return impl->getNbOutputMeshes();
 }
 
-SofaPhysicsOutputMesh* SofaPhysicsAPI::getOutputMeshPtr(unsigned int meshID)
+SofaPhysicsOutputMesh* SofaPhysicsAPI::getOutputMeshPtr(unsigned int meshID) const
 {
     return impl->getOutputMeshPtr(meshID);
 }
 
-SofaPhysicsOutputMesh* SofaPhysicsAPI::getOutputMeshPtr(const char* name)
+SofaPhysicsOutputMesh* SofaPhysicsAPI::getOutputMeshPtr(const char* name) const
 {
     return impl->getOutputMeshPtr(name);
 }
@@ -387,18 +387,16 @@ const char *SofaPhysicsSimulation::APIName()
 int SofaPhysicsSimulation::load(const char* cfilename)
 {
     std::string filename = cfilename;
-    std::cout << "FROM APP: SofaPhysicsSimulation::load(" << filename << ")" << std::endl;
     sofa::helper::BackTrace::autodump();
 
     //bool wasAnimated = isAnimated();
-    bool success = true;
     sofa::helper::system::DataRepository.findFile(filename);
     m_RootNode = m_Simulation->load(filename.c_str());
     if (m_RootNode.get())
     {
         sceneFileName = filename;
         m_Simulation->init(m_RootNode.get());
-        updateOutputMeshes();
+        return updateOutputMeshes();
 
         if ( useGUI ) {
           sofa::gui::common::GUIManager::SetScene(m_RootNode.get(),cfilename);
@@ -434,9 +432,9 @@ int SofaPhysicsSimulation::unload()
     return API_SUCCESS;
 }
 
-int SofaPhysicsSimulation::loadPlugin(const char* pluginName)
+int SofaPhysicsSimulation::loadPlugin(const char* pluginPath)
 {
-    sofa::helper::system::PluginManager::PluginLoadStatus plugres = sofa::helper::system::PluginManager::getInstance().loadPlugin(pluginName);
+    sofa::helper::system::PluginManager::PluginLoadStatus plugres = sofa::helper::system::PluginManager::getInstance().loadPlugin(pluginPath);
     if (plugres == sofa::helper::system::PluginManager::PluginLoadStatus::SUCCESS || plugres == sofa::helper::system::PluginManager::PluginLoadStatus::ALREADY_LOADED)
         return API_SUCCESS;
     else if (plugres == sofa::helper::system::PluginManager::PluginLoadStatus::INVALID_LOADING)
@@ -714,12 +712,12 @@ int SofaPhysicsSimulation::updateOutputMeshes()
     return sofaOutputMeshes.size();
 }
 
-unsigned int SofaPhysicsSimulation::getNbOutputMeshes()
+unsigned int SofaPhysicsSimulation::getNbOutputMeshes() const
 {
     return outputMeshes.size();
 }
 
-SofaPhysicsOutputMesh* SofaPhysicsSimulation::getOutputMeshPtr(unsigned int meshID)
+SofaPhysicsOutputMesh* SofaPhysicsSimulation::getOutputMeshPtr(unsigned int meshID) const
 {
     if (meshID >= outputMeshes.size())
         return nullptr;
@@ -727,7 +725,7 @@ SofaPhysicsOutputMesh* SofaPhysicsSimulation::getOutputMeshPtr(unsigned int mesh
         return outputMeshes[meshID];
 }
 
-SofaPhysicsOutputMesh* SofaPhysicsSimulation::getOutputMeshPtr(const char* name)
+SofaPhysicsOutputMesh* SofaPhysicsSimulation::getOutputMeshPtr(const char* name) const
 {
     for (SofaPhysicsOutputMesh* mesh : outputMeshes)
     {
@@ -753,6 +751,45 @@ SofaPhysicsOutputMesh** SofaPhysicsSimulation::getOutputMeshes()
     else
         return &(outputMeshes[0]);
 }
+
+
+int SofaPhysicsSimulation::activateMessageHandler(bool value)
+{
+    if (value)
+        m_msgHandler->activate();
+    else
+        m_msgHandler->deactivate();
+
+    m_msgIsActivated = value;
+
+    return API_SUCCESS;
+}
+
+int SofaPhysicsSimulation::getNbMessages()
+{
+    return static_cast<int>(m_msgHandler->getMessages().size());
+}
+
+std::string SofaPhysicsSimulation::getMessage(int messageId, int& msgType)
+{
+    const std::vector<sofa::helper::logging::Message>& msgs = m_msgHandler->getMessages();
+
+    if (messageId >= msgs.size()) {
+        msgType = -1;
+        return "Error messageId out of bounds";
+    }
+
+    msgType = static_cast<int>(msgs[messageId].type());
+    return msgs[messageId].messageAsString();
+}
+
+int SofaPhysicsSimulation::clearMessages()
+{
+    m_msgHandler->reset();
+
+    return API_SUCCESS;
+}
+
 
 
 int SofaPhysicsSimulation::activateMessageHandler(bool value)
@@ -1077,7 +1114,7 @@ void SofaPhysicsSimulation::calcProjection()
     double offset;
     double xForeground, yForeground, zForeground, xBackground, yBackground,
            zBackground;
-    sofa::type::Vector3 center;
+    sofa::type::Vec3 center;
 
     /// Camera part
     if (!currentCamera)

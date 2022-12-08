@@ -19,10 +19,10 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_CORE_VECID_H
-#define SOFA_CORE_VECID_H
+#pragma once
 
-#include <sofa/config.h>
+#include <sofa/core/config.h>
+
 #include <string>
 #include <sstream>
 #include <cassert>
@@ -40,12 +40,7 @@ enum VecType
     V_MATDERIV,
 };
 
-static const std::unordered_map<VecType, std::string> VecTypeLabels {
-    {V_ALL, "(V_ALL)"},
-    {V_COORD, "(V_COORD)"},
-    {V_DERIV, "(V_DERIV)"},
-    {V_MATDERIV, "(V_MATDERIV)"}
-};
+SOFA_CORE_API extern const std::unordered_map<VecType, std::string> VecTypeLabels;
 
 /// Types of vectors that can be stored in State
 enum VecAccess
@@ -461,6 +456,4 @@ typedef TVecId<V_MATDERIV, V_READ> ConstMatrixDerivId;
 typedef TVecId<V_MATDERIV, V_WRITE>     MatrixDerivId;
 
 static_assert(sizeof(VecId) == sizeof(VecCoordId), "");
-} // namespace sofa
-
-#endif
+} // namespace sofa::core

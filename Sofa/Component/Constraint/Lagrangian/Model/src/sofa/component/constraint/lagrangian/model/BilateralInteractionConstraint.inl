@@ -316,12 +316,18 @@ void BilateralInteractionConstraint<DataTypes>::removeContact(int objectId, Subs
     WriteAccessor<Data <SubsetIndices > > m2Indices = this->m2;
     WriteAccessor<Data<VecDeriv > > wrest = this->restVector;
 
-    int lastState1Id = this->mstate1->getSize() - 1;
-    int lastState2Id = this->mstate2->getSize() - 1;
+    const SubsetIndices& cIndices1 = m1.getValue();
+    const SubsetIndices& cIndices2 = m2.getValue();
+
     for (int i = 0; i < indices.size(); ++i)
     {
-        Index elemId = indices[i];
-        Index posId = indexOfElemConstraint(objectId, elemId);
+        const Index elemId = indices[i];
+        Index posId = sofa::InvalidID;
+            
+        if (objectId == 0)
+            posId = indexOfElemConstraint(cIndices1, elemId);
+        else if (objectId == 1)
+            posId = indexOfElemConstraint(cIndices2, elemId);
 
         if (posId != sofa::InvalidID)
         {
@@ -355,17 +361,17 @@ void BilateralInteractionConstraint<DataTypes>::clear(int reserve)
 
 
 template<class DataTypes>
-Index BilateralInteractionConstraint<DataTypes>::indexOfElemConstraint(int objectId, Index Id)
+Index BilateralInteractionConstraint<DataTypes>::indexOfElemConstraint(const SubsetIndices& cIndices, Index Id)
 {
-    if (objectId == 0)
-    {
-        const SubsetIndices& cIndices = m1.getValue();
-        for (int i = 0; i < cIndices.size(); ++i)
-        {
-            if (cIndices[i] == Id)
-                return Index(i);
-        }
-    }
+    auto it = std::find(cIndices.begin(), cIndices.end(), Id);
+
+    if (it != cIndices.end())
+        return Index(std::distance(cIndices.begin(), it));
+    else    
+        return sofa::InvalidID;
+}
+
+
     else if (objectId == 1)
     {
         const SubsetIndices& cIndices = m2.getValue();
@@ -390,7 +396,7 @@ void BilateralInteractionConstraint<DataTypes>::draw(const core::visual::VisualP
 
     constexpr sofa::type::RGBAColor colorActive = sofa::type::RGBAColor::magenta();
     constexpr sofa::type::RGBAColor colorNotActive = sofa::type::RGBAColor::green();
-    std::vector< sofa::type::Vector3 > vertices;
+    std::vector< sofa::type::Vec3 > vertices;
 
     unsigned minp = std::min(m1.getValue().size(),m2.getValue().size());
     auto positionsM1 = sofa::helper::getReadAccessor(*this->mstate1->read(ConstVecCoordId::position()));
