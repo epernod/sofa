@@ -72,6 +72,23 @@ struct Triangle
     }
 
     /**
+    * @brief	Compute the barycenter of a triangle
+    * @tparam   Node iterable container (or sofa::type::Vec with cross() and norm())
+    * @tparam   T scalar
+    * @param	n0,n1,n2 nodes of the triangle
+    * @return	Node barycenter of this triangle
+    */
+    template<typename Node,
+        typename T = std::decay_t<decltype(*std::begin(std::declval<Node>()))>,
+        typename = std::enable_if_t<std::is_scalar_v<T>>
+    >
+        [[nodiscard]]
+    static constexpr auto barycenter(const Node& n0, const Node& n1, const Node& n2)
+    {
+        return (n0 + n1 + n2) / 3;
+    }
+
+    /**
     * @brief	Compute the normal of a triangle
     * @remark   triangle normal computation is only possible in 3D
     * @remark   normal returned is not normalized

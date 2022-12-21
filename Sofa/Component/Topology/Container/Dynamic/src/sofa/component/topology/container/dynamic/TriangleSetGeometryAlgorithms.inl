@@ -397,6 +397,14 @@ typename DataTypes::Real TriangleSetGeometryAlgorithms< DataTypes >::computeRest
     return area;
 }
 
+template< class DataTypes>
+typename DataTypes::Coord TriangleSetGeometryAlgorithms< DataTypes >::computeTriangleBarycenter(const TriangleID i) const
+{
+    const Triangle& t = this->m_topology->getTriangle(i);
+    const typename DataTypes::VecCoord& p = (this->object->read(core::ConstVecCoordId::position())->getValue());
+    return sofa::geometry::Triangle::barycenter(p[t[0]], p[t[1]], p[t[2]]);
+}
+
 /// computes the edge length of all edges are store in the array interface
 template<class DataTypes>
 void TriangleSetGeometryAlgorithms<DataTypes>::computeTriangleArea( BasicArrayInterface<Real> &ai) const

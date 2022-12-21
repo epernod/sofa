@@ -116,6 +116,9 @@ public:
      */
     Real computeRestTriangleArea(const TriangleID i) const;
 
+    ///brief Compute triangle barycenter coordinates of input TriangleID @param i .
+    Coord computeTriangleBarycenter(const TriangleID i) const;
+
     /** \brief Computes barycentric coefficients of point p in triangle (a,b,c) indexed by ind_t
     *
     */
