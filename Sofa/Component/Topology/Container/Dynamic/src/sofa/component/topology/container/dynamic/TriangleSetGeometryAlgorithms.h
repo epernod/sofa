@@ -144,12 +144,14 @@ public:
     void computeClosestIndexPair(const TriangleID ind_ta, const TriangleID ind_tb,
         PointID &ind1, PointID &ind2) const;
 
-    /** \brief Tests if a point is included in the triangle indexed by ind_t
-     *
-     */
-    bool isPointInsideTriangle(const TriangleID ind_t, bool is_tested, const sofa::type::Vec<3,Real>& p, TriangleID &ind_t_test, bool bRest=false) const;
-
-    bool isPointInTriangle(const TriangleID ind_t, bool is_tested, const sofa::type::Vec<3,Real>& p, TriangleID &ind_t_test) const;
+    /*** \brief Tests if a point is inside the triangle indexed by @param ind_t
+    * @param TriangleID index of triangle to test
+    * @param bool testNeighboor if true will check if input point is on a adjacent triangle 
+    * @tparam point Coord point to test
+    * @param TriangleID output parameter. Will contain the triangle id If testNeighboor is set to true and point is on a adjacent triangle
+    * @param bool bRest if true (resp. false) will test on the rest position (resp. on current position). False by default.
+    */
+    bool isPointInsideTriangle(const TriangleID ind_t, bool testNeighboor, const sofa::type::Vec<3,Real>& point, TriangleID &ind_t_test, bool bRest=false) const;    
 
 
 
@@ -356,8 +358,12 @@ public:
      */
     virtual bool InciseAlongEdgeList(const sofa::type::vector<EdgeID>& edges, sofa::type::vector<PointID>& new_points, sofa::type::vector<PointID>& end_points, bool& reachBorder);
 
+    /////// DEPRECATED METHOD ////////
 
-
+    SOFA_ATTRIBUTE_DEPRECATED("v23.06", "v23.12", "Use method isPointInsideTriangle instead.")
+    bool isPointInTriangle(const TriangleID ind_t, bool is_tested, const sofa::type::Vec<3, Real>& p, TriangleID& ind_t_test) const {
+        return isPointInsideTriangle(ind_t, is_tested, p, ind_t_test);
+    }
 
 protected:
     Data<bool> showTriangleIndices; ///< Debug : view Triangle indices

@@ -642,289 +642,99 @@ void TriangleSetGeometryAlgorithms< DataTypes >::computeClosestIndexPair(const T
     return;
 }
 
+
 // test if a point is inside the triangle indexed by ind_t
 template<class DataTypes>
 bool TriangleSetGeometryAlgorithms< DataTypes >::isPointInsideTriangle(const TriangleID ind_t,
-        bool is_tested,
-        const sofa::type::Vec<3,Real>& p,
+        bool testNeighboor,
+        const sofa::type::Vec<3,Real>& point,
         TriangleID &ind_t_test,
         bool bRest) const
 {
-    const Real ZERO = -1e-12;
+    const Real ZERO = std::numeric_limits<Real>::epsilon();
     const typename DataTypes::VecCoord& vect_c = bRest
         ? (this->object->read(core::ConstVecCoordId::restPosition())->getValue())
         :(this->object->read(core::ConstVecCoordId::position())->getValue());
-    const Triangle &t=this->m_topology->getTriangle(ind_t);
+    const Triangle& tri = this->m_topology->getTriangle(ind_t);
 
-    const typename DataTypes::Coord& c0=vect_c[t[0]];
-    const typename DataTypes::Coord& c1=vect_c[t[1]];
-    const typename DataTypes::Coord& c2=vect_c[t[2]];
-
-    sofa::type::Vec<3,Real> ptest = p;
-
-    sofa::type::Vec<3,Real> p0;
-    p0[0] = (Real) (c0[0]);
-    p0[1] = (Real) (c0[1]);
-    p0[2] = (Real) (c0[2]);
-    sofa::type::Vec<3,Real> p1;
-    p1[0] = (Real) (c1[0]);
-    p1[1] = (Real) (c1[1]);
-    p1[2] = (Real) (c1[2]);
-    sofa::type::Vec<3,Real> p2;
-    p2[0] = (Real) (c2[0]);
-    p2[1] = (Real) (c2[1]);
-    p2[2] = (Real) (c2[2]);
-
-    sofa::type::Vec<3,Real> v_normal = (p2-p0).cross(p1-p0);
-
-    Real norm_v_normal = v_normal*(v_normal);
-    if(norm_v_normal != 0.0)
+    const sofa::type::Vec<3, Real> p0 = sofa::type::Vec<3, Real>(vect_c[tri[0]]);
+    const sofa::type::Vec<3, Real> p1 = sofa::type::Vec<3, Real>(vect_c[tri[1]]);
+    const sofa::type::Vec<3, Real> p2 = sofa::type::Vec<3, Real>(vect_c[tri[2]]);
+    const sofa::type::Vec<3,Real> v_normal = (p2-p0).cross(p1-p0);
+    
+    if (v_normal.norm2() < ZERO) // triangle is flat
     {
-        sofa::type::Vec<3,Real> n_01 = (p1-p0).cross(v_normal);
-        sofa::type::Vec<3,Real> n_12 = (p2-p1).cross(v_normal);
-        sofa::type::Vec<3,Real> n_20 = (p0-p2).cross(v_normal);
-
-        Real v_01 = (Real) ((ptest-p0)*(n_01));
-        Real v_12 = (Real) ((ptest-p1)*(n_12));
-        Real v_20 = (Real) ((ptest-p2)*(n_20));
-
-        bool is_inside = (v_01 > ZERO) && (v_12 > ZERO) && (v_20 > ZERO);
-
-        if(is_tested && (!is_inside))
-        {
-            sofa::type::vector< TriangleID > shell;
-            EdgeID ind_edge = 0;
-
-            if(v_01 < 0.0)
-            {
-                if(v_12 < 0.0) /// vertex 1
-                {
-                    shell =(sofa::type::vector< TriangleID >) (this->m_topology->getTrianglesAroundVertex(t[1]));
-                }
-                else
-                {
-                    if(v_20 < 0.0) /// vertex 0
-                    {
-                        shell =(sofa::type::vector< TriangleID >) (this->m_topology->getTrianglesAroundVertex(t[0]));
-
-                    }
-                    else // v_01 < 0.0
-                    {
-                        ind_edge=this->m_topology->getEdgeIndex(t[0],t[1]);
-                        shell =(sofa::type::vector< TriangleID >) (this->m_topology->getTrianglesAroundEdge(ind_edge));
-                    }
-                }
-            }
-            else
-            {
-                if(v_12 < 0.0)
-                {
-                    if(v_20 < 0.0) /// vertex 2
-                    {
-                        shell =(sofa::type::vector< TriangleID >) (this->m_topology->getTrianglesAroundVertex(t[2]));
-
-                    }
-                    else // v_12 < 0.0
-                    {
-                        ind_edge=this->m_topology->getEdgeIndex(t[1],t[2]);
-                        shell =(sofa::type::vector< TriangleID >) (this->m_topology->getTrianglesAroundEdge(ind_edge));
-                    }
-                }
-                else // v_20 < 0.0
-                {
-                    ind_edge=this->m_topology->getEdgeIndex(t[2],t[0]);
-                    shell =(sofa::type::vector< TriangleID >) (this->m_topology->getTrianglesAroundEdge(ind_edge));
-                }
-            }
-
-            size_t i =0;
-            bool is_in_next_triangle=false;
-            TriangleID ind_triangle=0;
-            TriangleID ind_t_false_init;
-            TriangleID &ind_t_false = ind_t_false_init;
-
-            if(shell.size()>1)
-            {
-                while(i < shell.size() && !is_in_next_triangle)
-                {
-                    ind_triangle=shell[i];
-
-                    if(ind_triangle != ind_t)
-                    {
-                        is_in_next_triangle = isPointInTriangle(ind_triangle, false, p, ind_t_false);
-                    }
-                    i++;
-                }
-
-                if(is_in_next_triangle)
-                {
-                    ind_t_test=ind_triangle;
-                    //msg_info() << "correct to triangle indexed by " << ind_t_test;
-                }
-                else // not found
-                {
-                    //msg_info() << "not found !!! ";
-                    ind_t_test=ind_t;
-                }
-            }
-            else
-            {
-                ind_t_test=ind_t;
-            }
-        }
-        return is_inside;
-
-    }
-    else // triangle is flat
-    {
-        //msg_info() << "INFO_print : triangle is flat";
         return false;
     }
-}
 
-// test if a point is in the triangle indexed by ind_t
-template<class DataTypes>
-bool TriangleSetGeometryAlgorithms< DataTypes >::isPointInTriangle(const TriangleID ind_t,
-        bool is_tested,
-        const sofa::type::Vec<3,Real>& p,
-        TriangleID &ind_t_test) const
-{
-    const Real ZERO = 1e-12;
-    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::ConstVecCoordId::position())->getValue());
-    const Triangle &t=this->m_topology->getTriangle(ind_t);
+    sofa::type::Vec<3,Real> n_01 = (p1-p0).cross(v_normal);
+    sofa::type::Vec<3,Real> n_12 = (p2-p1).cross(v_normal);
+    sofa::type::Vec<3,Real> n_20 = (p0-p2).cross(v_normal);
 
-    const typename DataTypes::Coord& c0=vect_c[t[0]];
-    const typename DataTypes::Coord& c1=vect_c[t[1]];
-    const typename DataTypes::Coord& c2=vect_c[t[2]];
+    // compute barycoef
+    Real v_01 = (Real) ((point-p0)*(n_01));
+    Real v_12 = (Real) ((point-p1)*(n_12));
+    Real v_20 = (Real) ((point-p2)*(n_20));
 
-    sofa::type::Vec<3,Real> ptest = p;
+    bool is_inside = (v_01 > ZERO) && (v_12 > ZERO) && (v_20 > ZERO);
 
-    sofa::type::Vec<3,Real> p0;
-    p0[0] = (Real) (c0[0]);
-    p0[1] = (Real) (c0[1]);
-    p0[2] = (Real) (c0[2]);
-    sofa::type::Vec<3,Real> p1;
-    p1[0] = (Real) (c1[0]);
-    p1[1] = (Real) (c1[1]);
-    p1[2] = (Real) (c1[2]);
-    sofa::type::Vec<3,Real> p2;
-    p2[0] = (Real) (c2[0]);
-    p2[1] = (Real) (c2[1]);
-    p2[2] = (Real) (c2[2]);
-
-    sofa::type::Vec<3,Real> v_normal = (p2-p0).cross(p1-p0);
-
-    Real norm_v_normal = v_normal*(v_normal);
-    //if(norm_v_normal != 0.0)
-    if(norm_v_normal > ZERO)
+    if(testNeighboor && (!is_inside))
     {
-        sofa::type::Vec<3,Real> n_01 = (p1-p0).cross(v_normal);
-        sofa::type::Vec<3,Real> n_12 = (p2-p1).cross(v_normal);
-        sofa::type::Vec<3,Real> n_20 = (p0-p2).cross(v_normal);
+        sofa::type::vector< TriangleID > shell;
 
-        Real v_01 = (Real) ((ptest-p0)*(n_01));
-        Real v_12 = (Real) ((ptest-p1)*(n_12));
-        Real v_20 = (Real) ((ptest-p2)*(n_20));
-
-        //bool is_inside = (v_01 > 0.0) && (v_12 > 0.0) && (v_20 > 0.0);
-        bool is_inside = (v_01 > -ZERO) && (v_12 > -ZERO) && (v_20 >= -ZERO);
-
-        if(is_tested && (!is_inside))
+        /// Compute the neighboor candidate triangles 
+        if(v_01 < 0.0)
         {
-            sofa::type::vector< TriangleID > shell;
-            EdgeID ind_edge = 0;
-
-            //if(v_01 < 0.0)
-            if(v_01 < -ZERO)
+            if(v_12 < 0.0) // In vertex tri[1] direction
             {
-                //if(v_12 < 0.0) /// vertex 1
-                if(v_12 < -ZERO) /// vertex 1
-                {
-                    shell =(sofa::type::vector< TriangleID >) (this->m_topology->getTrianglesAroundVertex(t[1]));
-                }
-                else
-                {
-                    //if(v_20 < 0.0) /// vertex 0
-                    if(v_20 < -ZERO) /// vertex 0
-                    {
-                        shell =(sofa::type::vector< TriangleID >) (this->m_topology->getTrianglesAroundVertex(t[0]));
-
-                    }
-                    else // v_01 < 0.0
-                    {
-                        ind_edge=this->m_topology->getEdgeIndex(t[0],t[1]);
-                        shell =(sofa::type::vector< TriangleID >) (this->m_topology->getTrianglesAroundEdge(ind_edge));
-                    }
-                }
+                shell = this->m_topology->getTrianglesAroundVertex(tri[1]);
             }
-            else
+            else if (v_20 < 0.0) // In vertex tri[0] direction
             {
-                //if(v_12 < 0.0)
-                if(v_12 < -ZERO)
-                {
-                    //if(v_20 < 0.0) /// vertex 2
-                    if(v_20 < -ZERO) /// vertex 2
-                    {
-                        shell =(sofa::type::vector< TriangleID >) (this->m_topology->getTrianglesAroundVertex(t[2]));
-
-                    }
-                    else // v_12 < 0.0
-                    {
-                        ind_edge=this->m_topology->getEdgeIndex(t[1],t[2]);
-                        shell =(sofa::type::vector< TriangleID >) (this->m_topology->getTrianglesAroundEdge(ind_edge));
-                    }
-                }
-                else // v_20 < 0.0
-                {
-                    ind_edge=this->m_topology->getEdgeIndex(t[2],t[0]);
-                    shell =(sofa::type::vector< TriangleID >) (this->m_topology->getTrianglesAroundEdge(ind_edge));
-                }
+                shell = this->m_topology->getTrianglesAroundVertex(tri[0]);
             }
-
-            size_t i =0;
-            bool is_in_next_triangle=false;
-            TriangleID ind_triangle=0;
-            TriangleID ind_t_false_init;
-            TriangleID &ind_t_false = ind_t_false_init;
-
-            if(shell.size()>1)
+            else // Opposite to edge triE[2] 
             {
-                while(i < shell.size() && !is_in_next_triangle)
-                {
-                    ind_triangle=shell[i];
-
-                    if(ind_triangle != ind_t)
-                    {
-                        is_in_next_triangle = isPointInTriangle(ind_triangle, false, p, ind_t_false);
-                    }
-                    i++;
-                }
-
-                if(is_in_next_triangle)
-                {
-                    ind_t_test=ind_triangle;
-                    //msg_info() << "correct to triangle indexed by " << ind_t_test;
-                }
-                else // not found
-                {
-                    //msg_info() << "not found !!! ";
-                    ind_t_test=ind_t;
-                }
-            }
-            else
-            {
-                ind_t_test=ind_t;
+                EdgeID ind_edge = this->m_topology->getEdgesInTriangle(ind_t)[2];
+                shell = this->m_topology->getTrianglesAroundEdge(ind_edge);
             }
         }
-        return is_inside;
+        else if (v_12 < 0.0)
+        {
+            if (v_20 < 0.0) /// In vertex tri[2] direction
+            {
+                shell = this->m_topology->getTrianglesAroundVertex(tri[2]);
+            }
+            else // Opposite to edge triE[0] 
+            {
+                EdgeID ind_edge = this->m_topology->getEdgesInTriangle(ind_t)[0];
+                shell = this->m_topology->getTrianglesAroundEdge(ind_edge);
+            }
+        }
+        else // v_20 < 0.0 -> Opposite to edge triE[1] 
+        {
+            EdgeID ind_edge = this->m_topology->getEdgesInTriangle(ind_t)[1];
+            shell = this->m_topology->getTrianglesAroundEdge(ind_edge);
+        }
 
+        ind_t_test = sofa::InvalidID;
+        TriangleID ind_t_false = sofa::InvalidID;
+        for (TriangleID ind_triangle : shell) // test each candidate
+        {
+            if (ind_triangle == ind_t) // do not re-test this triangle
+                continue;
+
+            bool is_in_next_triangle = isPointInsideTriangle(ind_triangle, false, point, ind_t_false);
+            if (is_in_next_triangle) {
+                ind_t_test = ind_triangle;
+                break;
+            }
+        }
     }
-    else // triangle is flat
-    {
-        //msg_info() << "INFO_print : triangle is flat";
-        return false;
-    }
+
+    return is_inside;
 }
+
 
 // Tests how to triangularize a quad whose vertices are defined by (p_q1, p_q2, ind_q3, ind_q4) according to the Delaunay criterion
 template<class DataTypes>
