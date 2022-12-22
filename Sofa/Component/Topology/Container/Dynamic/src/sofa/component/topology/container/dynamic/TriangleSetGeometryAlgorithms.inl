@@ -909,22 +909,9 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::isTriangleInPlane(const Triangl
         }
     }
 
-    const typename DataTypes::Coord& c0=vect_c[ind_p];
-    const typename DataTypes::Coord& c1=vect_c[ind_1];
-    const typename DataTypes::Coord& c2=vect_c[ind_2];
-
-    sofa::type::Vec<3,Real> p0;
-    p0[0] = (Real) (c0[0]);
-    p0[1] = (Real) (c0[1]);
-    p0[2] = (Real) (c0[2]);
-    sofa::type::Vec<3,Real> p1;
-    p1[0] = (Real) (c1[0]);
-    p1[1] = (Real) (c1[1]);
-    p1[2] = (Real) (c1[2]);
-    sofa::type::Vec<3,Real> p2;
-    p2[0] = (Real) (c2[0]);
-    p2[1] = (Real) (c2[1]);
-    p2[2] = (Real) (c2[2]);
+    const sofa::type::Vec<3, Real> p0 = sofa::type::Vec<3, Real>(vect_c[ind_p]);
+    const sofa::type::Vec<3, Real> p1 = sofa::type::Vec<3, Real>(vect_c[ind_1]);
+    const sofa::type::Vec<3, Real> p2 = sofa::type::Vec<3, Real>(vect_c[ind_2]);
 
     return((p1-p0)*( plane_vect)>=0.0 && (p1-p0)*( plane_vect)>=0.0);
 }
