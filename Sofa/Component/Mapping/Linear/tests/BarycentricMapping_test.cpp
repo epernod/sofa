@@ -35,7 +35,7 @@ using sofa::core::topology::BaseMeshTopology;
 using sofa::testing::BaseTest;
 
 
-using sofa::type::Vector3;
+using sofa::type::Vec3;
 using sofa::type::Vec3u;
 using sofa::core::objectmodel::New;
 
@@ -52,7 +52,7 @@ using sofa::component::statecontainer::MechanicalObject ;
 
 #include <sofa/simulation/Node.h>
 
-using sofa::defaulttype::Vec3dTypes;
+using sofa::defaulttype::Vec3Types;
 
 template <class In, class Out>
 struct BarycentricMapperTriangleSetTopologyTest :  public BaseTest, public BarycentricMapperTriangleSetTopology<In,Out>
@@ -78,12 +78,12 @@ struct BarycentricMapperTriangleSetTopologyTest :  public BaseTest, public Baryc
 
     void SetUp() override
     {
-        m_in.push_back(Vector3(0.5, 1.5, 0.0));
-        m_in.push_back(Vector3(1.5, 0.0, 2.5));
-        m_in.push_back(Vector3(-0.5, -1.5, 0.0));
+        m_in.push_back(Vec3(0.5, 1.5, 0.0));
+        m_in.push_back(Vec3(1.5, 0.0, 2.5));
+        m_in.push_back(Vec3(-0.5, -1.5, 0.0));
 
-        m_out.push_back(Vector3{-0.5, -1.5, 0.0});
-        m_out.push_back(Vector3{0.5, 0.0, -10.0});
+        m_out.push_back(Vec3{-0.5, -1.5, 0.0});
+        m_out.push_back(Vec3{0.5, 0.0, -10.0});
 
         m_topology = New<TriangleSetTopologyContainer>();
         m_fromTopology = m_topology.get();
@@ -104,7 +104,7 @@ struct BarycentricMapperTriangleSetTopologyTest :  public BaseTest, public Baryc
         Node::SPtr nodeMapping = node->createChild("nodeToMap");
         TriangleSetTopologyContainer::SPtr triangleContainer = New<TriangleSetTopologyContainer>();
         TetrahedronSetTopologyContainer::SPtr tetraContainer = New<TetrahedronSetTopologyContainer>();
-        MechanicalObject<Vec3dTypes>::SPtr mecanical = New<MechanicalObject<Vec3dTypes>>();
+        MechanicalObject<Vec3Types>::SPtr mecanical = New<MechanicalObject<Vec3Types>>();
 
         node->addObject(tetraContainer);
         node->addObject(mecanical);
@@ -133,7 +133,7 @@ struct BarycentricMapperTriangleSetTopologyTest :  public BaseTest, public Baryc
 };
 
 
-typedef BarycentricMapperTriangleSetTopologyTest< Vec3dTypes, Vec3dTypes> BarycentricMapperTriangleSetTopologyTest_d;
+typedef BarycentricMapperTriangleSetTopologyTest< Vec3Types, Vec3Types> BarycentricMapperTriangleSetTopologyTest_d;
 
 
 TEST_F(BarycentricMapperTriangleSetTopologyTest_d, init)

@@ -22,6 +22,7 @@
 #pragma once
 
 #include <sofa/component/solidmechanics/fem/nonuniform/HexahedronCompositeFEMForceFieldAndMass.h>
+#include <sofa/component/solidmechanics/fem/nonuniform/NonUniformHexahedronFEMForceFieldAndMass.inl>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/component/topology/container/grid/SparseGridRamificationTopology.h>
 #include <iomanip>
@@ -438,7 +439,7 @@ void HexahedronCompositeFEMForceFieldAndMass<DataTypes>::init()
     NonUniformHexahedronFEMForceFieldAndMassT::init();
 
 
-    if(d_drawSize.getValue()==-1)
+    if(d_drawSize.getValue()==-1 && this->_sparseGrid != nullptr)
         d_drawSize.setValue( (float)((this->_sparseGrid->getMax()[0]-this->_sparseGrid->getMin()[0]) * .004f) );
 
 }
@@ -1594,7 +1595,7 @@ void HexahedronCompositeFEMForceFieldAndMass<T>::draw(const core::visual::Visual
     }
     else
     {
-        std::vector< type::Vector3 > points;
+        std::vector< type::Vec3 > points;
 
         vparams->drawTool()->setLightingEnabled(false);
 
@@ -1614,7 +1615,7 @@ void HexahedronCompositeFEMForceFieldAndMass<T>::draw(const core::visual::Visual
     {
         colour=sofa::type::RGBAColor(0.95f, 0.95f, 0.7f,1.0f);
 
-        std::vector< sofa::type::Vector3 > points;
+        std::vector< sofa::type::Vec3 > points;
         for(unsigned i=0; i<x.size(); ++i)
             points.push_back( x[i] );
         vparams->drawTool()->drawSpheres(points, d_drawSize.getValue()*1.5f,colour);
@@ -1626,7 +1627,7 @@ void HexahedronCompositeFEMForceFieldAndMass<T>::draw(const core::visual::Visual
 
     {
 
-        std::vector< sofa::type::Vector3 > points;
+        std::vector< sofa::type::Vec3 > points;
         for(unsigned i=0; i<sgr->getConnexions()->size(); ++i)
         {
             type::vector< topology::container::grid::SparseGridRamificationTopology::Connexion *>& con = (*sgr->getConnexions())[i];

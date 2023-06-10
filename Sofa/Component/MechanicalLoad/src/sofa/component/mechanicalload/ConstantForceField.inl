@@ -39,11 +39,11 @@ namespace sofa::component::mechanicalload
 template<class DataTypes>
 ConstantForceField<DataTypes>::ConstantForceField()
     : d_indices(initData(&d_indices, "indices", "indices where the forces are applied"))
-    , d_indexFromEnd(initData(&d_indexFromEnd,bool(false),"indexFromEnd", "Concerned DOFs indices are numbered from the end of the MState DOFs vector. (default=false)"))
+    , d_indexFromEnd(initData(&d_indexFromEnd,false,"indexFromEnd", "Concerned DOFs indices are numbered from the end of the MState DOFs vector. (default=false)"))
     , d_forces(initData(&d_forces, "forces", "applied forces at each point"))
-    , d_force(initData(&d_force, "force", "applied force to all points if forces attribute is not specified"))
+    , d_force(initData(&d_force, Deriv{}, "force", "applied force to all points if forces attribute is not specified"))
     , d_totalForce(initData(&d_totalForce, "totalForce", "total force for all points, will be distributed uniformly over points"))
-    , d_showArrowSize(initData(&d_showArrowSize,SReal(0.0), "showArrowSize", "Size of the drawn arrows (0->no arrows, sign->direction of drawing. (default=0)"))
+    , d_showArrowSize(initData(&d_showArrowSize, 0_sreal, "showArrowSize", "Size of the drawn arrows (0->no arrows, sign->direction of drawing. (default=0)"))
     , d_color(initData(&d_color, sofa::type::RGBAColor(0.2f,0.9f,0.3f,1.0f), "showColor", "Color for object display (default: [0.2,0.9,0.3,1.0])"))
     , l_topology(initLink("topology", "link to the topology container"))
     , m_systemSize(0)
@@ -160,6 +160,11 @@ void ConstantForceField<DataTypes>::init()
             return;
         }
         msg_info() << "Input totalForce is used for initialization";
+    }
+    else
+    {
+        msg_warning() << "Force has not been set. Define one of the following Data: " << d_forces.getName() << ", " << d_force.getName() << " or " << d_totalForce.getName();
+        computeForceFromSingleForce();
     }
 
     // init from ForceField
@@ -469,6 +474,11 @@ void ConstantForceField<DataTypes>::addKToMatrix(const sofa::core::behavior::Mul
     SOFA_UNUSED(kFact);
 }
 
+template <class DataTypes>
+void ConstantForceField<DataTypes>::buildStiffnessMatrix(core::behavior::StiffnessMatrix* matrix)
+{
+    SOFA_UNUSED(matrix);
+}
 
 template<class DataTypes>
 void ConstantForceField<DataTypes>::draw(const core::visual::VisualParams* vparams)
@@ -485,7 +495,7 @@ void ConstantForceField<DataTypes>::draw(const core::visual::VisualParams* vpara
 
     if( fabs(aSC)<1.0e-10 )
     {
-        std::vector<type::Vector3> points;
+        std::vector<type::Vec3> points;
         for (unsigned int i=0; i<indices.size(); i++)
         {
             Real xx = 0.0, xy = 0.0, xz = 0.0, fx = 0.0, fy = 0.0, fz = 0.0;
@@ -514,8 +524,8 @@ void ConstantForceField<DataTypes>::draw(const core::visual::VisualParams* vpara
             }
 
             DataTypes::get(fx,fy,fz, f[i] );
-            points.push_back(type::Vector3(xx, xy, xz ));
-            points.push_back(type::Vector3(xx+fx, xy+fy, xz+fz ));
+            points.push_back(type::Vec3(xx, xy, xz ));
+            points.push_back(type::Vec3(xx+fx, xy+fy, xz+fz ));
         }
         vparams->drawTool()->drawLines(points, 2, sofa::type::RGBAColor::green());
     }
@@ -552,8 +562,8 @@ void ConstantForceField<DataTypes>::draw(const core::visual::VisualParams* vpara
 
             DataTypes::get(fx,fy,fz, f[i] );
 
-            type::Vector3 p1( xx, xy, xz);
-            type::Vector3 p2( aSC*fx+xx, aSC*fy+xy, aSC*fz+xz );
+            type::Vec3 p1( xx, xy, xz);
+            type::Vec3 p2( aSC*fx+xx, aSC*fy+xy, aSC*fz+xz );
 
             const float norm = static_cast<float>((p2-p1).norm());
 

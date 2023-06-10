@@ -27,11 +27,12 @@
 #include <sofa/helper/AdvancedTimer.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/MultiMatrixAccessor.h>
-#include <sofa/component/constraint/lagrangian/solver/ConstraintStoreLambdaVisitor.h>
+#include <sofa/component/constraint/lagrangian/solver/visitors/ConstraintStoreLambdaVisitor.h>
 #include <sofa/core/behavior/MultiVec.h>
 #include <sofa/simulation/DefaultTaskScheduler.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
-#include <functional>
+#include <sofa/simulation/MainTaskSchedulerFactory.h>
+#include <sofa/simulation/ParallelForEach.h>
 
 #include <sofa/simulation/mechanicalvisitor/MechanicalVOpVisitor.h>
 using sofa::simulation::mechanicalvisitor::MechanicalVOpVisitor;
@@ -54,7 +55,6 @@ namespace sofa::component::constraint::lagrangian::solver
 namespace
 {
 
-using sofa::helper::ReadAccessor;
 using sofa::helper::WriteOnlyAccessor;
 using sofa::core::objectmodel::Data;
 
@@ -71,8 +71,8 @@ void clearMultiVecId(sofa::core::objectmodel::BaseContext* ctx, const sofa::core
 GenericConstraintSolver::GenericConstraintSolver()
     : d_resolutionMethod( initData(&d_resolutionMethod, "resolutionMethod", "Method used to solve the constraint problem, among: \"ProjectedGaussSeidel\", \"UnbuiltGaussSeidel\" or \"for NonsmoothNonlinearConjugateGradient\""))
     , maxIt( initData(&maxIt, 1000, "maxIterations", "maximal number of iterations of the Gauss-Seidel algorithm"))
-    , tolerance( initData(&tolerance, 0.001, "tolerance", "residual error threshold for termination of the Gauss-Seidel algorithm"))
-    , sor( initData(&sor, 1.0, "sor", "Successive Over Relaxation parameter (0-2)"))
+    , tolerance( initData(&tolerance, 0.001_sreal, "tolerance", "residual error threshold for termination of the Gauss-Seidel algorithm"))
+    , sor( initData(&sor, 1.0_sreal, "sor", "Successive Over Relaxation parameter (0-2)"))
     , scaleTolerance( initData(&scaleTolerance, true, "scaleTolerance", "Scale the error tolerance with the number of constraints"))
     , allVerified( initData(&allVerified, false, "allVerified", "All contraints must be verified (each constraint's error < tolerance)"))
     , d_newtonIterations(initData(&d_newtonIterations, 100, "newtonIterations", "Maximum iteration number of Newton (for the NonsmoothNonlinearConjugateGradient solver only)"))
@@ -85,16 +85,16 @@ GenericConstraintSolver::GenericConstraintSolver()
     , currentNumConstraints(initData(&currentNumConstraints, 0, "currentNumConstraints", "OUTPUT: current number of constraints"))
     , currentNumConstraintGroups(initData(&currentNumConstraintGroups, 0, "currentNumConstraintGroups", "OUTPUT: current number of constraints"))
     , currentIterations(initData(&currentIterations, 0, "currentIterations", "OUTPUT: current number of constraint groups"))
-    , currentError(initData(&currentError, 0.0, "currentError", "OUTPUT: current error"))
+    , currentError(initData(&currentError, 0.0_sreal, "currentError", "OUTPUT: current error"))
     , reverseAccumulateOrder(initData(&reverseAccumulateOrder, false, "reverseAccumulateOrder", "True to accumulate constraints from nodes in reversed order (can be necessary when using multi-mappings or interaction constraints not following the node hierarchy)"))
     , d_constraintForces(initData(&d_constraintForces,"constraintForces","OUTPUT: constraint forces (stored only if computeConstraintForces=True)"))
-    , d_computeConstraintForces(initData(&d_computeConstraintForces,false,
+    , d_computeConstraintForces(initData(&d_computeConstraintForces,true,
                                         "computeConstraintForces",
                                         "enable the storage of the constraintForces (default = False)."))
     , current_cp(&m_cpBuffer[0])
     , last_cp(nullptr)
 {
-    sofa::helper::OptionsGroup m_newoptiongroup(3,"ProjectedGaussSeidel","UnbuiltGaussSeidel", "NonsmoothNonlinearConjugateGradient");
+    sofa::helper::OptionsGroup m_newoptiongroup{"ProjectedGaussSeidel","UnbuiltGaussSeidel", "NonsmoothNonlinearConjugateGradient"};
     m_newoptiongroup.setSelectedItem("ProjectedGaussSeidel");
     d_resolutionMethod.setValue(m_newoptiongroup);
 
@@ -128,7 +128,7 @@ GenericConstraintSolver::GenericConstraintSolver()
 GenericConstraintSolver::~GenericConstraintSolver()
 {
     if(d_multithreading.getValue())
-        simulation::TaskScheduler::getInstance()->stop();
+        simulation::MainTaskSchedulerFactory::createInRegistry()->stop();
 }
 
 void GenericConstraintSolver::init()
@@ -162,7 +162,7 @@ void GenericConstraintSolver::init()
 
     if(d_multithreading.getValue())
     {
-        simulation::TaskScheduler::getInstance()->init();
+        simulation::MainTaskSchedulerFactory::createInRegistry()->init();
     }
 
     if(d_newtonIterations.isSet())
@@ -200,8 +200,8 @@ bool GenericConstraintSolver::prepareStates(const core::ConstraintParams *cParam
     clearConstraintProblemLocks(); // NOTE: this assumes we solve only one constraint problem per step
 
     simulation::common::VectorOperations vop(cParams, this->getContext());
-    
-    
+
+
     {
         sofa::core::behavior::MultiVecDeriv lambda(&vop, m_lambdaId);
         lambda.realloc(&vop,false,true, core::VecIdProperties{"lambda", GetClass()->className});
@@ -216,7 +216,7 @@ bool GenericConstraintSolver::prepareStates(const core::ConstraintParams *cParam
         m_dxId = dx.id();
 
         clearMultiVecId(getContext(), cParams, m_dxId);
-        
+
     }
 
     return true;
@@ -321,8 +321,7 @@ void GenericConstraintSolver::buildSystem_matrixFree(unsigned int numConstraints
             }
         }
 
-        if (!foundCC)
-            msg_error() << "WARNING: no constraintCorrection found for constraint" << c_id ;
+        msg_error_when(!foundCC) << "No constraintCorrection found for constraint" << c_id ;
 
         SReal** w =  current_cp->getW();
         for(unsigned int m = c_id; m < c_id + l; m++)
@@ -337,60 +336,70 @@ void GenericConstraintSolver::buildSystem_matrixFree(unsigned int numConstraints
         current_cp->change_sequence=true;
 }
 
+GenericConstraintSolver::ComplianceWrapper::ComplianceMatrixType& GenericConstraintSolver::
+ComplianceWrapper::matrix()
+{
+    if (m_isMultiThreaded)
+    {
+        if (!m_threadMatrix)
+        {
+            m_threadMatrix = std::make_unique<ComplianceMatrixType>();
+            m_threadMatrix->resize(m_complianceMatrix.rowSize(), m_complianceMatrix.colSize());
+        }
+        return *m_threadMatrix;
+    }
+    return m_complianceMatrix;
+}
+
+void GenericConstraintSolver::ComplianceWrapper::assembleMatrix() const
+{
+    if (m_threadMatrix)
+    {
+        for (linearalgebra::BaseMatrix::Index j = 0; j < m_threadMatrix->rowSize(); ++j)
+        {
+            for (linearalgebra::BaseMatrix::Index l = 0; l < m_threadMatrix->colSize(); ++l)
+            {
+                m_complianceMatrix.add(j, l, m_threadMatrix->element(j,l));
+            }
+        }
+    }
+}
+
 void GenericConstraintSolver::buildSystem_matrixAssembly(const core::ConstraintParams *cParams)
 {
     sofa::helper::ScopedAdvancedTimer getComplianceTimer("Get Compliance");
-    msg_info() <<" computeCompliance in "  << constraintCorrections.size()<< " constraintCorrections" ;
+    dmsg_info() <<" computeCompliance in "  << constraintCorrections.size()<< " constraintCorrections" ;
 
-    if(d_multithreading.getValue())
-    {
-        simulation::TaskScheduler* taskScheduler = simulation::TaskScheduler::getInstance();
-        simulation::CpuTask::Status status;
+    const bool multithreading = d_multithreading.getValue();
 
-        type::vector<GenericConstraintSolver::ComputeComplianceTask> tasks;
-        sofa::Index nbTasks = constraintCorrections.size();
-        tasks.resize(nbTasks, GenericConstraintSolver::ComputeComplianceTask(&status));
-        sofa::Index dim = current_cp->W.rowSize();
+    const simulation::ForEachExecutionPolicy execution = multithreading ?
+        simulation::ForEachExecutionPolicy::PARALLEL :
+        simulation::ForEachExecutionPolicy::SEQUENTIAL;
 
-        for (sofa::Index i=0; i<nbTasks; i++)
+    simulation::TaskScheduler* taskScheduler = simulation::MainTaskSchedulerFactory::createInRegistry();
+    assert(taskScheduler);
+
+    std::mutex mutex;
+
+    simulation::forEachRange(execution, *taskScheduler, constraintCorrections.begin(), constraintCorrections.end(),
+        [&cParams, this, &multithreading, &mutex](const auto& range)
         {
-            core::behavior::BaseConstraintCorrection* cc = constraintCorrections[i];
-            if (!cc->isActive())
-                continue;
+            ComplianceWrapper compliance(current_cp->W, multithreading);
 
-            tasks[i].set(cc, *cParams, dim);
-            taskScheduler->addTask(&tasks[i]);
-        }
-        taskScheduler->workUntilDone(&status);
+            for (auto it = range.start; it != range.end; ++it)
+            {
+                core::behavior::BaseConstraintCorrection* cc = *it;
+                if (cc->isActive())
+                {
+                    cc->addComplianceInConstraintSpace(cParams, &compliance.matrix());
+                }
+            }
 
-        auto & W = current_cp->W;
+            std::lock_guard guard(mutex);
+            compliance.assembleMatrix();
+        });
 
-        // Accumulate the contribution of each constraints
-        // into the system's compliant matrix W
-        for (sofa::Index i = 0; i < nbTasks; i++) {
-            core::behavior::BaseConstraintCorrection* cc = constraintCorrections[i];
-            if (!cc->isActive())
-                continue;
-
-            const auto & Wi = tasks[i].W;
-
-            for (sofa::Index j = 0; j < dim; ++j)
-                for (sofa::Index l = 0; l < dim; ++l)
-                    W.add(j, l, Wi.element(j,l));
-        }
-
-    } else {
-        for (auto* cc : constraintCorrections)
-        {
-            if (!cc->isActive())
-                continue;
-
-            sofa::helper::ScopedAdvancedTimer addComplianceInConstraintSpaceTimer("Object name: "+cc->getName());
-            cc->addComplianceInConstraintSpace(cParams, &current_cp->W);
-        }
-    }
-
-    msg_info() << " computeCompliance_done "  ;
+    dmsg_info() << " computeCompliance_done "  ;
 }
 
 void GenericConstraintSolver::rebuildSystem(SReal massFactor, SReal forceFactor)
@@ -407,7 +416,7 @@ void printLCP(std::ostream& file, SReal *q, SReal **M, SReal *f, int dim, bool p
     file.precision(9);
     // affichage de la matrice du LCP
     if (printMatrix) {
-        file << msgendl << " M = [";
+        file << msgendl << " W = [";
         for(int compteur=0;compteur<dim;compteur++) {
             for(int compteur2=0;compteur2<dim;compteur2++) {
                 file << "\t" << M[compteur][compteur2];
@@ -418,14 +427,14 @@ void printLCP(std::ostream& file, SReal *q, SReal **M, SReal *f, int dim, bool p
     }
 
     // affichage de q
-    file << " q = [";
+    file << " delta = [";
     for(int compteur=0;compteur<dim;compteur++) {
         file << "\t" << q[compteur];
     }
     file << "      ];" << msgendl << msgendl;
 
     // affichage de f
-    file << " f = [";
+    file << " lambda = [";
     for(int compteur=0;compteur<dim;compteur++) {
         file << "\t" << f[compteur];
     }
@@ -517,7 +526,7 @@ bool GenericConstraintSolver::applyCorrection(const core::ConstraintParams *cPar
     msg_info() << "KeepContactForces done" ;
 
     AdvancedTimer::stepBegin("Compute And Apply Motion Correction");
-    
+
     if (cParams->constOrder() == core::ConstraintParams::POS_AND_VEL)
     {
         core::MultiVecCoordId xId(res1);

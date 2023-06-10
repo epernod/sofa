@@ -19,8 +19,7 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_CORE_OBJECTMODEL_LINK_H
-#define SOFA_CORE_OBJECTMODEL_LINK_H
+#pragma once
 
 #include <sofa/core/objectmodel/BaseLink.h>
 #include <sofa/type/stable_vector.h>
@@ -28,14 +27,11 @@
 #include <sofa/core/sptr.h>
 #include <sofa/core/fwd.h>
 
+#include <functional>
+
 namespace sofa
 {
-
-namespace core
-{
-
-
-namespace objectmodel
+namespace core::objectmodel
 {
 
 class DDGNode;
@@ -302,17 +298,19 @@ class TLink : public BaseLink
 public:
     typedef TOwnerType OwnerType;
     typedef TDestType DestType;
-    enum { ActiveFlags = TFlags };
-#define ACTIVEFLAG(f) ((ActiveFlags & (f)) != 0)
-    typedef LinkTraitsDestPtr<DestType, ACTIVEFLAG(FLAG_STRONGLINK)> TraitsDestPtr;
+    static constexpr unsigned ActiveFlags = TFlags;
+    static constexpr bool IsStrongLink = (ActiveFlags & FLAG_STRONGLINK) != 0;
+    static constexpr bool IsMultiLink = (ActiveFlags & FLAG_MULTILINK) != 0;
+    static constexpr bool StorePath = (ActiveFlags & FLAG_STOREPATH) != 0;
+
+    typedef LinkTraitsDestPtr<DestType, IsStrongLink> TraitsDestPtr;
     typedef typename TraitsDestPtr::T DestPtr;
-    typedef LinkTraitsValueType<DestType, DestPtr, ACTIVEFLAG(FLAG_STRONGLINK), ACTIVEFLAG(FLAG_STOREPATH)> TraitsValueType;
+    typedef LinkTraitsValueType<DestType, DestPtr, IsStrongLink, StorePath> TraitsValueType;
     typedef typename TraitsValueType::T ValueType;
-    typedef LinkTraitsContainer<DestType, DestPtr, ValueType, ACTIVEFLAG(FLAG_MULTILINK)> TraitsContainer;
+    typedef LinkTraitsContainer<DestType, DestPtr, ValueType, IsMultiLink> TraitsContainer;
     typedef typename TraitsContainer::T Container;
     typedef typename Container::const_iterator const_iterator;
     typedef typename Container::const_reverse_iterator const_reverse_iterator;
-#undef ACTIVEFLAG
 
     TLink()
         : BaseLink(ActiveFlags)
@@ -570,7 +568,7 @@ public:
     typedef typename Inherit::TraitsContainer TraitsContainer;
     typedef typename Inherit::Container Container;
 
-    typedef void (OwnerType::*ValidatorFn)(DestPtr v, std::size_t index, bool add);
+    using ValidatorFn = std::function<void(DestPtr, std::size_t, bool)>;
 
     MultiLink() : m_validator{nullptr} {}
 
@@ -616,13 +614,13 @@ protected:
     void added(DestPtr val, std::size_t index)
     {
         if (m_validator)
-            (this->m_owner->*m_validator)(val, index, true);
+            m_validator(val, index, true);
     }
 
     void removed(DestPtr val, std::size_t index)
     {
         if (m_validator)
-            (this->m_owner->*m_validator)(val, index, false);
+            m_validator(val, index, false);
     }
 };
 
@@ -647,7 +645,7 @@ public:
     using Inherit::m_value;
     using Inherit::m_owner;
 
-    typedef void (OwnerType::*ValidatorFn)(DestPtr before, DestPtr& after);
+    using ValidatorFn = std::function<void(DestPtr, DestPtr&)>;
 
     SingleLink()
         : m_validator(nullptr)
@@ -751,7 +749,7 @@ protected:
         if (m_validator)
         {
             DestPtr after = val;
-            (m_owner->*m_validator)(nullptr, after);
+            m_validator(nullptr, after);
             if (after != val)
                 TraitsValueType::set(m_value.get(), after);
         }
@@ -762,7 +760,7 @@ protected:
         if (m_validator)
         {
             DestPtr after = nullptr;
-            (m_owner->*m_validator)(val, after);
+            m_validator(val, after);
             if (after)
                 TraitsValueType::set(m_value.get(), after);
         }
@@ -773,16 +771,13 @@ protected:
         if (m_validator)
         {
             DestPtr after = val;
-            (m_owner->*m_validator)(before, after);
+            m_validator(before, after);
             if (after != val)
                 TraitsValueType::set(this->m_value.get(), after);
         }
     }
 };
-
-} // namespace objectmodel
-
-} // namespace core
+} // namespace core::objectmodel
 
 // the SingleLink class is used everywhere
 using core::objectmodel::SingleLink;
@@ -791,5 +786,3 @@ using core::objectmodel::SingleLink;
 using core::objectmodel::MultiLink;
 
 } // namespace sofa
-
-#endif

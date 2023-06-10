@@ -26,6 +26,7 @@
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/type/RGBAColor.h>
+#include <sofa/defaulttype/MapMapSparseMatrixEigenUtils.h>
 #include <iostream>
 
 namespace sofa::component::mapping::nonlinear
@@ -37,8 +38,6 @@ DistanceFromTargetMapping<TIn, TOut>::DistanceFromTargetMapping()
     , f_indices(initData(&f_indices, "indices", "Indices of the parent points"))
     , f_targetPositions(initData(&f_targetPositions, "targetPositions", "Positions to compute the distances from"))
     , f_restDistances(initData(&f_restDistances, "restLengths", "Rest lengths of the connections."))
-    //TODO(dmarchal): use a list of options instead of numeric values.
-    , d_geometricStiffness(initData(&d_geometricStiffness, (unsigned)2, "geometricStiffness", "0 -> no GS, 1 -> exact GS, 2 -> stabilized GS (default)"))
     , d_showObjectScale(initData(&d_showObjectScale, 0.f, "showObjectScale", "Scale for object display"))
     , d_color(initData(&d_color, sofa::type::RGBAColor(1,1,0,1), "showColor", "Color for object display. (default=[1.0,1.0,0.0,1.0])"))
 {
@@ -106,7 +105,7 @@ void DistanceFromTargetMapping<TIn, TOut>::init()
     if(f_restDistances.getValue().size() != f_indices.getValue().size())
     {
         helper::WriteAccessor< Data< type::vector<Real> > > distances(f_restDistances);
-        unsigned prevsize = distances.size();
+        const unsigned prevsize = distances.size();
         distances.resize( f_indices.getValue().size() );
         for(unsigned i=prevsize; i<distances.size(); i++ )
             distances[i] = 0;
@@ -202,15 +201,19 @@ void DistanceFromTargetMapping<TIn, TOut>::applyJT(const core::MechanicalParams 
 }
 
 template <class TIn, class TOut>
-void DistanceFromTargetMapping<TIn, TOut>::applyJT(const core::ConstraintParams*, Data<InMatrixDeriv>& , const Data<OutMatrixDeriv>& )
+void DistanceFromTargetMapping<TIn, TOut>::applyJT(const core::ConstraintParams* cparams, Data<InMatrixDeriv>& out, const Data<OutMatrixDeriv>& in)
 {
+    SOFA_UNUSED(cparams);
+    const OutMatrixDeriv& childMat  = sofa::helper::getReadAccessor(in).ref();
+    InMatrixDeriv&        parentMat = sofa::helper::getWriteAccessor(out).wref();
+    addMultTransposeEigen(parentMat, jacobian.compressedMatrix, childMat);
 }
 
 
 template <class TIn, class TOut>
 void DistanceFromTargetMapping<TIn, TOut>::applyDJT(const core::MechanicalParams* mparams, core::MultiVecDerivId parentDfId, core::ConstMultiVecDerivId )
 {
-    const unsigned& geometricStiffness = d_geometricStiffness.getValue();
+    const unsigned geometricStiffness = d_geometricStiffness.getValue().getSelectedId();
      if( !geometricStiffness ) return;
 
     helper::WriteAccessor<Data<InVecDeriv> > parentForce (*parentDfId[this->fromModel.get()].write());
@@ -231,10 +234,7 @@ void DistanceFromTargetMapping<TIn, TOut>::applyDJT(const core::MechanicalParams
             {
                 for(unsigned k=0; k<Nin; k++)
                 {
-                    if( j==k )
-                        b[j][k] = 1.f - directions[i][j]*directions[i][k];
-                    else
-                        b[j][k] =     - directions[i][j]*directions[i][k];
+                    b[j][k] = static_cast<Real>(1) * ( j==k ) - directions[i][j]*directions[i][k];
                 }
             }
             // (I - uu^T)*f/l*kfactor  --  do not forget kfactor !
@@ -282,7 +282,7 @@ template <class TIn, class TOut>
 void DistanceFromTargetMapping<TIn, TOut>::updateK( const core::MechanicalParams* mparams, core::ConstMultiVecDerivId childForceId )
 {
     SOFA_UNUSED(mparams);
-    const unsigned& geometricStiffness = d_geometricStiffness.getValue();
+    const unsigned geometricStiffness = d_geometricStiffness.getValue().getSelectedId();
     if( !geometricStiffness ) { K.resize(0,0); return; }
 
     helper::ReadAccessor<Data<OutVecDeriv> > childForce( *childForceId[this->toModel.get()].read() );
@@ -304,10 +304,7 @@ void DistanceFromTargetMapping<TIn, TOut>::updateK( const core::MechanicalParams
             {
                 for(unsigned k=0; k<Nin; k++)
                 {
-                    if( j==k )
-                        b[j][k] = 1.f - directions[i][j]*directions[i][k];
-                    else
-                        b[j][k] =     - directions[i][j]*directions[i][k];
+                    b[j][k] = static_cast<Real>(1) * ( j==k ) - directions[i][j]*directions[i][k];
                 }
             }
             b *= childForce[i][0] * invlengths[i];  // (I - uu^T)*f/l
@@ -323,6 +320,10 @@ void DistanceFromTargetMapping<TIn, TOut>::updateK( const core::MechanicalParams
 template <class TIn, class TOut>
 void DistanceFromTargetMapping<TIn, TOut>::draw(const core::visual::VisualParams* vparams)
 {
+    if( !vparams->displayFlags().getShowMechanicalMappings() ) return;
+
+    const auto stateLifeCycle = vparams->drawTool()->makeStateLifeCycle();
+
     float arrowsize = d_showObjectScale.getValue();
     if( arrowsize<0 ) return;
 
@@ -330,12 +331,12 @@ void DistanceFromTargetMapping<TIn, TOut>::draw(const core::visual::VisualParams
     helper::ReadAccessor< Data<InVecCoord > > targetPositions(f_targetPositions);
     helper::ReadAccessor< Data<type::vector<unsigned> > > indices(f_indices);
 
-    type::vector< sofa::type::Vector3 > points;
+    type::vector< sofa::type::Vec3 > points;
 
     for(unsigned i=0; i<indices.size(); i++ )
     {
-        points.push_back( sofa::type::Vector3(TIn::getCPos(targetPositions[i]) ) );
-        points.push_back( sofa::type::Vector3(TIn::getCPos(pos[indices[i]]) ) );
+        points.push_back( sofa::type::Vec3(TIn::getCPos(targetPositions[i]) ) );
+        points.push_back( sofa::type::Vec3(TIn::getCPos(pos[indices[i]]) ) );
     }
 
     if( !arrowsize )

@@ -23,6 +23,7 @@
 
 #include <sofa/core/topology/BaseMeshTopology.h>
 #include <sofa/component/solidmechanics/spring/FrameSpringForceField.h>
+#include <sofa/core/behavior/PairInteractionForceField.inl>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/type/RGBAColor.h>
 #include <cassert>
@@ -178,7 +179,7 @@ void FrameSpringForceField<DataTypes>::draw(const core::visual::VisualParams* vp
     const auto stateLifeCycle = vparams->drawTool()->makeStateLifeCycle();
     vparams->drawTool()->disableLighting();
 
-    std::vector<sofa::type::Vector3> vertices;
+    std::vector<sofa::type::Vec3> vertices;
     std::vector<sofa::type::RGBAColor> colors;
 
     bool external = ( this->mstate1!=this->mstate2 );

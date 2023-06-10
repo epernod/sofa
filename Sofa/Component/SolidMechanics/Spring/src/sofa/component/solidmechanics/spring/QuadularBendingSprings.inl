@@ -22,6 +22,7 @@
 #pragma once
 
 #include <sofa/component/solidmechanics/spring/QuadularBendingSprings.h>
+#include <sofa/core/behavior/ForceField.inl>
 #include <sofa/core/visual/VisualParams.h>
 #include <iostream>
 #include <sofa/type/RGBAColor.h>
@@ -65,8 +66,6 @@ void QuadularBendingSprings<DataTypes>::applyQuadCreation(const sofa::type::vect
 
     unsigned int u,v;
 
-    unsigned int nb_activated = 0;
-
     const typename DataTypes::VecCoord& restPosition=this->mstate->read(core::ConstVecCoordId::restPosition())->getValue();
 
     helper::WriteOnlyAccessor< Data< type::vector<EdgeInformation> > > edgeData = edgeInfo;
@@ -101,9 +100,6 @@ void QuadularBendingSprings<DataTypes>::applyQuadCreation(const sofa::type::vect
                 const auto& shell = this->m_topology->getQuadsAroundEdge(edgeIndex);
                 if (shell.size()==2)
                 {
-
-                    nb_activated+=1;
-
                     EdgesInQuad te1;
                     Quad t1;
 
@@ -702,7 +698,7 @@ void QuadularBendingSprings<DataTypes>::draw(const core::visual::VisualParams* v
     vparams->drawTool()->disableLighting();
 
     const type::vector<EdgeInformation>& edgeInf = edgeInfo.getValue();
-    std::vector<sofa::type::Vector3> vertices;
+    std::vector<sofa::type::Vec3> vertices;
     std::vector<sofa::type::RGBAColor> colors;
     constexpr sofa::type::RGBAColor green_color = sofa::type::RGBAColor::green();
     constexpr sofa::type::RGBAColor red_color   = sofa::type::RGBAColor::red();

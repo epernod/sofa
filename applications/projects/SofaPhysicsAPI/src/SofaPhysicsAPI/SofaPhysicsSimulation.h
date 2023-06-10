@@ -21,6 +21,7 @@
 ******************************************************************************/
 #pragma once
 
+#include <SofaPhysicsAPI/config.h>
 #include "SofaPhysicsAPI.h"
 #include "SofaPhysicsOutputMesh_impl.h"
 
@@ -48,10 +49,14 @@ public:
 
     const char* APIName();
 
+    /// Load an XML file containing the main scene description. Will return API_SUCCESS or API_SCENE_FAILED if loading failed
     int load(const char* filename);
+
+    /// Call unload of the current scene graph. Will return API_SUCCESS or API_SCENE_NULL if scene is null
     int unload();
 
-    int loadPlugin(const char* pluginName);
+    /// Method to load a specific SOFA plugin using it's full path @param pluginPath. Return error code.
+    int loadPlugin(const char* pluginPath);
     void createScene();
 
     void start();
@@ -62,9 +67,13 @@ public:
     void sendValue(const char* name, double value);
     void drawGL();
 
-    unsigned int getNbOutputMeshes();
-    SofaPhysicsOutputMesh* getOutputMeshPtr(unsigned int meshID);
-    SofaPhysicsOutputMesh* getOutputMeshPtr(const char* name);
+    /// return the number of SofaPhysicsOutputMesh (i.e @sa outputMeshes size)
+    unsigned int getNbOutputMeshes() const;
+
+    /// return pointer to the SofaPhysicsOutputMesh at the @param meshID position in @sa outputMeshes. Return nullptr if out of bounds.
+    SofaPhysicsOutputMesh* getOutputMeshPtr(unsigned int meshID) const; 
+    /// return pointer to the SofaPhysicsOutputMesh with the name equal to @param name in @sa outputMeshes. Return nullptr if not found.
+    SofaPhysicsOutputMesh* getOutputMeshPtr(const char* name) const;
 
     SofaPhysicsOutputMesh** getOutputMesh(unsigned int meshID);
     SofaPhysicsOutputMesh** getOutputMeshes();
@@ -81,10 +90,14 @@ public:
 
     void setGravity(double* gravity);
 
-    // message API
+    /// message API
+    /// Method to activate/deactivate SOFA MessageHandler according to @param value. Will store status in @sa m_msgIsActivated. Return Error code.
     int activateMessageHandler(bool value);
+    /// Method to get the number of messages in queue
     int getNbMessages();
+    /// Method to return the queued message of index @param messageId and its type level inside @param msgType
     std::string getMessage(int messageId, int& msgType);
+    /// Method clear the list of queued messages. Return Error code.
     int clearMessages();
 
     unsigned int getNbDataMonitors();
@@ -105,7 +118,9 @@ protected:
     sofa::simulation::Simulation* m_Simulation;
     sofa::simulation::Node::SPtr m_RootNode;
     std::string sceneFileName;
+    /// Pointer to the LoggingMessageHandler
     sofa::helper::logging::LoggingMessageHandler* m_msgHandler;
+    /// Status of the LoggingMessageHandler
     bool m_msgIsActivated;
 
     sofa::component::visual::BaseCamera::SPtr currentCamera;

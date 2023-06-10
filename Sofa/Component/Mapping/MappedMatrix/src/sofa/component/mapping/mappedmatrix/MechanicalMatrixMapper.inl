@@ -22,6 +22,10 @@
 #pragma once
 
 #include <sofa/component/mapping/mappedmatrix/MechanicalMatrixMapper.h>
+#ifndef SOFA_BUILD_SOFA_COMPONENT_MAPPING_MAPPEDMATRIX
+SOFA_DEPRECATED_HEADER_NOT_REPLACED("v23.06", "v23.12")
+#endif
+
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/helper/rmath.h>
 #include <sofa/helper/AdvancedTimer.h>
@@ -32,6 +36,7 @@
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/core/behavior/BaseMass.h>
 #include <sofa/defaulttype/MapMapSparseMatrix.h>
+#include <sofa/simulation/MainTaskSchedulerFactory.h>
 
 #include <sofa/simulation/mechanicalvisitor/MechanicalResetConstraintVisitor.h>
 using sofa::simulation::mechanicalvisitor::MechanicalResetConstraintVisitor;
@@ -96,6 +101,7 @@ void MechanicalMatrixMapper<TDataTypes1, TDataTypes2>::computeMatrixProduct(
 template<class DataTypes1, class DataTypes2>
 MechanicalMatrixMapper<DataTypes1, DataTypes2>::MechanicalMatrixMapper()
     :
+      d_yesIKnowMatrixMappingIsSupportedAutomatically(initData(&d_yesIKnowMatrixMappingIsSupportedAutomatically, false, "yesIKnowMatrixMappingIsSupportedAutomatically", "If true the component is activated, otherwise it is deactivated.\nThis Data is used to explicitly state that the component must be used even though matrix mapping is now supported automatically, without MechanicalMatrixMapper.")),
       d_forceFieldList(initData(&d_forceFieldList,"forceFieldList","List of ForceField Names to work on (by default will take all)")),
       l_nodeToParse(initLink("nodeToParse","link to the node on which the component will work, from this link the mechanicalState/mass/forceField links will be made")),
       d_stopAtNodeToParse(initData(&d_stopAtNodeToParse,false,"stopAtNodeToParse","Boolean to choose whether forceFields in children Nodes of NodeToParse should be considered.")),
@@ -110,9 +116,28 @@ MechanicalMatrixMapper<DataTypes1, DataTypes2>::MechanicalMatrixMapper()
 {
 }
 
+template <typename TDataTypes1, typename TDataTypes2>
+void MechanicalMatrixMapper<TDataTypes1, TDataTypes2>::parse(
+    core::objectmodel::BaseObjectDescription* arg)
+{
+    Inherit1::parse(arg);
+    if (!arg->getAttribute("yesIKnowMatrixMappingIsSupportedAutomatically", nullptr))
+    {
+        msg_warning() << "Matrix mapping is now supported automatically. Therefore, "
+            << this->getClassName() << " is no longer necessary. Remove it from your scene.";
+    }
+}
+
 template<class DataTypes1, class DataTypes2>
 void MechanicalMatrixMapper<DataTypes1, DataTypes2>::init()
 {
+    if (!d_yesIKnowMatrixMappingIsSupportedAutomatically.getValue())
+    {
+        msg_error() << "This component is deprecated and deactivated because matrix mapping is now supported automatically";
+        this->d_componentState.setValue(ComponentState::Invalid);
+        return;
+    }
+
     if(this->d_componentState.getValue() == ComponentState::Valid){
         msg_warning() << "Calling an already fully initialized component. You should use reinit instead." ;
     }
@@ -168,7 +193,7 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::init()
     m_nbColsJ1 = ms1->getSize()*DerivSize1;
     m_nbColsJ2 = ms2->getSize()*DerivSize2;
 
-    auto* taskScheduler = sofa::simulation::TaskScheduler::getInstance();
+    auto* taskScheduler = sofa::simulation::MainTaskSchedulerFactory::createInRegistry();
     assert(taskScheduler != nullptr);
     if (d_parallelTasks.getValue())
     {
@@ -189,9 +214,12 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::init()
 template<class DataTypes1, class DataTypes2>
 void MechanicalMatrixMapper<DataTypes1, DataTypes2>::bwdInit()
 {
-    m_fullMatrixSize = l_mechanicalState.get()->getMatrixSize();
-    m_J1eig.resize(m_fullMatrixSize, m_nbColsJ1);
-    m_J2eig.resize(m_fullMatrixSize, m_nbColsJ2);
+    m_fullMatrixSize = l_mechanicalState ? l_mechanicalState->getMatrixSize() : 0;
+    if (m_fullMatrixSize > 0)
+    {
+        m_J1eig.resize(m_fullMatrixSize, m_nbColsJ1);
+        m_J2eig.resize(m_fullMatrixSize, m_nbColsJ2);
+    }
 }
 
 template<class DataTypes1, class DataTypes2>
@@ -440,7 +468,7 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::addKToMatrix(const Mechanic
     MultiMatrixAccessor::InteractionMatrixRef mat12 = matrix->getMatrix(mstate1, mstate2);
     MultiMatrixAccessor::InteractionMatrixRef mat21 = matrix->getMatrix(mstate2, mstate1);
 
-    auto* taskScheduler = sofa::simulation::TaskScheduler::getInstance();
+    auto* taskScheduler = sofa::simulation::MainTaskSchedulerFactory::createInRegistry();
     assert(taskScheduler != nullptr);
 
     ///////////////////////////     STEP 1      ////////////////////////////////////
@@ -468,7 +496,7 @@ void MechanicalMatrixMapper<DataTypes1, DataTypes2>::addKToMatrix(const Mechanic
 
     ///////////////////////     GET K       ////////////////////////////////////////
     CompressedRowSparseMatrix< Real1 >* K = new CompressedRowSparseMatrix< Real1 > ( );
-    K->resizeBloc( m_fullMatrixSize ,  m_fullMatrixSize );
+    K->resizeBlock( m_fullMatrixSize ,  m_fullMatrixSize );
     K->clear();
     DefaultMultiMatrixAccessor* KAccessor;
     KAccessor = new DefaultMultiMatrixAccessor;

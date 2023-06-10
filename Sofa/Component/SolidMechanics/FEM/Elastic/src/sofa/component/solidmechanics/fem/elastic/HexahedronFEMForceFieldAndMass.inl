@@ -22,7 +22,10 @@
 #pragma once
 
 #include <sofa/component/solidmechanics/fem/elastic/HexahedronFEMForceFieldAndMass.h>
+#include <sofa/core/behavior/Mass.inl>
 #include <sofa/component/solidmechanics/fem/elastic/HexahedronFEMForceField.inl>
+#include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
+#include <sofa/core/behavior/BaseLocalMassMatrix.h>
 
 namespace sofa::component::solidmechanics::fem::elastic
 {
@@ -251,6 +254,39 @@ void HexahedronFEMForceFieldAndMass<DataTypes>::addMToMatrix(const core::Mechani
 }
 
 template<class DataTypes>
+void HexahedronFEMForceFieldAndMass<DataTypes>::buildStiffnessMatrix(core::behavior::StiffnessMatrix* matrix)
+{
+    HexahedronFEMForceFieldT::buildStiffnessMatrix(matrix);
+}
+
+template<class DataTypes>
+void HexahedronFEMForceFieldAndMass<DataTypes>::buildMassMatrix(sofa::core::behavior::MassMatrixAccumulator* matrices)
+{
+    int e = 0;
+    for(auto it = this->getIndexedElements()->begin(); it != this->getIndexedElements()->end() ; ++it, ++e)
+    {
+        const ElementMass &Me = d_elementMasses.getValue()[e];
+
+        // find index of node 1
+        for (int n1 = 0; n1<8; n1++)
+        {
+            const int node1 = (*it)[n1];
+
+            // find index of node 2
+            for (int n2 = 0; n2<8; n2++)
+            {
+                const int node2 = (*it)[n2];
+
+                const Mat33 tmp = Mat33(Coord(Me[3*n1+0][3*n2+0],Me[3*n1+0][3*n2+1],Me[3*n1+0][3*n2+2]),
+                        Coord(Me[3*n1+1][3*n2+0],Me[3*n1+1][3*n2+1],Me[3*n1+1][3*n2+2]),
+                        Coord(Me[3*n1+2][3*n2+0],Me[3*n1+2][3*n2+1],Me[3*n1+2][3*n2+2]));
+                matrices->add(3 * node1, 3 * node2, tmp);
+            }
+        }
+    }
+}
+
+template<class DataTypes>
 void HexahedronFEMForceFieldAndMass<DataTypes>::accFromF(const core::MechanicalParams* /*mparams*/, DataVecDeriv& /*a*/, const DataVecDeriv& /*f*/)
 {
     msg_warning()<<"HexahedronFEMForceFieldAndMass<DataTypes>::accFromF not yet implemented"<<msgendl;
@@ -313,8 +349,8 @@ void HexahedronFEMForceFieldAndMass<DataTypes>::draw(const core::visual::VisualP
     if (!vparams->displayFlags().getShowBehaviorModels())
         return;
     const VecCoord& x = this->mstate->read(core::ConstVecCoordId::position())->getValue();
-    // since drawTool requires a std::vector<Vector3> we have to convert x in an ugly way
-    std::vector<type::Vector3> pos;
+    // since drawTool requires a std::vector<Vec3> we have to convert x in an ugly way
+    std::vector<type::Vec3> pos;
     pos.resize(x.size());
     auto posIT = pos.begin();
     typename VecCoord::const_iterator xIT = x.begin();

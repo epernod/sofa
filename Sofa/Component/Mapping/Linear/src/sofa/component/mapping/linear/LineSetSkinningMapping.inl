@@ -115,6 +115,9 @@ void LineSetSkinningMapping<TIn, TOut>::init()
         }
     }
 
+    if (m_topology->getNbLines() == 0)
+        return;
+
     for(unsigned int verticeIndex=0; verticeIndex<xto.size(); verticeIndex++)
     {
         double	sumWeights = 0.0;
@@ -199,7 +202,7 @@ void LineSetSkinningMapping<TIn, TOut>::draw(const core::visual::VisualParams* v
     const InVecCoord& xfrom = this->fromModel->read(core::ConstVecCoordId::position())->getValue();
 
     std::vector<sofa::type::RGBAColor> colorVector;
-    std::vector<sofa::type::Vector3> vertices;
+    std::vector<sofa::type::Vec3> vertices;
 
     for (unsigned int verticeIndex=0; verticeIndex<xto.size(); verticeIndex++)
     {
@@ -212,8 +215,8 @@ void LineSetSkinningMapping<TIn, TOut>::draw(const core::visual::VisualParams* v
 
 
             colorVector.push_back(sofa::type::RGBAColor(iline.weight, 0.0, (1.0-iline.weight),1.0));
-            vertices.push_back(sofa::type::Vector3( xto[verticeIndex] ));
-            vertices.push_back(sofa::type::Vector3( v ));
+            vertices.push_back(sofa::type::Vec3( xto[verticeIndex] ));
+            vertices.push_back(sofa::type::Vec3( v ));
         }
     }
     vparams->drawTool()->drawLines(vertices,1,colorVector);

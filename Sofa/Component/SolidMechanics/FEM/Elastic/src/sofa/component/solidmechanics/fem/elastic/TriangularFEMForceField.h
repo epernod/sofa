@@ -132,10 +132,11 @@ public:
         Real maxStress;
         Coord principalStrainDirection;
         Real maxStrain;
+        Real differenceToCriteria;
 
         type::vector<Coord> lastNStressDirection;
 
-        TriangleInformation() { }
+        TriangleInformation() = default;
 
         /// Output stream
         inline friend std::ostream& operator<< ( std::ostream& os, const TriangleInformation& /*ti*/ )
@@ -148,8 +149,6 @@ public:
         {
             return in;
         }
-
-        Real differenceToCriteria;
     };
 
 
@@ -196,7 +195,7 @@ public:
     Real getPoisson() { return (f_poisson.getValue())[0]; }
     void setPoisson(Real val);
     void setPoissonArray(const type::vector<Real>& values);
-    
+
     Real getYoung() { return (f_young.getValue())[0]; }
     void setYoung(Real val);
     void setYoungArray(const type::vector<Real>& values);

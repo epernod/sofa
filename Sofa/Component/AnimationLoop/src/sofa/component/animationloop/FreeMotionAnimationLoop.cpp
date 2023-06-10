@@ -41,8 +41,9 @@
 #include <sofa/simulation/UpdateMappingEndEvent.h>
 #include <sofa/simulation/UpdateBoundingBoxVisitor.h>
 #include <sofa/simulation/TaskScheduler.h>
-#include <sofa/component/animationloop/FreeMotionTask.h>
 #include <sofa/simulation/CollisionVisitor.h>
+#include <sofa/simulation/SolveVisitor.h>
+#include <sofa/simulation/MainTaskSchedulerFactory.h>
 
 #include <sofa/simulation/mechanicalvisitor/MechanicalVInitVisitor.h>
 using sofa::simulation::mechanicalvisitor::MechanicalVInitVisitor;
@@ -97,6 +98,8 @@ void FreeMotionAnimationLoop::parse ( sofa::core::objectmodel::BaseObjectDescrip
 
 void FreeMotionAnimationLoop::init()
 {
+    Inherit::init();
+
     simulation::common::VectorOperations vop(core::execparams::defaultInstance(), getContext());
 
     MultiVecDeriv dx(&vop, core::VecDerivId::dx());
@@ -113,8 +116,9 @@ void FreeMotionAnimationLoop::init()
             if (defaultSolver != nullptr)
             {
                 msg_warning() << "A ConstraintSolver is required by " << this->getClassName() << " but has not been found:"
-                    " a default LCPConstraintSolver is automatically added in the scene for you. To remove this warning, add"
-                    " a ConstraintSolver in the scene.";
+                    " a default " << defaultSolver->getClassName() << " is automatically added in the scene for you. To remove this warning, add"
+                    " a ConstraintSolver in the scene. The list of available constraint solvers is: "
+                    << core::ObjectFactory::getInstance()->listClassesDerivedFrom<sofa::core::behavior::ConstraintSolver>();
                 getContext()->addObject(defaultSolver);
                 l_constraintSolver.set(defaultSolver);
                 defaultSolver = nullptr;
@@ -123,7 +127,8 @@ void FreeMotionAnimationLoop::init()
             {
                 msg_fatal() << "A ConstraintSolver is required by " << this->getClassName() << " but has not been found:"
                     " a default LCPConstraintSolver could not be automatically added in the scene. To remove this error, add"
-                    " a ConstraintSolver in the scene.";
+                    " a ConstraintSolver in the scene. The list of available constraint solvers is: "
+                    << core::ObjectFactory::getInstance()->listClassesDerivedFrom<sofa::core::behavior::ConstraintSolver>();
             }
         }
         else
@@ -136,7 +141,7 @@ void FreeMotionAnimationLoop::init()
         defaultSolver.reset();
     }
 
-    auto* taskScheduler = sofa::simulation::TaskScheduler::getInstance();
+    auto* taskScheduler = sofa::simulation::MainTaskSchedulerFactory::createInRegistry();
     assert(taskScheduler != nullptr);
     if (d_parallelCollisionDetectionAndFreeMotion.getValue() || d_parallelODESolving.getValue())
     {
@@ -189,6 +194,14 @@ void FreeMotionAnimationLoop::step(const sofa::core::ExecParams* params, SReal d
         ScopedAdvancedTimer timer("MechanicalVInitVisitor");
         MechanicalVInitVisitor< core::V_COORD >(params, core::VecCoordId::freePosition(), core::ConstVecCoordId::position(), true).execute(gnode);
         MechanicalVInitVisitor< core::V_DERIV >(params, core::VecDerivId::freeVelocity(), core::ConstVecDerivId::velocity(), true).execute(gnode);
+    }
+
+    // This animation loop works with lagrangian constraints. Forces derive from the constraints.
+    // Therefore we notice the States that they have to consider them in the total accumulation of
+    // forces.
+    for (auto* state : this->getContext()->getObjects<sofa::core::BaseState>(sofa::core::objectmodel::BaseContext::SearchDirection::SearchDown))
+    {
+        state->addToTotalForces(cparams.lambda().getId(state));
     }
 
 
@@ -257,7 +270,7 @@ void FreeMotionAnimationLoop::step(const sofa::core::ExecParams* params, SReal d
         if (cparams.constOrder() == core::ConstraintParams::VEL )
         {
             l_constraintSolver->solveConstraint(&cparams, vel);
-            pos.eq(pos, vel, dt);
+            pos.eq(pos, vel, dt); //position += velocity * dt
         }
         else
         {
@@ -315,13 +328,11 @@ void FreeMotionAnimationLoop::FreeMotionAndCollisionDetection(const sofa::core::
                                                               sofa::core::MultiVecDerivId freeVel,
                                                               simulation::common::MechanicalOperations* mop)
 {
-    sofa::simulation::CpuTask::Status freeMotionTaskStatus;
-    FreeMotionTask freeMotionTask(gnode, params, &cparams, dt, pos, freePos, freeVel, mop, getContext(), &freeMotionTaskStatus, d_parallelODESolving.getValue());
     if (!d_parallelCollisionDetectionAndFreeMotion.getValue())
     {
         ScopedAdvancedTimer timer("FreeMotion+CollisionDetection");
 
-        freeMotionTask.run();
+        computeFreeMotion(params, cparams, dt, pos, freePos, freeVel, mop);
 
         {
             ScopedAdvancedTimer collisionDetectionTimer("CollisionDetection");
@@ -332,7 +343,7 @@ void FreeMotionAnimationLoop::FreeMotionAndCollisionDetection(const sofa::core::
     {
         ScopedAdvancedTimer timer("FreeMotion+CollisionDetection");
 
-        auto* taskScheduler = sofa::simulation::TaskScheduler::getInstance();
+        auto* taskScheduler = sofa::simulation::MainTaskSchedulerFactory::createInRegistry();
         assert(taskScheduler != nullptr);
 
         preCollisionComputation(params);
@@ -344,7 +355,8 @@ void FreeMotionAnimationLoop::FreeMotionAndCollisionDetection(const sofa::core::
             act.execute(getContext());
         }
 
-        taskScheduler->addTask(&freeMotionTask);
+        sofa::simulation::CpuTask::Status freeMotionTaskStatus;
+        taskScheduler->addTask(freeMotionTaskStatus, [&]() { computeFreeMotion(params, cparams, dt, pos, freePos, freeVel, mop); });
 
         {
             ScopedAdvancedTimer collisionDetectionTimer("CollisionDetection");
@@ -369,10 +381,35 @@ void FreeMotionAnimationLoop::FreeMotionAndCollisionDetection(const sofa::core::
     }
 }
 
+void FreeMotionAnimationLoop::computeFreeMotion(const sofa::core::ExecParams* params, const core::ConstraintParams& cparams, SReal dt,
+                                         sofa::core::MultiVecId pos,
+                                         sofa::core::MultiVecId freePos,
+                                         sofa::core::MultiVecDerivId freeVel,
+                                         simulation::common::MechanicalOperations* mop)
+{
+    {
+        sofa::helper::ScopedAdvancedTimer timer("FreeMotion");
+        simulation::SolveVisitor freeMotion(params, dt, true, d_parallelODESolving.getValue());
+        gnode->execute(&freeMotion);
+    }
+
+    mop->projectResponse(freeVel);
+    mop->propagateDx(freeVel, true);
+
+    if (cparams.constOrder() == sofa::core::ConstraintParams::POS ||
+        cparams.constOrder() == sofa::core::ConstraintParams::POS_AND_VEL)
+    {
+        sofa::helper::ScopedAdvancedTimer timer("freePosEqPosPlusFreeVelDt");
+        MechanicalVOpVisitor freePosEqPosPlusFreeVelDt(params, freePos, pos, freeVel, dt);
+        freePosEqPosPlusFreeVelDt.setMapped(true);
+        getContext()->executeVisitor(&freePosEqPosPlusFreeVelDt);
+    }
+}
+
 int FreeMotionAnimationLoopClass = core::RegisterObject(R"(
 The animation loop to use with constraints.
 You must add this loop at the beginning of the scene if you are using constraints.")")
-        .add< FreeMotionAnimationLoop >()
-        .addAlias("FreeMotionMasterSolver");
+                                   .add< FreeMotionAnimationLoop >()
+                                   .addAlias("FreeMotionMasterSolver");
 
 } //namespace sofa::component::animationloop

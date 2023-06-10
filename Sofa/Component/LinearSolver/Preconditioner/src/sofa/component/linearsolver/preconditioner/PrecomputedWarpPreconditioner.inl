@@ -30,7 +30,7 @@
 #include <cmath>
 #include <sofa/helper/system/thread/CTime.h>
 #include <sofa/defaulttype/VecTypes.h>
-#include <sofa/component/linearsolver/iterative/MatrixLinearSolver.h>
+#include <sofa/component/linearsolver/iterative/MatrixLinearSolver.inl>
 #include <sofa/helper/system/thread/CTime.h>
 #include <sofa/core/behavior/RotationFinder.h>
 #include <sofa/core/behavior/LinearSolver.h>
@@ -47,6 +47,8 @@
 
 #include <sofa/simulation/Node.h>
 
+#include <sofa/component/linearsolver/preconditioner/PrecomputedMatrixSystem.h>
+
 
 namespace sofa::component::linearsolver::preconditioner
 {
@@ -54,7 +56,6 @@ namespace sofa::component::linearsolver::preconditioner
 template<class TDataTypes>
 PrecomputedWarpPreconditioner<TDataTypes>::PrecomputedWarpPreconditioner()
     : jmjt_twostep( initData(&jmjt_twostep,true,"jmjt_twostep","Use two step algorithm to compute JMinvJt") )
-    , f_verbose( initData(&f_verbose,false,"verbose","Dump system state at each iteration") )
     , use_file( initData(&use_file,true,"use_file","Dump system matrix in a file") )
     , share_matrix( initData(&share_matrix,true,"share_matrix","Share the compliance matrix in memory if they are related to the same file (WARNING: might require to reload Sofa when opening a new scene...)") )
     , l_linearSolver(initLink("linearSolver", "Link towards the linear solver used to precompute the first matrix"))
@@ -64,6 +65,19 @@ PrecomputedWarpPreconditioner<TDataTypes>::PrecomputedWarpPreconditioner()
     first = true;
     _rotate = false;
     usePrecond = true;
+}
+
+template <class TDataTypes>
+void PrecomputedWarpPreconditioner<TDataTypes>::checkLinearSystem()
+{
+    if (!this->l_linearSystem)
+    {
+        auto* matrixLinearSystem=this->getContext()->template get<PrecomputedMatrixSystem<TMatrix, TVector> >();
+        if(!matrixLinearSystem)
+        {
+            this->template createDefaultLinearSystem<PrecomputedMatrixSystem<TMatrix, TVector> >();
+        }
+    }
 }
 
 template<class TDataTypes>
@@ -77,7 +91,7 @@ void PrecomputedWarpPreconditioner<TDataTypes>::setSystemMBKMatrix(const core::M
         init_bFact = sofa::core::mechanicalparams::bFactor(mparams);
         init_kFact = mparams->kFactor();
         Inherit::setSystemMBKMatrix(mparams);
-        loadMatrix(*this->linearSystem.systemMatrix);
+        loadMatrix(*this->getSystemMatrix());
     }
 
     this->linearSystem.needInvert = usePrecond;
@@ -287,8 +301,8 @@ void PrecomputedWarpPreconditioner<TDataTypes>::loadMatrixWithSolver()
     this->getContext()->get(EulerSolver);
 
     // for the initial computation, the gravity has to be put at 0
-    const sofa::type::Vec3d gravity = this->getContext()->getGravity();
-    const sofa::type::Vec3d gravity_zero(0.0,0.0,0.0);
+    const sofa::type::Vec3 gravity = this->getContext()->getGravity();
+    static constexpr sofa::type::Vec3 gravity_zero(0_sreal, 0_sreal, 0_sreal);
     this->getContext()->setGravity(gravity_zero);
 
     component::linearsolver::iterative::CGLinearSolver<GraphScatteredMatrix,GraphScatteredVector>* CGlinearSolver;
@@ -344,16 +358,16 @@ void PrecomputedWarpPreconditioner<TDataTypes>::loadMatrixWithSolver()
     force.resize(nb_dofs);
 
     ///////////////////////// CHANGE THE PARAMETERS OF THE SOLVER /////////////////////////////////
-    double buf_tolerance=0, buf_threshold=0;
-    int buf_maxIter=0;
+    Real buf_tolerance=0, buf_threshold=0;
+    unsigned int buf_maxIter=0;
     if(CGlinearSolver)
     {
-        buf_tolerance = (double) CGlinearSolver->d_tolerance.getValue();
-        buf_maxIter   = (int) CGlinearSolver->d_maxIter.getValue();
-        buf_threshold = (double) CGlinearSolver->d_smallDenominatorThreshold.getValue();
-        CGlinearSolver->d_tolerance.setValue(1e-35);
-        CGlinearSolver->d_maxIter.setValue(5000);
-        CGlinearSolver->d_smallDenominatorThreshold.setValue(1e-25);
+        buf_tolerance = CGlinearSolver->d_tolerance.getValue();
+        buf_maxIter   = CGlinearSolver->d_maxIter.getValue();
+        buf_threshold = CGlinearSolver->d_smallDenominatorThreshold.getValue();
+        CGlinearSolver->d_tolerance.setValue(Real(1e-35));
+        CGlinearSolver->d_maxIter.setValue(5000u);
+        CGlinearSolver->d_smallDenominatorThreshold.setValue(Real(1e-25));
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -644,6 +658,7 @@ void PrecomputedWarpPreconditioner<TDataTypes>::ComputeResult(linearalgebra::Bas
 template<class TDataTypes>
 void PrecomputedWarpPreconditioner<TDataTypes>::init()
 {
+    Inherit1::init();
     simulation::Node *node = dynamic_cast<simulation::Node *>(this->getContext());
     if (node != nullptr) mstate = node->get<MState> ();
 }
@@ -677,7 +692,7 @@ void PrecomputedWarpPreconditioner<TDataTypes>::draw(const core::visual::VisualP
 
         sofa::type::Quat<SReal> q;
         q.fromMatrix(RotMat);
-        vparams->drawTool()->drawFrame(DataTypes::getCPos(x[pid]), q, sofa::type::Vector3(scale,scale,scale));
+        vparams->drawTool()->drawFrame(DataTypes::getCPos(x[pid]), q, sofa::type::Vec3(scale,scale,scale));
     }
 
 }

@@ -22,6 +22,7 @@
 #pragma once
 
 #include <sofa/component/solidmechanics/fem/elastic/FastTetrahedralCorotationalForceField.h>
+#include <sofa/core/behavior/ForceField.inl>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/helper/decompose.h>
 #include <sofa/core/behavior/MultiMatrixAccessor.h>
@@ -139,8 +140,8 @@ FastTetrahedralCorotationalForceField<DataTypes>::FastTetrahedralCorotationalFor
     , tetrahedronInfo(initData(&tetrahedronInfo, "tetrahedronInfo", "Internal tetrahedron data"))
     , _initialPoints(0)
     , f_method(initData(&f_method,std::string("qr"),"method"," method for rotation computation :\"qr\" (by QR) or \"polar\" or \"polar2\" or \"none\" (Linear elastic) "))
-    , f_poissonRatio(initData(&f_poissonRatio,Real(0.3),"poissonRatio","Poisson ratio in Hooke's law"))
-    , f_youngModulus(initData(&f_youngModulus,Real(1000.),"youngModulus","Young modulus in Hooke's law"))
+    , f_poissonRatio(initData(&f_poissonRatio,Real(0.45),"poissonRatio","Poisson ratio in Hooke's law"))
+    , f_youngModulus(initData(&f_youngModulus,Real(5000.),"youngModulus","Young modulus in Hooke's law"))
     , lambda(0)
     , mu(0)
     , f_drawing(initData(&f_drawing, true, "drawing", " draw the forcefield if true"))
@@ -166,6 +167,9 @@ template <class DataTypes>
 void FastTetrahedralCorotationalForceField<DataTypes>::init()
 {
     this->Inherited::init();
+
+    msg_warning_when(!f_poissonRatio.isSet()) << "The default value of the Data " << f_poissonRatio.getName() << " changed in v23.06 from 0.3 to 0.45.";
+    msg_warning_when(!f_youngModulus.isSet()) << "The default value of the Data " << f_youngModulus.getName() << " changed in v23.06 from 1000 to 5000";
 
     if (l_topology.empty())
     {
@@ -610,7 +614,7 @@ void FastTetrahedralCorotationalForceField<DataTypes>::draw(const core::visual::
         vparams->drawTool()->setPolygonMode(0, true);
 
 
-    std::vector< type::Vector3 > points[4];
+    std::vector< type::Vec3 > points[4];
     for (size_t i = 0; i<m_topology->getNbTetrahedra(); ++i)
     {
         const core::topology::BaseMeshTopology::Tetrahedron t = m_topology->getTetrahedron(i);

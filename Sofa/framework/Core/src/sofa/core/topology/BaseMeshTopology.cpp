@@ -23,7 +23,6 @@
 #include <sofa/helper/io/MeshTopologyLoader.h>
 #include <sofa/helper/system/FileRepository.h>
 #include <sofa/core/objectmodel/BaseNode.h>
-
 namespace sofa::core::topology
 {
 
@@ -494,7 +493,4 @@ bool BaseMeshTopology::removeInNode( objectmodel::BaseNode* node )
     Inherit1::removeInNode(node);
     return true;
 }
-
-
-
 } // namespace sofa::core::topology

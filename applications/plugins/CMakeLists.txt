@@ -19,7 +19,6 @@ sofa_add_subdirectory(plugin SofaDistanceGrid SofaDistanceGrid) # Depends on Sof
 sofa_add_subdirectory(plugin SofaImplicitField SofaImplicitField)
 sofa_add_subdirectory(plugin MultiThreading MultiThreading)
 sofa_add_subdirectory(plugin DiffusionSolver DiffusionSolver) # Depends on CImgPlugin
-sofa_add_subdirectory(plugin SofaPython SofaPython EXTERNAL)
 sofa_add_subdirectory(plugin image image) # Depends on CImgPlugin, DiffusionSolver, MultiThreading (soft)
 sofa_add_subdirectory(plugin SofaNewmat SofaNewmat)
 
@@ -29,7 +28,7 @@ sofa_add_subdirectory(plugin CGALPlugin CGALPlugin EXTERNAL)     # Depends on im
 sofa_add_subdirectory(plugin Flexible Flexible EXTERNAL)         # Depends on image, CImgPlugin, SofaHighOrderTopology (soft)
 sofa_add_subdirectory(plugin Registration Registration EXTERNAL) # Depends on image, SofaPython, SofaGui and SofaDistanceGrid
 sofa_add_subdirectory(plugin BulletCollisionDetection BulletCollisionDetection) # Depends on Compliant and LMConstraint
-sofa_add_subdirectory(plugin PreassembledMass PreassembledMass) # Depends on Flexible and Compliant
+sofa_add_subdirectory(plugin PreassembledMass PreassembledMass EXTERNAL) # Depends on Flexible and Compliant
 sofa_add_subdirectory(plugin ExternalBehaviorModel ExternalBehaviorModel OFF WHEN_TO_SHOW "SOFA_ENABLE_LEGACY_HEADERS" VALUE_IF_HIDDEN OFF)
 sofa_add_subdirectory(plugin InvertibleFVM InvertibleFVM EXTERNAL)
 sofa_add_subdirectory(plugin MeshSTEPLoader MeshSTEPLoader)
@@ -63,9 +62,10 @@ endif()
 
 sofa_find_package(Sofa.GL QUIET)
 if(Sofa.GL_FOUND)
-    sofa_add_subdirectory(plugin SofaCUDA SofaCUDA)           # SofaCUDA plugin can't work without OPENGL
     sofa_add_subdirectory(plugin SofaSimpleGUI SofaSimpleGUI) # SofaSimpleGUI plugin can't work without OPENGL
     sofa_add_subdirectory(plugin VolumetricRendering VolumetricRendering) # VolumetricRendering plugin can't work without OPENGL
 else()
-    message("Sofa.GL not found; disabling SofaCUDA, SofaSimpleGUI and VolumetricRendering plugins")
+    message("Sofa.GL not found; disabling SofaSimpleGUI and VolumetricRendering plugins")
 endif()
+
+sofa_add_subdirectory(plugin SofaCUDA SofaCUDA)

@@ -79,7 +79,7 @@ class GraphVisitor;
 
 class SofaMouseManager;
 
-#if SOFA_GUI_QT_HAVE_QT5_CHARTS
+#if SOFA_GUI_QT_HAVE_QT_CHARTS
 class SofaWindowProfiler;
 #endif
 
@@ -153,7 +153,7 @@ private:
     GraphVisitor* handleTraceVisitor;
 #endif
     SofaMouseManager* m_sofaMouseManager;
-#if SOFA_GUI_QT_HAVE_QT5_CHARTS
+#if SOFA_GUI_QT_HAVE_QT_CHARTS
     SofaWindowProfiler* m_windowTimerProfiler;
 #endif
 
@@ -312,7 +312,7 @@ protected:
 
     void sleep(float seconds, float init_time)
     {
-        unsigned int t = 0;
+        [[maybe_unused]] unsigned int t = 0;
         clock_t goal = (clock_t) (seconds + init_time);
         while (goal > clock()/(float)CLOCKS_PER_SEC) t++;
     }

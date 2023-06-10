@@ -50,7 +50,7 @@ struct DistanceMappingTest : public sofa::mapping_test::Mapping_test<DistanceMap
     {
         DistanceMapping* map = static_cast<DistanceMapping*>( this->mapping );
         map->f_computeDistance.setValue(true);
-        map->d_geometricStiffness.setValue(1);
+        sofa::helper::getWriteAccessor(map->d_geometricStiffness)->setSelectedItem(1);
 
         component::topology::container::dynamic::EdgeSetTopologyContainer::SPtr edges = modeling::addNew<component::topology::container::dynamic::EdgeSetTopologyContainer>(this->root);
         edges->addEdge( 0, 1 );
@@ -62,7 +62,7 @@ struct DistanceMappingTest : public sofa::mapping_test::Mapping_test<DistanceMap
 
         // expected child positions
         OutVecCoord expectedoutcoord;
-        expectedoutcoord.push_back( type::Vector1( std::sqrt(3.0) ) );
+        expectedoutcoord.push_back( type::Vec1( std::sqrt(3.0) ) );
 
         return this->runTest( incoord, expectedoutcoord );
     }

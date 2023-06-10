@@ -176,9 +176,7 @@ struct BoxROITest :  public sofa::testing::BaseTest
                 "   </Node>                                                    "
                 "</Node>                                                       ";
 
-        Node::SPtr root = SceneLoaderXML::loadFromMemory ("testscene",
-                                                          scene.c_str(),
-                                                          scene.size());
+        Node::SPtr root = SceneLoaderXML::loadFromMemory ("testscene", scene.c_str());
         EXPECT_NE(root.get(), nullptr);
         root->init(sofa::core::execparams::defaultInstance());
 
@@ -192,7 +190,7 @@ struct BoxROITest :  public sofa::testing::BaseTest
                 "<?xml version='1.0'?>"
                 "<Node 	name='Root' gravity='0 0 0' time='0' animate='0'   >   "
                 "   <Node name='Level 1'>                                      "
-                "       <RequiredPlugin  name='SofaLoader' />                  "
+                "       <RequiredPlugin  name='Sofa.Component.IO.Mesh' />      "
                 "       <TriangleSetTopologyContainer  name='Container' />     "
                 "       <MeshOBJLoader filename='mesh/single_triangle.obj'/>                   "
                 "       <BoxROI name='myBoxROI'/>                              "
@@ -331,15 +329,15 @@ struct BoxROITest :  public sofa::testing::BaseTest
         m_boxroi->findData("box")->read("-1. -1. -1.  0. 0. 0.   1. 1. 1.  2. 2. 2.");
         m_boxroi->computeBBox(nullptr, false);
 
-        EXPECT_EQ(m_boxroi->f_bbox.getValue().minBBox(), Vec3d(-1,-1,-1));
-        EXPECT_EQ(m_boxroi->f_bbox.getValue().maxBBox(), Vec3d(2,2,2));
+        EXPECT_EQ(m_boxroi->f_bbox.getValue().minBBox(), Vec3(-1,-1,-1));
+        EXPECT_EQ(m_boxroi->f_bbox.getValue().maxBBox(), Vec3(2,2,2));
 
         m_boxroi->findData("box")->read("-1. -1. -1.  0. 0. 0.");
         m_boxroi->findData("orientedBox")->read("0 0 0  2 0 0  2 2 0 2");
         m_boxroi->computeBBox(nullptr, false);
 
-        EXPECT_EQ(m_boxroi->f_bbox.getValue().minBBox(), Vec3d(-1,-1,-1));
-        EXPECT_EQ(m_boxroi->f_bbox.getValue().maxBBox(), Vec3d(2,2,1));
+        EXPECT_EQ(m_boxroi->f_bbox.getValue().minBBox(), Vec3(-1,-1,-1));
+        EXPECT_EQ(m_boxroi->f_bbox.getValue().maxBBox(), Vec3(2,2,1));
     }
 
 };
@@ -349,7 +347,6 @@ struct BoxROITest :  public sofa::testing::BaseTest
 //Please fix this either the tests or the BoxROI implementation
 typedef Types<
     Vec3Types
-    ,Vec3dTypes
     //,Rigid3dTypes
 
 > DataTypes;

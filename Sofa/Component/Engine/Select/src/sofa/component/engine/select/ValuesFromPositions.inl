@@ -50,7 +50,7 @@ ValuesFromPositions<DataTypes>::ValuesFromPositions()
     , p_drawVectors(initData(&p_drawVectors, false, "drawVectors", "draw vectors line"))
     , p_vectorLength (initData(&p_vectorLength, (float)10, "drawVectorLength", "vector length visualisation. "))
 {
-    sofa::helper::OptionsGroup m_newoptiongroup(2,"Scalar","Vector");
+    sofa::helper::OptionsGroup m_newoptiongroup{"Scalar","Vector"};
     m_newoptiongroup.setSelectedItem("Scalar");
     p_fieldType.setValue(m_newoptiongroup);
 
@@ -417,7 +417,7 @@ void ValuesFromPositions<DataTypes>::draw(const core::visual::VisualParams* vpar
 
         float vectorLength = p_vectorLength.getValue();
         auto color = sofa::type::RGBAColor::black();
-        std::vector<sofa::type::Vector3> vertices;
+        std::vector<sofa::type::Vec3> vertices;
         for (unsigned int i =0; i<tetrahedronVectors.size(); i++)
         {
             Tetra t = tetrahedra[i];

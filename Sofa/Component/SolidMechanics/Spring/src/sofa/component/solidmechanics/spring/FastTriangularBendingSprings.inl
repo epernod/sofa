@@ -22,6 +22,7 @@
 #pragma once
 
 #include <sofa/component/solidmechanics/spring/FastTriangularBendingSprings.h>
+#include <sofa/core/behavior/ForceField.inl>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/topology/TopologyChange.h>
 #include <fstream> // for reading the file
@@ -449,7 +450,7 @@ void FastTriangularBendingSprings<DataTypes>::draw(const core::visual::VisualPar
 
     const type::vector<EdgeSpring>& edgeInf = d_edgeSprings.getValue();
     constexpr sofa::type::RGBAColor color = sofa::type::RGBAColor::green();
-    std::vector<sofa::type::Vector3> vertices;
+    std::vector<sofa::type::Vec3> vertices;
 
     for(i=0; i<edgeInf.size(); ++i)
     {

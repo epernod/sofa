@@ -22,6 +22,7 @@
 #pragma once
 
 #include <sofa/component/solidmechanics/tensormass/TetrahedralTensorMassForceField.h>
+#include <sofa/core/behavior/ForceField.inl>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/type/RGBAColor.h>
 #include <sofa/core/topology/TopologyData.inl>
@@ -472,7 +473,7 @@ void TetrahedralTensorMassForceField<DataTypes>::draw(const core::visual::Visual
         vparams->drawTool()->setPolygonMode(0,true);
 
     constexpr sofa::type::RGBAColor color = sofa::type::RGBAColor::green();
-    std::vector<sofa::type::Vector3> vertices;
+    std::vector<sofa::type::Vec3> vertices;
 
     const VecCoord& x = this->mstate->read(core::ConstVecCoordId::position())->getValue();
     int nbTriangles=m_topology->getNbTriangles();
@@ -483,9 +484,9 @@ void TetrahedralTensorMassForceField<DataTypes>::draw(const core::visual::Visual
         int b = m_topology->getTriangle(i)[1];
         int c = m_topology->getTriangle(i)[2];
 
-        vertices.push_back(sofa::type::Vector3(x[a]));
-        vertices.push_back(sofa::type::Vector3(x[b]));
-        vertices.push_back(sofa::type::Vector3(x[c]));
+        vertices.push_back(sofa::type::Vec3(x[a]));
+        vertices.push_back(sofa::type::Vec3(x[b]));
+        vertices.push_back(sofa::type::Vec3(x[c]));
     }
     vparams->drawTool()->drawTriangles(vertices,color);
 

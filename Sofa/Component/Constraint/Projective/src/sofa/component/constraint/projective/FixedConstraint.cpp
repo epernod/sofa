@@ -73,9 +73,9 @@ void FixedConstraint<Rigid3Types>::draw(const core::visual::VisualParams* vparam
 
     const SetIndexArray & indices = d_indices.getValue();
     const VecCoord& x = mstate->read(core::ConstVecCoordId::position())->getValue();
-    
-    std::vector< Vector3 > points;
-    
+
+    std::vector< type::Vec3 > points;
+
     if (d_fixAll.getValue())
     {
         for (unsigned i = 0; i < x.size(); i++)
@@ -118,7 +118,7 @@ void FixedConstraint<Rigid2Types>::draw(const core::visual::VisualParams* vparam
 
     vparams->drawTool()->setLightingEnabled(false);
     constexpr sofa::type::RGBAColor color (1,0.5,0.5,1);
-    std::vector<sofa::type::Vector3> vertices;
+    std::vector<sofa::type::Vec3> vertices;
 
     if(d_fixAll.getValue())
     {

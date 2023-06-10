@@ -91,6 +91,8 @@ public:
     Data<int> merge_method; ///< if multi_grid is active: which method to use to merge constraints (0 = compliance-based, 1 = spatial coordinates)
     Data<int> merge_spatial_step; ///< if merge_method is 1: grid size reduction between multigrid levels
     Data<int> merge_local_levels; ///< if merge_method is 1: up to the specified level of the multigrid, constraints are grouped locally, i.e. separately within each contact pairs, while on upper levels they are grouped globally independently of contact pairs.
+    Data<type::vector< SReal >> d_constraintForces; ///< OUTPUT: The Data constraintForces is used to provide the intensities of constraint forces in the simulation. The user can easily check the constraint forces from the GenericConstraint component interface
+    Data<bool> d_computeConstraintForces; ///< The indices of the constraintForces to store in the constraintForce data field
 
     Data < std::set<int> > constraintGroups; ///< list of ID of groups of constraints to be handled by this solver.
 
@@ -98,8 +100,8 @@ public:
 
     Data<int> showLevels; ///< Number of constraint levels to display
     Data<SReal> showCellWidth; ///< Distance between each constraint cells
-    Data<type::Vector3> showTranslation; ///< Position of the first cell
-    Data<type::Vector3> showLevelTranslation; ///< Translation between levels
+    Data<type::Vec3> showTranslation; ///< Position of the first cell
+    Data<type::Vec3> showLevelTranslation; ///< Translation between levels
 
     ConstraintProblem* getConstraintProblem() override;
     void lockConstraintProblem(sofa::core::objectmodel::BaseObject* from, ConstraintProblem* p1, ConstraintProblem* p2=nullptr) override; ///< Do not use the following LCPs until the next call to this function. This is used to prevent concurent access to the LCP when using a LCPForceFeedback through an haptic thread
@@ -107,13 +109,26 @@ public:
     void removeConstraintCorrection(core::behavior::BaseConstraintCorrection *s) override;
 
 private:
-    std::vector<core::behavior::BaseConstraintCorrection*> constraintCorrections;
-	std::vector<char> constraintCorrectionIsActive; // for each constraint correction, a boolean that is false if the parent node is sleeping
+    type::vector<core::behavior::BaseConstraintCorrection*> constraintCorrections;
+    type::vector<bool> constraintCorrectionIsActive; // for each constraint correction, a boolean that is false if the parent node is sleeping
     void computeInitialGuess();
     void keepContactForcesValue();
 
     unsigned int _numConstraints;
     SReal _mu;
+
+    /// Call the method resetConstraint on all the mechanical states and BaseConstraintSet
+    void resetConstraints(core::ConstraintParams cparams);
+    /// Call the method buildConstraintMatrix on all the BaseConstraintSet
+    void buildConstraintMatrix(core::ConstraintParams cparams);
+    /// Call the method applyJT on all the mappings
+    void accumulateMatrixDeriv(core::ConstraintParams cparams);
+    /// Multigrid hierarchy is resized and cleared
+    void buildHierarchy();
+    /// Call the method getConstraintInfo on all the BaseConstraintSet
+    void getConstraintInfo(core::ConstraintParams cparams);
+    /// Call the method addComplianceInConstraintSpace on all the BaseConstraintCorrection
+    void addComplianceInConstraintSpace(core::ConstraintParams cparams);
 
     /// for built lcp ///
     void build_LCP();

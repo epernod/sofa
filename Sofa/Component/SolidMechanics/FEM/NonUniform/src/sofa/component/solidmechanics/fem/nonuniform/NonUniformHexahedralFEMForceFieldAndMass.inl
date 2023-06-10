@@ -22,6 +22,7 @@
 #pragma once
 
 #include <sofa/component/solidmechanics/fem/nonuniform/NonUniformHexahedralFEMForceFieldAndMass.h>
+#include <sofa/component/solidmechanics/fem/elastic/HexahedralFEMForceFieldAndMass.inl>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/component/topology/container/dynamic/MultilevelHexahedronSetTopologyContainer.h>
 #include <sofa/core/topology/TopologyData.inl>
@@ -57,6 +58,8 @@ void NonUniformHexahedralFEMForceFieldAndMass<DataTypes>::init()
     if(_multilevelTopology == nullptr)
     {
         msg_error() << "Object must have a MultilevelHexahedronSetTopologyContainer";
+        sofa::core::objectmodel::BaseObject::d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
+        return;
     }
 
     this->reinit();

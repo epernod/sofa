@@ -27,7 +27,6 @@
 namespace sofa::component::mapping::linear::_barycentricmappertopologycontainer_
 {
 
-using type::Vec3d;
 using type::Vec3i;
 typedef typename core::topology::BaseMeshTopology::SeqEdges SeqEdges;
 
@@ -105,7 +104,7 @@ void BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::compute
     for(unsigned int i=0; i<elements.size(); i++)
     {
         Element element = elements[i];
-        Vector3 min=in[element[0]], max=in[element[0]];
+        Vec3 min=in[element[0]], max=in[element[0]];
 
         for(unsigned int j=0; j<element.size(); j++)
         {
@@ -180,7 +179,7 @@ void BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::init ( 
                         {
                             for(auto entry : it_entries->second)
                             {
-                                Vector3 inPos = in[elements[entry][0]];
+                                Vec3 inPos = in[elements[entry][0]];
                                 checkDistanceFromElement(entry, outPos, inPos, nearestParams);
                             }
                         }
@@ -208,7 +207,7 @@ void BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::compute
         computeBase(base,in,element);
         m_bases[e] = base;
 
-        Vector3 center;
+        Vec3 center;
         computeCenter(center,in,element);
         m_centers[e] = center;
     }
@@ -217,11 +216,11 @@ void BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::compute
 
 template <class In, class Out, class MappingDataType, class Element>
 void BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::checkDistanceFromElement(unsigned int e,
-                                                                                                  const Vector3& outPos,
-                                                                                                  const Vector3& inPos,
+                                                                                                  const Vec3& outPos,
+                                                                                                  const Vec3& inPos,
                                                                                                   NearestParams& nearestParams)
 {
-    Vector3 bary = m_bases[e] * ( outPos - inPos);
+    Vec3 bary = m_bases[e] * ( outPos - inPos);
     SReal dist;
     computeDistance(dist, bary);
     if ( dist>0 )
@@ -381,7 +380,7 @@ void BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::draw  (
     // Draw line between mapped node (out) and nodes of nearest element (in)
     const type::vector<Element>& elements = getElements();
 
-    std::vector< Vector3 > points;
+    std::vector< Vec3 > points;
     {
         for ( unsigned int i=0; i<d_map.getValue().size(); i++ )
         {
@@ -403,7 +402,7 @@ void BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::draw  (
 
 
 template <class In, class Out, class MappingDataType, class Element>
-Vec3i BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::getGridIndices(const Vector3& pos)
+Vec3i BarycentricMapperTopologyContainer<In,Out,MappingDataType,Element>::getGridIndices(const Vec3& pos)
 {
     Vec3i i_x;
     for(int i=0; i<3; i++)

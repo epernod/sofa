@@ -239,12 +239,12 @@ bool EdgeSetTopology_test::testRemovingVertices()
     // Check edge around point to be removed
     sofa::type::vector< EdgeID > vIds = { 0, 1, 2 };
     const EdgesAroundVertex& edgeAVertex = m_topoCon->getEdgesAroundVertex(0);
-    auto nbrE = edgeAVertex.size();
 
     edgeModifier->removePoints(vIds);
 
     EXPECT_EQ(m_topoCon->getNbPoints(), nbrVertex - vIds.size());
     // TODO epernod 2022-08-24: Edge are not deleted when removing vertices. This might create errors.
+    //auto nbrE = edgeAVertex.size();
     //EXPECT_EQ(m_topoCon->getNbEdges(), nbrEdge - nbrE); 
 
     return true;
@@ -346,28 +346,28 @@ bool EdgeSetTopology_test::checkEdgeDataGraph()
 
     sofa::core::topology::TopologyHandler* vertexH0 = *vertexHandlers.cbegin();
     EXPECT_NE(vertexH0, nullptr);
-    EXPECT_EQ(vertexH0->getName(), "TopologyDataHandler( MeshMatrixMass )vertexMass");
+    EXPECT_EQ(vertexH0->getName(), "TopologyDataHandler (MeshMatrixMass)vertexMass");
 
     auto itHandler = edgeHandlers.begin();
     sofa::core::topology::TopologyHandler* edgeH0 = *itHandler;
     EXPECT_NE(edgeH0, nullptr);
 
     // We need to pre-check as handlers are stored in a set (order not predefined)
-    bool firstOrder = edgeH0->getName().find("edgeMass") != std::string::npos ? true : false;
+    const bool firstOrder = edgeH0->getName().find("edgeMass") != std::string::npos;
 
     if (firstOrder)
-        EXPECT_EQ(edgeH0->getName(), "TopologyDataHandler( MeshMatrixMass )edgeMass");
+        EXPECT_EQ(edgeH0->getName(), "TopologyDataHandler (MeshMatrixMass)edgeMass");
     else
-        EXPECT_EQ(edgeH0->getName(), "TopologyDataHandler( VectorSpringForceField )springs");
+        EXPECT_EQ(edgeH0->getName(), "TopologyDataHandler (VectorSpringForceField)springs");
 
     itHandler++;
     sofa::core::topology::TopologyHandler* edgeH1 = *itHandler;
     EXPECT_NE(edgeH1, nullptr);
 
     if (firstOrder)
-        EXPECT_EQ(edgeH1->getName(), "TopologyDataHandler( VectorSpringForceField )springs");
+        EXPECT_EQ(edgeH1->getName(), "TopologyDataHandler (VectorSpringForceField)springs");
     else
-        EXPECT_EQ(edgeH1->getName(), "TopologyDataHandler( MeshMatrixMass )edgeMass");
+        EXPECT_EQ(edgeH1->getName(), "TopologyDataHandler (MeshMatrixMass)edgeMass");
         
     return true;
 }

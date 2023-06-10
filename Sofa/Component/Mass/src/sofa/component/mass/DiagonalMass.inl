@@ -21,7 +21,7 @@
 ******************************************************************************/
 #pragma once
 #include <sofa/component/mass/DiagonalMass.h>
-
+#include <sofa/core/behavior/Mass.inl>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/MechanicalParams.h>
 #include <sofa/helper/io/XspLoader.h>
@@ -29,6 +29,7 @@
 #include <sofa/core/topology/TopologyData.inl>
 #include <sofa/component/mass/AddMToMatrixFunctor.h>
 #include <sofa/core/behavior/MultiMatrixAccessor.h>
+#include <sofa/core/behavior/BaseLocalMassMatrix.h>
 #include <numeric>
 
 namespace sofa::component::mass
@@ -608,10 +609,10 @@ SReal DiagonalMass<DataTypes, GeometricalTypes>::getPotentialEnergy( const core:
 
 // does nothing by default, need to be specialized in .cpp
 template <class DataTypes, class GeometricalTypes>
-type::Vector6
+type::Vec6
 DiagonalMass<DataTypes, GeometricalTypes>::getMomentum ( const core::MechanicalParams*, const DataVecCoord& /*vx*/, const DataVecDeriv& /*vv*/  ) const
 {
-    return type::Vector6();
+    return type::Vec6();
 }
 
 template <class DataTypes, class GeometricalTypes>
@@ -619,12 +620,25 @@ void DiagonalMass<DataTypes, GeometricalTypes>::addMToMatrix(const core::Mechani
 {
     const MassVector &masses= d_vertexMass.getValue();
     static constexpr auto N = Deriv::total_size;
-    AddMToMatrixFunctor<Deriv,MassType> calc;
+    AddMToMatrixFunctor<Deriv,MassType, linearalgebra::BaseMatrix> calc;
     sofa::core::behavior::MultiMatrixAccessor::MatrixRef r = matrix->getMatrix(this->mstate);
     const Real mFactor = Real(sofa::core::mechanicalparams::mFactorIncludingRayleighDamping(mparams, this->rayleighMass.getValue()));
     for (unsigned int i = 0; i < masses.size(); i++)
     {
         calc(r.matrix, masses[i], r.offset + N * i, mFactor);
+    }
+}
+
+template <class DataTypes, class GeometricalTypes>
+void DiagonalMass<DataTypes, GeometricalTypes>::buildMassMatrix(sofa::core::behavior::MassMatrixAccumulator* matrices)
+{
+    const MassVector &masses= d_vertexMass.getValue();
+    static constexpr auto N = Deriv::total_size;
+    AddMToMatrixFunctor<Deriv,MassType, sofa::core::behavior::MassMatrixAccumulator> calc;
+
+    for (unsigned int i = 0; i < masses.size(); i++)
+    {
+        calc(matrices, masses[i], N * i, 1.);
     }
 }
 
@@ -644,7 +658,7 @@ void DiagonalMass<DataTypes, GeometricalTypes>::getElementMass(sofa::Index index
     if (m->rowSize() != dimension || m->colSize() != dimension) m->resize(dimension,dimension);
 
     m->clear();
-    AddMToMatrixFunctor<Deriv,MassType>()(m, d_vertexMass.getValue()[index], 0, 1);
+    AddMToMatrixFunctor<Deriv,MassType, linearalgebra::BaseMatrix>()(m, d_vertexMass.getValue()[index], 0, 1);
 }
 
 template <class DataTypes, class GeometricalTypes>
@@ -1425,14 +1439,14 @@ void DiagonalMass<DataTypes, GeometricalTypes>::draw(const core::visual::VisualP
         return;
 
     const auto& x = l_geometryState->read(core::ConstVecCoordId::position())->getValue();
-    type::Vector3 gravityCenter;
+    type::Vec3 gravityCenter;
     Real totalMass=0.0;
 
-    std::vector<  sofa::type::Vector3 > points;
+    std::vector<  sofa::type::Vec3 > points;
 
     for (unsigned int i = 0; i < x.size(); i++)
     {
-        sofa::type::Vector3 p;
+        sofa::type::Vec3 p;
         p = GeometricalTypes::getCPos(x[i]);
 
         points.push_back(p);
@@ -1445,7 +1459,7 @@ void DiagonalMass<DataTypes, GeometricalTypes>::draw(const core::visual::VisualP
         gravityCenter /= totalMass;
 
         Real axisSize = d_showAxisSize.getValue();
-        sofa::type::Vector3 temp;
+        sofa::type::Vec3 temp;
 
         for ( unsigned int i=0 ; i<3 ; i++ )
             if(i < Coord::spatial_dimensions )

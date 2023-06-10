@@ -22,10 +22,11 @@
 #include <sofa/component/collision/detection/intersection/RayNewProximityIntersection.h>
 
 #include <sofa/core/collision/Intersection.inl>
-#include <sofa/helper/proximity.h>
 #include <iostream>
 #include <algorithm>
 #include <sofa/core/collision/IntersectorFactory.h>
+#include <sofa/geometry/proximity/PointTriangle.h>
+#include <sofa/geometry/proximity/SegmentTriangle.h>
 #include <sofa/type/Mat.h>
 
 namespace sofa::component::collision::detection::intersection
@@ -35,7 +36,6 @@ using namespace sofa::type;
 using namespace sofa::defaulttype;
 using namespace sofa::core::collision;
 using namespace sofa::component::collision::geometry;
-using sofa::helper::DistanceSegTri;
 
 IntersectorCreator<NewProximityIntersection, RayNewProximityIntersection> RayNewProximityIntersectors("Ray");
 
@@ -56,17 +56,19 @@ RayNewProximityIntersection::RayNewProximityIntersection(NewProximityIntersectio
 
 bool RayNewProximityIntersection::testIntersection(Ray &t1,Triangle &t2)
 {
-    Vector3 P,Q,PQ;
-    static DistanceSegTri proximitySolver;
+    Vec3 P,Q,PQ;
     const SReal alarmDist = intersection->getAlarmDistance() + t1.getProximity() + t2.getProximity();
 
     if (fabs(t2.n() * t1.direction()) < 0.000001)
         return false; // no intersection for edges parallel to the triangle
 
-    Vector3 A = t1.origin();
-    Vector3 B = A + t1.direction() * t1.l();
+    Vec3 A = t1.origin();
+    Vec3 B = A + t1.direction() * t1.l();
 
-    proximitySolver.NewComputation( t2.p1(), t2.p2(), t2.p3(), A, B,P,Q);
+    const auto r = sofa::geometry::proximity::computeClosestPointsSegmentAndTriangle(t2.p1(), t2.p2(), t2.p3(), A, B,P,Q);
+    msg_warning_when(!r, "RayNewProximityIntersection") << "Failed to compute distance between ray ["
+        << A << "," << B <<"] and triangle [" << t2.p1() << ", " << t2.p2() << ", " << t2.p3() << "]";
+
     PQ = Q-P;
 
     if (PQ.norm2() < alarmDist*alarmDist)
@@ -85,13 +87,15 @@ int RayNewProximityIntersection::computeIntersection(Ray &t1, Triangle &t2, Outp
     if (fabs(t2.n() * t1.direction()) < 0.000001)
         return false; // no intersection for edges parallel to the triangle
 
-    Vector3 A = t1.origin();
-    Vector3 B = A + t1.direction() * t1.l();
+    Vec3 A = t1.origin();
+    Vec3 B = A + t1.direction() * t1.l();
 
-    Vector3 P,Q,PQ;
-    static DistanceSegTri proximitySolver;
+    Vec3 P,Q,PQ;
 
-    proximitySolver.NewComputation( t2.p1(), t2.p2(), t2.p3(), A,B,P,Q);
+    const auto r = sofa::geometry::proximity::computeClosestPointsSegmentAndTriangle(t2.p1(), t2.p2(), t2.p3(), A, B,P,Q);
+    msg_warning_when(!r, "RayNewProximityIntersection") << "Failed to compute distance between ray ["
+        << A << "," << B <<"] and triangle [" << t2.p1() << ", " << t2.p2() << ", " << t2.p3() << "]";
+
     PQ = Q-P;
 
     if (PQ.norm2() >= alarmDist*alarmDist)
@@ -126,10 +130,10 @@ bool RayNewProximityIntersection::testIntersection( Ray& /*rRay*/, RigidSphere&)
 int RayNewProximityIntersection::computeIntersection(Ray& rRay, RigidSphere& rSphere, OutputVector* contacts)
 {
 
-    Vector3 v3SphereCenter = rSphere.center( );
+    Vec3 v3SphereCenter = rSphere.center( );
     SReal fSphereRadii = rSphere.r();
 
-    Vector3 v3RayOriginToSphereCenter = rRay.origin() - v3SphereCenter;
+    Vec3 v3RayOriginToSphereCenter = rRay.origin() - v3SphereCenter;
     SReal fB = v3RayOriginToSphereCenter * rRay.direction();
     SReal fC = v3RayOriginToSphereCenter * v3RayOriginToSphereCenter - fSphereRadii * fSphereRadii;
 
@@ -148,7 +152,7 @@ int RayNewProximityIntersection::computeIntersection(Ray& rRay, RigidSphere& rSp
 
     // Ray intersects sphere, compute hits values
     int iHit = 0;
-    Vector3 v3RayVector =  rRay.origin() + rRay.direction() * rRay.l();
+    Vec3 v3RayVector =  rRay.origin() + rRay.direction() * rRay.l();
 
     if(fDiscr < 1e-6f)
     {
@@ -163,8 +167,8 @@ int RayNewProximityIntersection::computeIntersection(Ray& rRay, RigidSphere& rSp
 
 
         SReal fHitFraction = fHitLength * (1.f / rRay.l() );
-        Vector3 v3ContactPoint = rRay.origin() + v3RayVector * fHitFraction;
-        Vector3 v3Normal = (v3ContactPoint - v3SphereCenter)/ fSphereRadii;
+        Vec3 v3ContactPoint = rRay.origin() + v3RayVector * fHitFraction;
+        Vec3 v3Normal = (v3ContactPoint - v3SphereCenter)/ fSphereRadii;
 
 //		const SReal contactDist = fHitFraction;
         contacts->resize(contacts->size()+1);
@@ -194,8 +198,8 @@ int RayNewProximityIntersection::computeIntersection(Ray& rRay, RigidSphere& rSp
 
             //Contact 1
             SReal fHitFraction = fHitLengthMin  * ( 1.0f/rRay.l() );
-            Vector3 v3ContactPoint = rRay.origin() + v3RayVector * fHitFraction;
-            Vector3 v3Normal = ( v3ContactPoint - v3SphereCenter ) / fSphereRadii;
+            Vec3 v3ContactPoint = rRay.origin() + v3RayVector * fHitFraction;
+            Vec3 v3Normal = ( v3ContactPoint - v3SphereCenter ) / fSphereRadii;
 
 //			const SReal contactDist = fHitFraction;
             contacts->resize(contacts->size()+1);
@@ -218,8 +222,8 @@ int RayNewProximityIntersection::computeIntersection(Ray& rRay, RigidSphere& rSp
 
             //Contact 2
             SReal fHitFraction = fHitLengthMax * ( 1.0f/rRay.l() );
-            Vector3 v3ContactPoint = rRay.origin() + v3RayVector * fHitFraction;
-            Vector3 v3Normal = ( v3ContactPoint - v3SphereCenter ) / fSphereRadii;
+            Vec3 v3ContactPoint = rRay.origin() + v3RayVector * fHitFraction;
+            Vec3 v3Normal = ( v3ContactPoint - v3SphereCenter ) / fSphereRadii;
 
 
 //			const SReal contactDist = fHitFraction;

@@ -32,8 +32,6 @@
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/component/visual/VisualModelImpl.h>
 
-#define   NB_MAX_TEXTURES 16
-
 namespace sofa::gl::component::rendering3d
 {
 
@@ -44,7 +42,6 @@ namespace sofa::gl::component::rendering3d
  *  using OpenGL.
  *
  */
-
 class SOFA_GL_COMPONENT_RENDERING3D_API OglModel : public sofa::component::visual::VisualModelImpl
 {
 public:
@@ -80,6 +77,7 @@ protected:
     GLuint vbo, iboEdges, iboTriangles, iboQuads;
     bool VBOGenDone, initDone, useEdges, useTriangles, useQuads, canUsePatches;
     size_t oldVerticesSize, oldNormalsSize, oldTexCoordsSize, oldTangentsSize, oldBitangentsSize, oldEdgesSize, oldTrianglesSize, oldQuadsSize;
+    int edgesRevision, trianglesRevision, quadsRevision;
 
     /// These two buffers are used to convert the data field to float type before being sent to
     /// opengl
@@ -99,7 +97,6 @@ protected:
     std::map<int, int> materialTextureIdMap; //link between a material and a texture
 
     GLenum getGLenum(const char* c ) const;
-
 
     OglModel();
 
@@ -148,7 +145,5 @@ public:
     void updateTrianglesIndicesBuffer();
     void updateQuadsIndicesBuffer();
 };
-
-typedef sofa::type::Vec<3,GLfloat> GLVec3f;
 
 } // namespace sofa::gl::component::rendering3d

@@ -24,8 +24,10 @@
 #include <sofa/component/solidmechanics/fem/elastic/config.h>
 
 #include <sofa/component/solidmechanics/fem/elastic/TriangleFEMForceField.h>
+#include <sofa/core/behavior/ForceField.inl>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/type/RGBAColor.h>
+#include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 
 namespace sofa::component::solidmechanics::fem::elastic
 {
@@ -543,7 +545,7 @@ void TriangleFEMForceField<DataTypes>::draw(const core::visual::VisualParams* vp
         vparams->drawTool()->setPolygonMode(0, true);
 
     std::vector<sofa::type::RGBAColor> colorVector;
-    std::vector<sofa::type::Vector3> vertices;
+    std::vector<sofa::type::Vec3> vertices;
 
     const VecCoord& x = this->mstate->read(core::ConstVecCoordId::position())->getValue();
 
@@ -555,11 +557,11 @@ void TriangleFEMForceField<DataTypes>::draw(const core::visual::VisualParams* vp
         Index c = (*it)[2];
 
         colorVector.push_back(sofa::type::RGBAColor::green());
-        vertices.push_back(sofa::type::Vector3(x[a]));
+        vertices.push_back(sofa::type::Vec3(x[a]));
         colorVector.push_back(sofa::type::RGBAColor(0, 0.5, 0.5, 1));
-        vertices.push_back(sofa::type::Vector3(x[b]));
+        vertices.push_back(sofa::type::Vec3(x[b]));
         colorVector.push_back(sofa::type::RGBAColor(0, 0, 1, 1));
-        vertices.push_back(sofa::type::Vector3(x[c]));
+        vertices.push_back(sofa::type::Vec3(x[c]));
     }
     vparams->drawTool()->drawTriangles(vertices, colorVector);
 
@@ -615,6 +617,42 @@ void TriangleFEMForceField<DataTypes>::addKToMatrix(sofa::linearalgebra::BaseMat
     }
 }
 
+template <class DataTypes>
+void TriangleFEMForceField<DataTypes>::buildStiffnessMatrix(core::behavior::StiffnessMatrix* matrix)
+{
+    constexpr auto S = DataTypes::deriv_total_size; // size of node blocks
+    unsigned int i = 0;
+
+    auto dfdx = matrix->getForceDerivativeIn(this->mstate)
+                       .withRespectToPositionsIn(this->mstate);
+
+    for (const auto nodeIndex : *_indexedElements)
+    {
+        StiffnessMatrix JKJt,RJKJtRt;
+        computeElementStiffnessMatrix(JKJt, RJKJtRt, _materialsStiffnesses[i], _strainDisplacements[i], _rotations[i]);
+
+        for (unsigned n1 = 0; n1 < nodeIndex.size(); n1++)
+        {
+            for(unsigned j = 0; j < S; j++)
+            {
+                unsigned ROW = S*nodeIndex[n1] + j;
+                unsigned row = S*n1+j;
+
+                for (unsigned n2=0; n2<nodeIndex.size(); n2++)
+                {
+                    for (unsigned k=0; k<S; k++)
+                    {
+                        unsigned COLUMN = S*nodeIndex[n2] +k;
+                        unsigned column = 3*n2+k;
+                        dfdx( ROW,COLUMN) += - RJKJtRt[row][column];
+                    }
+                }
+            }
+        }
+    }
+    ++i;
+}
+
 template<class DataTypes>
 void TriangleFEMForceField<DataTypes>::setPoisson(Real val)
 {
@@ -635,7 +673,7 @@ void TriangleFEMForceField<DataTypes>::setYoung(Real val)
     if (val < 0)
     {
         msg_warning() << "Input Young Modulus is not possible: " << val << ", setting default value: 1000";
-        f_young.setValue(1000);
+        f_young.setValue(Real(1000));
     }
     else if (val != f_young.getValue())
     {

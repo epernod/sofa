@@ -112,8 +112,8 @@ public:
     ///
     /// This method retrieves the positions and velocity vectors and call the internal
     /// getMomentum(const MechanicalParams*, const VecCoord&, const VecDeriv&) method implemented by the component.
-    type::Vector6 getMomentum( const MechanicalParams* mparams ) const override;
-    virtual type::Vector6 getMomentum( const MechanicalParams* , const DataVecCoord& , const DataVecDeriv&  ) const;
+    type::Vec6 getMomentum( const MechanicalParams* mparams ) const override;
+    virtual type::Vec6 getMomentum( const MechanicalParams* , const DataVecCoord& , const DataVecDeriv&  ) const;
 
 
 
@@ -127,6 +127,7 @@ public:
 
     void addMToMatrix(const MechanicalParams* mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix) override;
     virtual void addMToMatrix(sofa::linearalgebra::BaseMatrix * matrix, SReal mFact, unsigned int &offset);
+
 
     /// Compute the system matrix corresponding to m M + b B + k K
     ///

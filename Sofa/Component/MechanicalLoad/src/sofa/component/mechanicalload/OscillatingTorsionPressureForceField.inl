@@ -97,6 +97,8 @@ void OscillatingTorsionPressureForceField<DataTypes>::init()
     trianglePressureMap.createTopologyHandler(m_topology);
 
     initTriangleInformation();
+
+    this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Valid);
 }
 
 
@@ -112,8 +114,18 @@ SReal OscillatingTorsionPressureForceField<DataTypes>::getAmplitude()
 template <class DataTypes>
 void OscillatingTorsionPressureForceField<DataTypes>::addForce(const core::MechanicalParams* /* mparams */, DataVecDeriv& d_f, const DataVecCoord& d_x, const DataVecDeriv& /* d_v */)
 {
+    if (this->d_componentState.getValue() != sofa::core::objectmodel::ComponentState::Valid)
+        return;
+
     VecDeriv& f = *d_f.beginEdit();
     const VecCoord& x = d_x.getValue();
+
+    if (pointActive.size() < x.size())
+    {
+        msg_error() << "The component reads a position size different from the size used in the initialization: cannot continue.";
+        this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
+        return;
+    }
 
     Deriv force;
     Coord deltaPos;
@@ -121,7 +133,8 @@ void OscillatingTorsionPressureForceField<DataTypes>::addForce(const core::Mecha
     Real totalDist = 0;
 
     // calculate average rotation angle:
-    for (unsigned int i=0; i<x.size(); i++) if (pointActive[i])
+    for (unsigned int i=0; i<x.size(); i++)
+        if (pointActive[i])
         {
             vecFromCenter[i] = getVecFromRotAxis( x[i] );
             distFromCenter[i] = vecFromCenter[i].norm();
@@ -131,6 +144,7 @@ void OscillatingTorsionPressureForceField<DataTypes>::addForce(const core::Mecha
                 totalDist += distFromCenter[i];
             }
         }
+
     avgRotAngle /= totalDist;
 
     rotationAngle = avgRotAngle;
@@ -309,7 +323,7 @@ void OscillatingTorsionPressureForceField<DataTypes>::draw(const core::visual::V
 
     vparams->drawTool()->disableLighting();
     const sofa::type::RGBAColor color = sofa::type::RGBAColor::green();
-    std::vector<sofa::type::Vector3> vertices;
+    std::vector<sofa::type::Vec3> vertices;
 
     const sofa::type::vector<Index>& my_map = trianglePressureMap.getMap2Elements();
 
@@ -318,7 +332,7 @@ void OscillatingTorsionPressureForceField<DataTypes>::draw(const core::visual::V
         for(unsigned int j=0 ; j< 3 ; j++)
         {
             const Coord& c = x[m_topology->getTriangle(my_map[i])[j]];
-            vertices.push_back(sofa::type::Vector3(c[0], c[1], c[2]));
+            vertices.push_back(sofa::type::Vec3(c[0], c[1], c[2]));
         }
     }
     vparams->drawTool()->drawTriangles(vertices, color);

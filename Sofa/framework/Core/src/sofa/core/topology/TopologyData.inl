@@ -74,7 +74,7 @@ void TopologyData <TopologyElementType, VecT>::createTopologyHandler(sofa::core:
 
     // Create TopologyHandler
     this->m_topologyHandler = std::make_unique<TopologyDataHandler< TopologyElementType, VecT> >(this, _topology);
-    this->m_topologyHandler->setNamePrefix("TopologyDataHandler( " + this->getOwner()->getName() + " )");
+    this->m_topologyHandler->setNamePrefix("TopologyDataHandler (" + this->getOwner()->getName() + ")");
     this->m_topologyHandler->init();
 
     // Register the TopologyHandler
@@ -267,7 +267,7 @@ void TopologyData <TopologyElementType, VecT>::remove(const sofa::type::vector<I
     if (data.size() > 0)
     {
         // make sure m_lastElementIndex is up to date before removing
-        this->m_lastElementIndex = data.size() - 1;
+        this->m_lastElementIndex = static_cast<Index>(data.size()) - 1;
 
         // Loop over the indices to remove. As in topology process when removing elements:
         // 1- propagate event by calling callback if it has been set.
@@ -305,7 +305,7 @@ void TopologyData <TopologyElementType, VecT>::add(const sofa::type::vector<Inde
     // Using default values
     helper::WriteOnlyAccessor<Data< container_type > > data = this;
     
-    std::size_t i0 = data.size();
+    Index i0 = static_cast<Index>(data.size());
     if (i0 != index[0])
     {
         msg_error(this->getOwner()) << "TopologyDataHandler SIZE MISMATCH in Data "
@@ -338,7 +338,7 @@ void TopologyData <TopologyElementType, VecT>::add(const sofa::type::vector<Inde
     }
     else
     {
-        this->m_lastElementIndex = data.size() - 1;
+        this->m_lastElementIndex = static_cast<Index>(data.size()) - 1;
     }
 }
 

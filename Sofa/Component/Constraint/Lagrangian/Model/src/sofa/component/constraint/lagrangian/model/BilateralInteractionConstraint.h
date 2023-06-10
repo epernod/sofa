@@ -106,19 +106,19 @@ protected:
     Data<bool> keepOrientDiff; ///< keep the initial difference in orientation (only for rigids)
 
 
-    /// Link to be set to the topology container in the component graph.
-    SingleLink<BilateralInteractionConstraint<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology1;
+    SingleLink<BilateralInteractionConstraint<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology1; ///< Link to be set to the first topology container in order to support topological changes
+    SingleLink<BilateralInteractionConstraint<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology2; ///< Link to be set to the second topology container in order to support topological changes
 
     /// Link to be set to the topology container in the component graph.
     SingleLink<BilateralInteractionConstraint<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology2;
 
     std::vector<Vec3d> prevForces;
 
-    SOFA_ATTRIBUTE_DEPRECATED("v22.12", "v23.06", "Data 'activateAtIteration' has been deprecated, please use the Data d_activate instead and an engine or a script to change the behavior at the right step (see PR #3327).")
+    SOFA_ATTRIBUTE_DEPRECATED__BILATERALINTERACTIONCONSTRAINTDATA("Data 'activateAtIteration' has been deprecated, please use the Data d_activate instead and an engine or a script to change the behavior at the right step (see PR #3327).")
     Data<int> activateAtIteration; ///< activate constraint at specified interation (0 = always enabled, -1=disabled)
-    SOFA_ATTRIBUTE_DEPRECATED("v22.12", "v23.06", "Data 'merge' has been deprecated. Its behavior was unused, undocumented, untested, and unclear (see PR #3328).")
+    SOFA_ATTRIBUTE_DEPRECATED__BILATERALINTERACTIONCONSTRAINTDATA("Data 'merge' has been deprecated. Its behavior was unused, undocumented, untested, and unclear (see PR #3328).")
     Data<bool> merge; ///< TEST: merge the bilateral constraints in a unique constraint
-    SOFA_ATTRIBUTE_DEPRECATED("v22.12", "v23.06", "Data 'derivative' has been deprecated. Its behavior was unused, undocumented, untested, and unclear (see PR #3328).")
+    SOFA_ATTRIBUTE_DEPRECATED__BILATERALINTERACTIONCONSTRAINTDATA("Data 'derivative' has been deprecated. Its behavior was unused, undocumented, untested, and unclear (see PR #3328).")
     Data<bool> derivative; ///< TEST: derivative
 
     BilateralInteractionConstraint(MechanicalState* object1, MechanicalState* object2) ;
@@ -191,8 +191,8 @@ public:
 private:
     void unspecializedInit() ;
 
-    /// Method to get the index position of a @param point Id inside @sa m1 (resp. @sa 2m) if @param objectId is equal to 0 (resp. to 1). Return InvalidID if not found.
-    Index indexOfElemConstraint(int objectId, Index Id);
+    /// Method to get the index position of a @param point Id inside @sa m1 or @sa m2) depending of the value passed in @param cIndices. Return InvalidID if not found.
+    Index indexOfElemConstraint(const SubsetIndices& cIndices, Index Id);
 };
 
 

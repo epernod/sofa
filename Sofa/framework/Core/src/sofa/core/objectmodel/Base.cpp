@@ -34,6 +34,9 @@ using sofa::core::PathResolver;
 using sofa::helper::logging::MessageDispatcher ;
 using sofa::helper::logging::Message ;
 
+#include <sofa/helper/DiffLib.h>
+using sofa::helper::getClosestMatch;
+
 #include <map>
 #include <typeinfo>
 #include <cstring>
@@ -140,11 +143,8 @@ void Base::initData0( BaseData* field, BaseData::BaseInitData& res, const char* 
 /// Helper method used by initData()
 void Base::initData0( BaseData* field, BaseData::BaseInitData& res, const char* name, const char* help, BaseData::DataFlags dataFlags )
 {
-    // Questionnable optimization: test a single 'uint32_t' rather that four 'char'
-    static const char *draw_str = "draw";
-    static const char *show_str = "show";
-    static uint32_t draw_prefix = *reinterpret_cast<const uint32_t*>(draw_str);
-    static uint32_t show_prefix = *reinterpret_cast<const uint32_t*>(show_str);
+    static constexpr std::string_view draw_prefix = "draw";
+    static constexpr std::string_view show_prefix = "show";
 
     res.owner = this;
     res.data = field;
@@ -152,9 +152,9 @@ void Base::initData0( BaseData* field, BaseData::BaseInitData& res, const char* 
     res.helpMsg = help;
     res.dataFlags = dataFlags;
 
-    if (strlen(name) >= 3)
+    if (strlen(name) >= 4)
     {
-        uint32_t prefix = *reinterpret_cast<const uint32_t*>(name);
+        std::string_view prefix = std::string_view(name).substr(0, 4);
 
         if (prefix == draw_prefix || prefix == show_prefix)
             res.group = "Visualization";
@@ -420,7 +420,20 @@ bool Base::parseField( const std::string& attribute, const std::string& value)
     std::vector< BaseLink* > linkVec = findLinks(attribute);
     if (dataVec.empty() && linkVec.empty())
     {
-        msg_warning() << "Unknown Data field or Link: " << attribute ;
+        std::vector<std::string> possibleNames;
+        possibleNames.reserve(m_vecData.size() + m_vecLink.size());
+        for(auto& data : m_vecData)
+            possibleNames.emplace_back(data->getName());
+        for(auto& link : m_vecLink)
+            possibleNames.emplace_back(link->getName());
+
+        std::stringstream tmp;
+        tmp << "Unknown Data field or Link for: " << attribute << msgendl;
+        tmp << "   the closest existing entries are: " << msgendl;
+        for(auto& [name, score] : getClosestMatch(attribute, possibleNames))
+            tmp << "     - " + name + " ("+ std::to_string((int)(100*score))+"% match)" << msgendl;
+
+        msg_warning() << tmp.str() ;
         return false; // no field found
     }
     bool ok = true;

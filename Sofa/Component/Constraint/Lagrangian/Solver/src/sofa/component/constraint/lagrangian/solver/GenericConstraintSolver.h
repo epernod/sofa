@@ -110,40 +110,34 @@ protected:
     sofa::type::fixed_array<GenericConstraintProblem,CP_BUFFER_SIZE> m_cpBuffer;
     sofa::type::fixed_array<bool,CP_BUFFER_SIZE> m_cpIsLocked;
     GenericConstraintProblem *current_cp, *last_cp;
-    std::vector<core::behavior::BaseConstraintCorrection*> constraintCorrections;
-    std::vector<char> constraintCorrectionIsActive; // for each constraint correction, a boolean that is false if the parent node is sleeping
+    type::vector<core::behavior::BaseConstraintCorrection*> constraintCorrections;
+    type::vector<bool> constraintCorrectionIsActive; // for each constraint correction, a boolean that is false if the parent node is sleeping
 
 
-    sofa::core::objectmodel::BaseContext *context;
+    sofa::core::objectmodel::BaseContext *context { nullptr };
 
     sofa::core::MultiVecDerivId m_lambdaId;
     sofa::core::MultiVecDerivId m_dxId;
 
 private:
 
-    class ComputeComplianceTask : public simulation::CpuTask
+    struct ComplianceWrapper
     {
-    public:
-        ComputeComplianceTask(simulation::CpuTask::Status* status): CpuTask(status) {}
-        ~ComputeComplianceTask() override {}
+        using ComplianceMatrixType = sofa::linearalgebra::LPtrFullMatrix<SReal>;
 
-        MemoryAlloc run() final {
-            cc->addComplianceInConstraintSpace(&cparams, &W);
-            return MemoryAlloc::Stack;
-        }
+        ComplianceWrapper(ComplianceMatrixType& complianceMatrix, bool isMultiThreaded)
+        : m_isMultiThreaded(isMultiThreaded), m_complianceMatrix(complianceMatrix) {}
 
-        void set(core::behavior::BaseConstraintCorrection* _cc, core::ConstraintParams _cparams, int dim){
-            cc = _cc;
-            cparams = _cparams;
-            W.resize(dim,dim);
-        }
+        ComplianceMatrixType& matrix();
+
+        void assembleMatrix() const;
 
     private:
-        core::behavior::BaseConstraintCorrection* cc { nullptr };
-        sofa::linearalgebra::LPtrFullMatrix<SReal> W;
-        core::ConstraintParams cparams;
-        friend class GenericConstraintSolver;
+        bool m_isMultiThreaded { false };
+        ComplianceMatrixType& m_complianceMatrix;
+        std::unique_ptr<ComplianceMatrixType> m_threadMatrix;
     };
+
 };
 
 } //namespace sofa::component::constraint::lagrangian::solver

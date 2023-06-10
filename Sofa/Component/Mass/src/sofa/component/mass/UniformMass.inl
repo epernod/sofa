@@ -21,7 +21,7 @@
 ******************************************************************************/
 #pragma once
 #include <sofa/component/mass/UniformMass.h>
-
+#include <sofa/core/behavior/Mass.inl>
 #include <sofa/core/fwd.h>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/core/objectmodel/Context.h>
@@ -32,6 +32,7 @@
 #include <sofa/core/topology/BaseTopology.h>
 #include <sofa/core/topology/TopologyData.inl>
 #include <sofa/core/MechanicalParams.h>
+#include <sofa/core/behavior/BaseLocalMassMatrix.h>
 
 namespace sofa::component::mass
 {
@@ -407,8 +408,8 @@ void UniformMass<DataTypes>::addMDx ( const core::MechanicalParams*,
     if ( factor != 1.0 )
         m *= typename DataTypes::Real(factor);
 
-    for ( unsigned int i=0; i<indices.size(); i++ )
-        res[indices[i]] += dx[indices[i]] * m;
+    for (const auto i : indices)
+        res[i] += dx[i] * m;
 }
 
 
@@ -423,8 +424,8 @@ void UniformMass<DataTypes>::accFromF ( const core::MechanicalParams*,
     ReadAccessor<Data<SetIndexArray > > indices = d_indices;
 
     MassType m = d_vertexMass.getValue();
-    for ( unsigned int i=0; i<indices.size(); i++ )
-        a[indices[i]] = f[indices[i]] / m;
+    for (const auto i : indices)
+        a[i] = f[i] / m;
 }
 
 
@@ -484,17 +485,12 @@ void UniformMass<DataTypes>::addForce ( const core::MechanicalParams*, DataVecDe
 
     dmsg_info() <<" addForce, mg = "<<d_vertexMass<<" * "<<theGravity<<" = "<<mg;
 
-
-
     ReadAccessor<Data<SetIndexArray > > indices = d_indices;
 
     // add weight and inertia force
-    if (this->m_separateGravity.getValue()) for ( unsigned int i=0; i<indices.size(); i++ )
+    for (const auto i : indices)
     {
-    }
-    else for ( unsigned int i=0; i<indices.size(); i++ )
-    {
-        f[indices[i]] += mg;
+        f[i] += mg;
     }
 }
 
@@ -510,8 +506,8 @@ SReal UniformMass<DataTypes>::getKineticEnergy ( const MechanicalParams* params,
     SReal e = 0;
     const MassType& m = d_vertexMass.getValue();
 
-    for ( unsigned int i=0; i<indices.size(); i++ )
-        e+= v[indices[i]]*m*v[indices[i]];
+    for (const auto i : indices)
+        e += v[i] * m * v[i];
 
     return e/2;
 }
@@ -533,8 +529,8 @@ SReal UniformMass<DataTypes>::getPotentialEnergy ( const MechanicalParams* param
 
     Deriv mg = gravity * m;
 
-    for ( unsigned int i=0; i<indices.size(); i++ )
-        e -= mg*x[indices[i]];
+    for (const auto i : indices)
+        e -= mg * x[i];
 
     return e;
 }
@@ -542,7 +538,7 @@ SReal UniformMass<DataTypes>::getPotentialEnergy ( const MechanicalParams* param
 
 // does nothing by default, need to be specialized in .cpp
 template <class DataTypes>
-type::Vector6
+type::Vec6
 UniformMass<DataTypes>::getMomentum ( const core::MechanicalParams* params,
                                                 const DataVecCoord& d_x,
                                                 const DataVecDeriv& d_v  ) const
@@ -554,7 +550,7 @@ UniformMass<DataTypes>::getMomentum ( const core::MechanicalParams* params,
     msg_warning(this) << "You are using the getMomentum function that has not been implemented"
                          "for the template '"<< this->getTemplateName() << "'.\n" ;
 
-    return type::Vector6();
+    return type::Vec6();
 }
 
 
@@ -567,7 +563,7 @@ void UniformMass<DataTypes>::addMToMatrix (const MechanicalParams *mparams,
 
     static constexpr auto N = Deriv::total_size;
 
-    AddMToMatrixFunctor<Deriv,MassType> calc;
+    AddMToMatrixFunctor<Deriv,MassType, linearalgebra::BaseMatrix> calc;
     MultiMatrixAccessor::MatrixRef r = matrix->getMatrix(mstate);
 
     const Real mFactor = Real(sofa::core::mechanicalparams::mFactorIncludingRayleighDamping(mparams, this->rayleighMass.getValue()));
@@ -576,6 +572,21 @@ void UniformMass<DataTypes>::addMToMatrix (const MechanicalParams *mparams,
     for (auto id : *indices)
     {
         calc ( r.matrix, m, int(r.offset + N * id), mFactor);
+    }
+}
+
+template <class DataTypes>
+void UniformMass<DataTypes>::buildMassMatrix(sofa::core::behavior::MassMatrixAccumulator* matrices)
+{
+    const MassType& m = d_vertexMass.getValue();
+    static constexpr auto N = Deriv::total_size;
+
+    AddMToMatrixFunctor<Deriv,MassType, core::behavior::MassMatrixAccumulator> calc;
+
+    const ReadAccessor<Data<SetIndexArray > > indices = d_indices;
+    for (const auto index : indices)
+    {
+        calc( matrices, m, N * index, 1.);
     }
 }
 
@@ -598,7 +609,7 @@ void UniformMass<DataTypes>::getElementMass (sofa::Index  index ,
         m->resize ( dimension, dimension );
 
     m->clear();
-    AddMToMatrixFunctor<Deriv,MassType>() ( m, d_vertexMass.getValue(), 0, 1 );
+    AddMToMatrixFunctor<Deriv,MassType, linearalgebra::BaseMatrix>() ( m, d_vertexMass.getValue(), 0, 1 );
 }
 
 
@@ -618,14 +629,14 @@ void UniformMass<DataTypes>::draw(const VisualParams* vparams)
     ReadAccessor<Data<SetIndexArray > > indices = d_indices;
 
     Coord gravityCenter;
-    std::vector<  sofa::type::Vector3 > points;
-    for ( unsigned int i=0; i<indices.size(); i++ )
+    std::vector<  sofa::type::Vec3 > points;
+    for (const auto i : indices)
     {
-        sofa::type::Vector3 p;
-        p = DataTypes::getCPos(x[indices[i]]);
+        sofa::type::Vec3 p;
+        p = DataTypes::getCPos(x[i]);
 
-        points.push_back ( p );        
-        gravityCenter += x[indices[i]];
+        points.push_back ( p );
+        gravityCenter += x[i];
     }
     vparams->drawTool()->drawSpheres(points, 0.01f, sofa::type::RGBAColor::yellow());
     
@@ -634,7 +645,7 @@ void UniformMass<DataTypes>::draw(const VisualParams* vparams)
         const sofa::type::RGBAColor color = sofa::type::RGBAColor::yellow();
 
         Real axisSize = d_showAxisSize.getValue();
-        sofa::type::Vector3 temp;
+        sofa::type::Vec3 temp;
 
         for ( unsigned int i=0 ; i<3 ; i++ )
             if(i < Coord::spatial_dimensions )

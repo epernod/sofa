@@ -57,6 +57,13 @@ template<class DataTypes1, class DataTypes2>
 void InteractionEllipsoidForceField<DataTypes1, DataTypes2>::init()
 {
     Inherit1::init();
+
+    if (!this->mstate2)
+    {
+        this->d_componentState.setValue(core::objectmodel::ComponentState::Invalid);
+        return;
+    }
+
     vars.pos6D = this->mstate2->read(core::VecCoordId::position())->getValue()[object2_dof_index.getValue()];
     if(object2_invert.getValue())
         vars.pos6D = DataTypes2::inverse(vars.pos6D);
@@ -360,7 +367,7 @@ void InteractionEllipsoidForceField<DataTypes1, DataTypes2>::draw(const core::vi
 
     const auto stateLifeCycle = vparams->drawTool()->makeStateLifeCycle();
     sofa::type::RGBAColor colorValue;
-    std::vector<sofa::type::Vector3> vertices;
+    std::vector<sofa::type::Vec3> vertices;
 
     Real1 cx2=0, cy2=0, cz2=0;
     cx2=(Real1)vars.pos6D.getCenter()[0];
@@ -397,8 +404,8 @@ void InteractionEllipsoidForceField<DataTypes1, DataTypes2>::draw(const core::vi
             vparams->drawTool()->multMatrix(&Rfloat[0][0]);
         }
 
-        sofa::type::Vector3 center(cx1, cy1, cz1);
-        sofa::type::Vector3 radii(rx, ry, (stiffness.getValue()>0 ? rz : -rz));
+        sofa::type::Vec3 center(cx1, cy1, cz1);
+        sofa::type::Vec3 radii(rx, ry, (stiffness.getValue()>0 ? rz : -rz));
 
         vparams->drawTool()->drawEllipsoid(center, radii);
         vparams->drawTool()->translate(-cx2, -cy2, -cz2);
@@ -410,8 +417,8 @@ void InteractionEllipsoidForceField<DataTypes1, DataTypes2>::draw(const core::vi
 
         for (unsigned int i=0; i<contacts.size(); i++)
         {
-            vertices.push_back(sofa::type::Vector3(contacts[i].pos[0],contacts[i].pos[1],contacts[i].pos[2] ));
-            vertices.push_back(sofa::type::Vector3(contacts[i].pos[0]+contacts[i].force[0]*fscale,
+            vertices.push_back(sofa::type::Vec3(contacts[i].pos[0],contacts[i].pos[1],contacts[i].pos[2] ));
+            vertices.push_back(sofa::type::Vec3(contacts[i].pos[0]+contacts[i].force[0]*fscale,
                     contacts[i].pos[1]+contacts[i].force[1]*fscale,
                     contacts[i].pos[2]+contacts[i].force[2]*fscale ));
         }

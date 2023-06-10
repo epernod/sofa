@@ -19,8 +19,7 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#ifndef SOFA_CORE_TOPOLOGY_BASEMESHTOPOLOGY_H
-#define SOFA_CORE_TOPOLOGY_BASEMESHTOPOLOGY_H
+#pragma once
 
 #include <sofa/core/fwd.h>
 #include <sofa/core/topology/Topology.h>
@@ -320,7 +319,4 @@ public:
     bool removeInNode( objectmodel::BaseNode* node ) override;
 
 };
-
 } // namespace sofa::core::topology
-
-#endif
