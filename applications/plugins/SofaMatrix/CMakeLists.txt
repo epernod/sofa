@@ -1,26 +1,38 @@
 cmake_minimum_required(VERSION 3.12)
 project(SofaMatrix VERSION 1.0 LANGUAGES CXX)
 
-sofa_find_package(SofaBaseLinearSolver REQUIRED)
+
+sofa_find_package(Sofa.Core REQUIRED)
+sofa_find_package(Sofa.Component.Constraint.Lagrangian.Solver REQUIRED)
+sofa_find_package(Sofa.Component.LinearSolver.Direct REQUIRED)
 sofa_find_package(CImgPlugin REQUIRED)
-sofa_find_package(SofaGuiQt REQUIRED QUIET)
+sofa_find_package(Eigen3 REQUIRED)
+sofa_find_package(Sofa.GUI.Qt QUIET)
 
 set(SOFA_MODULES
-    SofaBaseLinearSolver
+    Sofa.Component.Constraint.Lagrangian.Solver
+    Sofa.Component.LinearSolver.Direct
+    Sofa.Core
     CImgPlugin
+    Eigen3::Eigen
 )
 
 set(SOFAMATRIX_SRC_DIR src/${PROJECT_NAME})
 
 set(HEADER_FILES
     ${SOFAMATRIX_SRC_DIR}/config.h.in
+    ${SOFAMATRIX_SRC_DIR}/ComplianceMatrixExporter.h
     ${SOFAMATRIX_SRC_DIR}/GlobalSystemMatrixExporter.h
     ${SOFAMATRIX_SRC_DIR}/MatrixImageExporter.h
+    ${SOFAMATRIX_SRC_DIR}/FillReducingOrdering.h
+    ${SOFAMATRIX_SRC_DIR}/FillReducingOrdering.inl
 )
 set(SOURCE_FILES
     ${SOFAMATRIX_SRC_DIR}/initSofaMatrix.cpp
+    ${SOFAMATRIX_SRC_DIR}/ComplianceMatrixExporter.cpp
     ${SOFAMATRIX_SRC_DIR}/GlobalSystemMatrixExporter.cpp
     ${SOFAMATRIX_SRC_DIR}/MatrixImageExporter.cpp
+    ${SOFAMATRIX_SRC_DIR}/FillReducingOrdering.cpp
 )
 set(README_FILES
     SofaMatrix.md
@@ -30,14 +42,16 @@ set(MOC_FILES
 set(MOC_HEADER_FILES
 )
 
-if (NOT SofaGuiQt_FOUND)
-    message(NOTICE "[SofaMatrix] Module SofaGuiQt not found: some components (GlobalSystemMatrixImage) will not be compiled")
+if (NOT Sofa.GUI.Qt_FOUND)
+    message(NOTICE "[SofaMatrix] Module Sofa.GUI.Qt not found: some components (GlobalSystemMatrixImage) will not be compiled")
 else()
     list(APPEND HEADER_FILES
+        ${SOFAMATRIX_SRC_DIR}/ComplianceMatrixImage.h
         ${SOFAMATRIX_SRC_DIR}/GlobalSystemMatrixImage.h
         ${SOFAMATRIX_SRC_DIR}/BaseMatrixImageProxy.h
     )
     list(APPEND SOURCE_FILES
+        ${SOFAMATRIX_SRC_DIR}/ComplianceMatrixImage.cpp
         ${SOFAMATRIX_SRC_DIR}/GlobalSystemMatrixImage.cpp
         ${SOFAMATRIX_SRC_DIR}/BaseMatrixImageViewerWidget.cpp
     )
@@ -45,7 +59,7 @@ else()
         ${SOFAMATRIX_SRC_DIR}/BaseMatrixImageViewerWidget.h
     )
     list(APPEND SOFA_MODULES
-        SofaGuiQt
+        Sofa.GUI.Qt
     )
 
     find_package(Qt5 COMPONENTS Core QUIET)

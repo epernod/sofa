@@ -23,32 +23,29 @@
 #include <sofa/gpu/cuda/mycuda.h>
 #include <sofa/core/ObjectFactory.h>
 
-namespace sofa
-{
-
-namespace gpu
-{
-
-namespace cuda
+namespace sofa::gpu::cuda
 {
 
 //Here are just several convenient functions to help user to know what contains the plugin
 
 extern "C" {
-    SOFA_GPU_CUDA_API void initExternalModule();
-    SOFA_GPU_CUDA_API const char* getModuleName();
-    SOFA_GPU_CUDA_API const char* getModuleVersion();
-    SOFA_GPU_CUDA_API const char* getModuleLicense();
-    SOFA_GPU_CUDA_API const char* getModuleDescription();
-    SOFA_GPU_CUDA_API const char* getModuleComponentList();
+SOFA_GPU_CUDA_API void initExternalModule();
+SOFA_GPU_CUDA_API const char* getModuleName();
+SOFA_GPU_CUDA_API const char* getModuleVersion();
+SOFA_GPU_CUDA_API const char* getModuleLicense();
+SOFA_GPU_CUDA_API const char* getModuleDescription();
+SOFA_GPU_CUDA_API const char* getModuleComponentList();
+SOFA_GPU_CUDA_API bool moduleIsInitialized();
 }
+
+bool isModuleInitialized = false;
 
 void initExternalModule()
 {
     static bool first = true;
     if (first)
     {
-        sofa::gpu::cuda::mycudaInit();
+        isModuleInitialized = sofa::gpu::cuda::mycudaInit();
         first = false;
     }
 }
@@ -80,8 +77,9 @@ const char* getModuleComponentList()
     return classes.c_str();
 }
 
-}
-
+bool moduleIsInitialized()
+{
+    return isModuleInitialized;
 }
 
 }

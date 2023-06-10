@@ -22,9 +22,10 @@
 #ifndef SOFA_COMPONENT_MISC_PARTICLESOURCE_INL
 #define SOFA_COMPONENT_MISC_PARTICLESOURCE_INL
 #include <SofaSphFluid/config.h>
+
 #include <SofaSphFluid/ParticleSource.h>
-#include <SofaBaseTopology/PointSetTopologyContainer.h>
-#include <SofaBaseTopology/PointSetTopologyModifier.h>
+#include <sofa/component/topology/container/dynamic/PointSetTopologyContainer.h>
+#include <sofa/component/topology/container/dynamic/PointSetTopologyModifier.h>
 #include <sofa/simulation/AnimateBeginEvent.h>
 
 namespace sofa
@@ -48,7 +49,6 @@ ParticleSource<DataTypes>::ParticleSource()
     , d_stop(initData(&d_stop, (Real)1e10, "stop", "Source stopping time"))
     , m_numberParticles(0)
     , m_lastparticles(initData(&m_lastparticles, "lastparticles", "lastparticles indices"))
-    , m_pointHandler(nullptr)
 {
     this->f_listening.setValue(true);
     d_center.beginEdit()->push_back(Coord()); d_center.endEdit();
@@ -58,8 +58,7 @@ ParticleSource<DataTypes>::ParticleSource()
 template<class DataTypes>
 ParticleSource<DataTypes>::~ParticleSource()
 {
-    if (m_pointHandler)
-        delete m_pointHandler;
+
 }
 
 
@@ -83,8 +82,13 @@ void ParticleSource<DataTypes>::init()
     sofa::core::topology::BaseMeshTopology* _topology = this->getContext()->getMeshTopology();
     if (_topology != nullptr)
     {
-        m_pointHandler = new PSPointHandler(this, &m_lastparticles);
-        // m_lastparticles.createTopologyHandler(_topology, m_pointHandler);
+        m_lastparticles.createTopologyHandler(_topology);
+        m_lastparticles.setDestructionCallback([this](Index pointIndex, Index& val)
+        {
+            SOFA_UNUSED(val);
+            m_lastpos[pointIndex] = m_lastpos[m_lastpos.size() - 1];
+            m_lastpos.pop_back();
+        });
     }
 
     msg_info() << " center = " << d_center.getValue() << msgendl
@@ -206,7 +210,7 @@ void ParticleSource<DataTypes>::animateBegin(double /*dt*/, double time)
     if (i0 == 1) // ignore the first point if it is the only one
     {
         i0 = 0;
-        sofa::component::topology::PointSetTopologyContainer* pointCon;
+        sofa::component::topology::container::dynamic::PointSetTopologyContainer* pointCon;
         this->getContext()->get(pointCon);
         if (pointCon != nullptr)
         {
@@ -269,7 +273,7 @@ void ParticleSource<DataTypes>::animateBegin(double /*dt*/, double time)
         if (nbParticlesToCreate <= 0)
             return;
 
-        sofa::component::topology::PointSetTopologyModifier* pointMod;
+        sofa::component::topology::container::dynamic::PointSetTopologyModifier* pointMod;
         this->getContext()->get(pointMod);
         
         // Particles creation.
@@ -331,10 +335,10 @@ void ParticleSource<DataTypes>::draw(const core::visual::VisualParams* vparams)
 
     Deriv dpos = d_velocity.getValue()*(time - m_lastTime);
 
-    std::vector< sofa::type::Vector3 > pointsInit;
+    std::vector< sofa::type::Vec3 > pointsInit;
     for (unsigned int s = 0; s < m_lastpos.size(); s++)
     {
-        sofa::type::Vector3 point;
+        sofa::type::Vec3 point;
         point = DataTypes::getCPos(m_lastpos[s] + dpos);
         pointsInit.push_back(point);
     }

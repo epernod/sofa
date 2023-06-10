@@ -26,7 +26,7 @@
 #include <sofa/core/topology/BaseMeshTopology.h>
 #include <sofa/core/State.h>
 #include <sofa/core/topology/TopologyChange.h>
-#include "CudaTypes.h"
+#include <sofa/gpu/cuda/CudaTypes.h>
 
 namespace sofa
 {
@@ -118,16 +118,6 @@ public:
     virtual void updateTopology();
     virtual void updateNormals();
     virtual void handleTopologyChange() override;
-
-    virtual std::string getTemplateName() const override
-    {
-        return templateName(this);
-    }
-    static std::string templateName(const CudaVisualModel<TDataTypes>* = NULL)
-    {
-        return TDataTypes::Name();
-    }
-
 
     virtual void computeBBox(const core::ExecParams* params, bool=false) override;
 

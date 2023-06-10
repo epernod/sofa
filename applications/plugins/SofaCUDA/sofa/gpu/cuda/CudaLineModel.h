@@ -21,15 +21,7 @@
 ******************************************************************************/
 #pragma once
 
-#include <sofa/gpu/cuda/CudaTypes.h>
-#include <SofaMeshCollision/LineModel.h>
+#include <SofaCUDA/config.h>
 
-namespace sofa::gpu::cuda
-{
-
-using CudaLineCollisionModel = sofa::component::collision::LineCollisionModel<CudaVec3Types>;
-using CudaLineCollisionModelf1 = sofa::component::collision::LineCollisionModel<CudaVec3f1Types>;
-
-using CudaLine = sofa::component::collision::TLine<CudaVec3fTypes>;
-
-} // namespace sofa::gpu::cuda
+SOFA_DEPRECATED_HEADER("v23.06", "v23.12", "SofaCUDA/component/collision/geometry/CudaLineModel.h")
+#include <SofaCUDA/component/collision/geometry/CudaLineModel.h>

@@ -62,10 +62,10 @@ Year = {2009}                                                                   
 #ifndef SOFA_CUDA_CUDA_HEXAHEDRON_TLED_FORCEFIELD_H
 #define SOFA_CUDA_CUDA_HEXAHEDRON_TLED_FORCEFIELD_H
 
-#include "CudaTypes.h"
+#include <vector_types.h>
+#include <sofa/gpu/cuda/CudaTypes.h>
 #include <sofa/core/behavior/ForceField.h>
-#include <SofaBaseTopology/MeshTopology.h>
-
+#include <sofa/component/topology/container/constant/MeshTopology.h>
 
 namespace sofa
 {
@@ -84,8 +84,8 @@ public:
     SOFA_CLASS(CudaHexahedronTLEDForceField,SOFA_TEMPLATE(core::behavior::ForceField,CudaVec3fTypes));
     typedef CudaVec3fTypes::Real Real;
     typedef CudaVec3fTypes::Coord Coord;
-    typedef component::topology::MeshTopology::Hexa Element;
-    typedef component::topology::MeshTopology::SeqHexahedra VecElement;
+    typedef component::topology::container::constant::MeshTopology::Hexa Element;
+    typedef component::topology::container::constant::MeshTopology::SeqHexahedra VecElement;
 
     int nbVertex;                           // number of vertices
     int nbElems;                            // number of elements
@@ -128,6 +128,38 @@ public:
 
 protected:
 
+    // Store the 8 node indices per element. Since the type is int4, two consecutive elements are
+    // needed to access the 8 indices.
+    int4* m_device_nodesPerElement { nullptr };
+
+    float4* m_device_DhC0 { nullptr };
+    float4* m_device_DhC1 { nullptr };
+    float4* m_device_DhC2 { nullptr };
+
+    float* m_device_detJ { nullptr };
+
+    float* m_device_hourglassControl { nullptr };
+
+    float3* m_device_preferredDirection { nullptr };
+
+    // Rate-dependant stress (isochoric part)
+    float4* m_device_Di1 { nullptr };
+    float4* m_device_Di2 { nullptr };
+
+    // Rate-dependant stress (volumetric part)
+    float4* m_device_Dv1 { nullptr };
+    float4* m_device_Dv2 { nullptr };
+
+    int2* m_device_forceCoordinates { nullptr };
+
+    float4* m_device_F0 { nullptr };
+    float4* m_device_F1 { nullptr };
+    float4* m_device_F2 { nullptr };
+    float4* m_device_F3 { nullptr };
+    float4* m_device_F4 { nullptr };
+    float4* m_device_F5 { nullptr };
+    float4* m_device_F6 { nullptr };
+    float4* m_device_F7 { nullptr };
 };
 
 } // namespace cuda

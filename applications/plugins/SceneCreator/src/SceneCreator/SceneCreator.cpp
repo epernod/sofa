@@ -23,7 +23,7 @@
 #include <SceneCreator/config.h>
 
 #include <sofa/simulation/Simulation.h>
-#include <SofaSimulationGraph/DAGSimulation.h>
+#include <sofa/simulation/graph/DAGSimulation.h>
 #include "GetVectorVisitor.h"
 #include "GetAssembledSizeVisitor.h"
 
@@ -33,7 +33,7 @@ using sofa::defaulttype::Vec3Types ;
 #include <sofa/helper/system/FileRepository.h>
 using sofa::helper::system::DataRepository ;
 
-#include <SofaSimulationGraph/SimpleApi.h>
+#include <sofa/simulation/graph/SimpleApi.h>
 using sofa::simpleapi::str ;
 using sofa::simpleapi::createObject ;
 using sofa::simpleapi::createChild ;
@@ -68,7 +68,7 @@ using sofa::core::objectmodel::BaseObject ;
 Node::SPtr createRootWithCollisionPipeline(const std::string& responseType)
 {
     root = simulation::getSimulation()->createNewGraph("root");
-    simpleapi::createObject(root, "DefaultPipeline", {{"name","Collision Pipeline"}}) ;
+    simpleapi::createObject(root, "CollisionPipeline", {{"name","Collision Pipeline"}}) ;
     simpleapi::createObject(root, "BruteForceBroadPhase", {{"name","Broad Phase Detection"}}) ;
     simpleapi::createObject(root, "BVHNarrowPhase", {{"name","Narrow Phase Detection"}}) ;
     simpleapi::createObject(root, "MinProximityIntersection", {{"name","Proximity"},
@@ -79,8 +79,6 @@ Node::SPtr createRootWithCollisionPipeline(const std::string& responseType)
                                 {"name", "Contact Manager"},
                                 {"response", responseType}
                             });
-
-    simpleapi::createObject(root, "DefaultCollisionGroupManager", {{"name", "Collision Group Manager"}});
     return root;
 }
 
@@ -109,17 +107,11 @@ Node::SPtr  createEulerSolverNode(Node::SPtr parent, const std::string& name, co
 
     if (scheme == "Implicit_SparseLDL")
     {
-        if(SCENECREATOR_HAVE_SOFASPARSESOLVER)
-        {
-            simpleapi::createObject(node, "EulerImplicitSolver", {{"name","Euler Implicit"},
-                                                                  {"rayleighStiffness","0.01"},
-                                                                  {"rayleighMass", "1.0"}}) ;
+        simpleapi::createObject(node, "EulerImplicitSolver", {{"name","Euler Implicit"},
+                                                                {"rayleighStiffness","0.01"},
+                                                                {"rayleighMass", "1.0"}}) ;
 
-            simpleapi::createObject(node, "SparseLDLSolver", {{"name","Sparse LDL Solver"}});
-            return node;
-        }
-
-        msg_error("SceneCreator") << "Unable to create a scene because this verson of sofa has not been compiled with SparseLDLSolver. " ;
+        simpleapi::createObject(node, "SparseLDLSolver", {{"name","Sparse LDL Solver"}});
         return node;
     }
 
@@ -366,7 +358,7 @@ void addTriangleFEM(simulation::Node::SPtr node, const std::string& objectName,
 {
     simpleapi::createObject(node, "UniformMass", {
                                 {"name", objectName+"_mass"},
-                                {"totalmass", str(totalMass)}});
+                                {"totalMass", str(totalMass)}});
 
     simpleapi::createObject(node, "TriangularFEMForceField", {
                                 {"name", objectName+"_FEM"},

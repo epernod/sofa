@@ -21,16 +21,7 @@
 ******************************************************************************/
 #pragma once
 
-#include <sofa/gpu/cuda/CudaTypes.h>
-#include <SofaMeshCollision/TriangleModel.h>
-#include <SofaMeshCollision/TriangleModel.inl>
+#include <SofaCUDA/config.h>
 
-namespace sofa::gpu::cuda
-{
-
-using CudaTriangleCollisionModel = sofa::component::collision::TriangleCollisionModel<CudaVec3Types>;
-using CudaTriangleCollisionModelf1 = sofa::component::collision::TriangleCollisionModel<CudaVec3f1Types>;
-
-using CudaTriangle = sofa::component::collision::TTriangle<CudaVec3fTypes>;
-
-} // namespace sofa::gpu::cuda
+SOFA_DEPRECATED_HEADER("v23.06", "v23.12", "SofaCUDA/component/collision/geometry/CudaTriangleModel.h")
+#include <SofaCUDA/component/collision/geometry/CudaTriangleModel.h>
