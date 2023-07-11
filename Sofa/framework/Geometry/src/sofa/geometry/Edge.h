@@ -243,7 +243,7 @@ struct Edge
             
             if (alphaDenom < std::numeric_limits<T>::epsilon()) // collinear
             {
-                intersection = sofa::type::Vec<2, T>(std::numeric_limits<T>::min(), std::numeric_limits<T>::min());
+                intersection = sofa::type::Vec<2, T>(sofa::InvalidID, sofa::InvalidID);
                 return false;
             }
             
@@ -251,7 +251,7 @@ struct Edge
 
             if (alpha < 0 || alpha > 1)
             {
-                intersection = sofa::type::Vec<2, T>(std::numeric_limits<T>::min(), std::numeric_limits<T>::min());
+                intersection = sofa::type::Vec<2, T>(sofa::InvalidID, sofa::InvalidID);
                 return false;
             }
             else
