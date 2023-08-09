@@ -2362,30 +2362,8 @@ bool TriangleSetGeometryAlgorithms<DataTypes>::computeIntersectedObjectsList (co
     sofa::type::vector<TriangleID> triangles_list;
     sofa::type::vector<EdgeID> edges_list;
     sofa::type::vector< Real > edge_barycoefs_list;
+    
     bool is_on_boundary = false;
-    msg_info() << "*********************************" << msgendl
-        << "* computeIntersectedObjectsList *" << msgendl
-        << "last_point: " << last_point << msgendl
-        << "a: " << a << msgendl
-        << "b: " << b << msgendl
-        << "ind_ta: " << ind_ta << msgendl
-        << "ind_tb: " << ind_tb << msgendl;
-
-    sofa::type::vector<TriangleID> triangles_list2;
-    sofa::type::vector<EdgeID> edges_list2;
-    sofa::type::vector< Real > coordsEdge_list2;
-
-    /*this->computeIntersectedPointsList2(last_point, a, b, ind_ta, ind_tb, triangles_list2, edges_list2, coordsEdge_list2, is_on_boundary);
-    msg_info() << "*********************************" << msgendl
-        << "* New method *" << msgendl
-        << "last_point: " << last_point << msgendl
-        << "a: " << a << msgendl
-        << "b: " << b << msgendl
-        << "triangles_list2: " << triangles_list2 << msgendl
-        << "edges_list2: " << edges_list2 << msgendl
-        << "coordsEdge_list2: " << coordsEdge_list2 << msgendl
-        << "*********************************";*/
-
     // using old function:
     bool pathOK = this->computeIntersectedPointsList(last_point, pointA, pointB, ind_triA, ind_triB, triangles_list, edges_list, edge_barycoefs_list, is_on_boundary);
     dmsg_info() << "*********************************" << msgendl
@@ -2400,7 +2378,6 @@ bool TriangleSetGeometryAlgorithms<DataTypes>::computeIntersectedObjectsList (co
 
     if (!pathOK)
         return false;
-    
 
     // creating new declaration path:
     sofa::type::Vec<3,Real> baryCoords;
@@ -2463,9 +2440,9 @@ bool TriangleSetGeometryAlgorithms<DataTypes>::computeIntersectedObjectsList (co
     msg_info() << "*********************************" << msgendl
         << "* computeIntersectedObjectsList end *";
 
-    for (unsigned int i = 0; i < topoPath_list.size(); ++i)
+    for (unsigned int i = 0; i < intersected_topoElements.size(); ++i)
     {
-        msg_info() << int(topoPath_list[i]) << " | id: " << indices_list[i] << " | coef: " << coords_list[i];
+        msg_info() << int(intersected_topoElements[i]) << " | id: " << intersected_indices[i] << " | coef: " << intersected_barycoefs[i];
     }
 
     msg_info() << "*********************************" << msgendl;
