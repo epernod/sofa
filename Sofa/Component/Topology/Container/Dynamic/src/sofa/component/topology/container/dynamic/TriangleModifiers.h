@@ -280,7 +280,7 @@ public:
         }
 
         PointID nextID = m_triangleToSplit->m_triangle[(communLocalID + 1) % 3];
-        PointID otherEdgeId0 = (theEdge0[0] == communID) ? theEdge0[1] : theEdge0[0];
+        //PointID otherEdgeId0 = (theEdge0[0] == communID) ? theEdge0[1] : theEdge0[0];
         PointID otherEdgeId1 = (theEdge1[0] == communID) ? theEdge1[1] : theEdge1[0];
 
         bool directOriented = (otherEdgeId1 == nextID) ? true : false;

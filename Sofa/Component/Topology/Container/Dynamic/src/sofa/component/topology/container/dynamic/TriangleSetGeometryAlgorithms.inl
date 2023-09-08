@@ -1959,7 +1959,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeIntersectedPointsList2(
     EdgeID current_edgeID = sofa::InvalidID;
     Real current_bary = 0;
     const typename DataTypes::VecCoord& coords = (this->object->read(core::ConstVecCoordId::position())->getValue());
-
+    SOFA_UNUSED(ind_tb);
     for(;;)
     {
         sofa::type::vector<EdgeID> intersectedEdges;
