@@ -1347,7 +1347,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
         {
             intersectedEdges.push_back(edgeId);
             
-            const sofa::type::Vec<2, Real> coefs = geometry::Edge::pointBaryCoefs(intersection, triP[localIds[0]], triP[localIds[1]]);
+            const sofa::type::Vec<2, Real> coefs = geometry::Edge::getBarycentricCoordinates(intersection, triP[localIds[0]], triP[localIds[1]]);
             baryCoefs.push_back(coefs[0]);
         }
     }
