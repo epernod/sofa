@@ -784,5 +784,4 @@ sofa::type::vector< SReal > EdgeSetGeometryAlgorithms<DataTypes>::computeRest2Po
 }
 
 
-
 } //namespace sofa::component::topology::container::dynamic
