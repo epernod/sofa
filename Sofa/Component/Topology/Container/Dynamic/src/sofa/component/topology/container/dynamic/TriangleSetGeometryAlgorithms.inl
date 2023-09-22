@@ -1340,15 +1340,13 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
             }
         }
 
-        Vec3 intersection(type::NOINIT);
-        bool res = geometry::Edge::intersectionWithEdge(pa_proj, pb_proj, triP[localIds[0]], triP[localIds[1]], intersection);
+        type::Vec2 baryCoords(type::NOINIT);
+        bool res = geometry::Edge::intersectionWithEdge(pa_proj, pb_proj, triP[localIds[0]], triP[localIds[1]], baryCoords);
 
         if (res)
         {
             intersectedEdges.push_back(edgeId);
-            
-            const sofa::type::Vec<2, Real> coefs = geometry::Edge::getBarycentricCoordinates(intersection, triP[localIds[0]], triP[localIds[1]]);
-            baryCoefs.push_back(coefs[0]);
+            baryCoefs.push_back(baryCoords[0]);
         }
     }
 
