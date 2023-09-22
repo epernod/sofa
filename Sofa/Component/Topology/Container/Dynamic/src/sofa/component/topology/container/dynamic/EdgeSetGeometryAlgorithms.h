@@ -130,11 +130,17 @@ public:
     /** \brief Compute the intersection coordinate of the 2 input straight lines. Lines vector director are computed using coord given in input.
     * @param edge1 tab Coord[2] from the 2 vertices composing first edge
     * @param edge2 same for second edge
-    * @param intersected bool default value true, changed as false if no intersection is done.
+    * @param intersected bool set to true if intersection otherwise false.
     * @return Coord of intersection point, 0 if no intersection.
     */
     Coord compute2EdgesIntersection (const Coord edge1[2], const Coord edge2[2], bool& intersected);
 
+    /** \brief Compute the intersection coordinate of an Edge from the topology and a segment defined by 2 points [a, b].
+    * @param edgeID index of the first edge
+    * @param segment defined by 2 points [a, b]
+    * @param intersected bool set to true if intersection otherwise false.
+    * @return Coord of intersection point, 0 if no intersection.
+    */
     Coord computeEdgeSegmentIntersection(const EdgeID edgeID, const type::Vec3& a, const type::Vec3& b, bool& intersected);
 
     bool computeEdgePlaneIntersection (EdgeID edgeID, sofa::type::Vec<3,Real> pointOnPlane, sofa::type::Vec<3,Real> normalOfPlane, sofa::type::Vec<3,Real>& intersection);
