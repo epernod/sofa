@@ -135,6 +135,8 @@ public:
     */
     Coord compute2EdgesIntersection (const Coord edge1[2], const Coord edge2[2], bool& intersected);
 
+    Coord computeEdgeSegmentIntersection(const EdgeID edgeID, const type::Vec3& a, const type::Vec3& b, bool& intersected);
+
     bool computeEdgePlaneIntersection (EdgeID edgeID, sofa::type::Vec<3,Real> pointOnPlane, sofa::type::Vec<3,Real> normalOfPlane, sofa::type::Vec<3,Real>& intersection);
     bool computeRestEdgePlaneIntersection (EdgeID edgeID, sofa::type::Vec<3,Real> pointOnPlane, sofa::type::Vec<3,Real> normalOfPlane, sofa::type::Vec<3,Real>& intersection);
 
@@ -160,11 +162,6 @@ public:
     /** return a pointer to the container of cubature points */
     NumericalIntegrationDescriptor<Real,1> &getEdgeNumericalIntegrationDescriptor();
 
-    bool computeEdgeSegmentIntersection(EdgeID edgeID,
-        const sofa::type::Vec<3,Real>& a,
-        const sofa::type::Vec<3, Real>& b,
-        Real &baryCoef);
-
 
     // compute barycentric coefficients
     SOFA_ATTRIBUTE_DEPRECATED("v23.12", "v24.06", "Use sofa::component::topology::container::dynamic::EdgeSetGeometryAlgorithms::computeEdgeBarycentricCoordinates")
@@ -175,6 +172,9 @@ public:
 
     SOFA_ATTRIBUTE_DISABLED("v23.12", "v23.12", "Method writeMSHfile has been disabled. To export the topology as .gmsh file, use the sofa::component::io::mesh::MeshExporter.")
     void writeMSHfile(const char *filename) const {msg_deprecated() << "Method writeMSHfile has been disabled. To export the topology as " << filename << " file, use the sofa::component::io::mesh::MeshExporter."; }
+
+    SOFA_ATTRIBUTE_DEPRECATED("v23.12", "v24.06", "Use the method computeEdgeSegmentIntersection returning a Coord")
+    bool computeEdgeSegmentIntersection(EdgeID edgeID, const type::Vec3& a, const type::Vec3& b, Real &baryCoef);
 
 
     // compute barycentric coefficients
