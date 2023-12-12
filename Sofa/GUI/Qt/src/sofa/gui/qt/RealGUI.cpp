@@ -469,6 +469,11 @@ RealGUI::RealGUI ( const char* viewername)
     connect(helpAboutAction, SIGNAL(triggered()), this, SLOT(showAbout()));
 
     m_filelistener = new RealGUIFileListener(this);
+
+    QFile file(":/RealGUI/style5");
+    file.open(QFile::ReadOnly);
+    QString styleSheet = QLatin1String(file.readAll());
+    qApp->setStyleSheet(styleSheet);
 }
 
 //------------------------------------
