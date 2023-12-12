@@ -187,6 +187,10 @@ protected:
     /// Keep track of log files that have been modified since the GUI started
     std::set<std::string>   m_modifiedLogFiles;
 
+    QList<QDockWidget *> m_extraDockWidgets;
+    QMenu* m_extraDockWidgetMenu;
+    QMenu* m_extraDestroyDockWidgetMenu;
+
     bool m_enableInteraction {false};
 private:
     //currently unused: scale is experimental
@@ -355,6 +359,9 @@ public slots:
     virtual void showVideoRecorderManager();
     virtual void showWindowDataGraph();
     virtual void toolsDockMoved();
+
+    void createDockWidget();
+    void destroyDockWidget(QAction *action);
 
 protected slots:
     /// Allow to dynamicly change viewer. Called when click on another viewer in GUI Qt viewer list (see viewerMap).

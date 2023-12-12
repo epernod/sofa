@@ -94,6 +94,7 @@ using sofa::simulation::SceneLoaderFactory;
 #include <QMimeData>
 #include <QCompleter>
 #include <QDesktopServices>
+#include <QDialogButtonBox>
 
 #if (QT_VERSION < QT_VERSION_CHECK(5, 11, 0))
 #include <QDesktopWidget>
@@ -394,6 +395,15 @@ RealGUI::RealGUI ( const char* viewername)
         connect ( timerIdle, SIGNAL ( timeout() ), this, SLOT ( emitIdle() ) );
         timerIdle->start(50);
     }
+
+    m_extraDockWidgetMenu = menuBar()->addMenu(tr("&Dock Widgets"));
+    m_extraDestroyDockWidgetMenu = new QMenu(tr("Destroy dock widget"), this);
+    m_extraDestroyDockWidgetMenu->setEnabled(false);
+    connect(m_extraDestroyDockWidgetMenu, &QMenu::triggered, this, &RealGUI::destroyDockWidget);
+
+    m_extraDockWidgetMenu->addSeparator();
+    m_extraDockWidgetMenu->addAction(tr("Add dock widget..."), this, &RealGUI::createDockWidget);
+    m_extraDockWidgetMenu->addMenu(m_extraDestroyDockWidgetMenu);
 
     this->setDockOptions(QMainWindow::AnimatedDocks | QMainWindow::AllowTabbedDocks);
 #if (QT_VERSION < QT_VERSION_CHECK(5, 15, 0))
@@ -2285,6 +2295,106 @@ void RealGUI::propertyDockMoved(Qt::DockWidgetArea /*a*/)
     if(dockWindow->isFloating())
         dockWindow->resize(500, 700);
 }
+
+
+class CreateDockWidgetDialog : public QDialog
+{
+public:
+    explicit CreateDockWidgetDialog(QWidget *parent = Q_NULLPTR);
+
+    QString enteredObjectName() const { return m_objectName->text(); }
+    Qt::DockWidgetArea location() const;
+
+private:
+    QLineEdit *m_objectName;
+    QComboBox *m_location;
+};
+
+CreateDockWidgetDialog::CreateDockWidgetDialog(QWidget *parent)
+    : QDialog(parent)
+    , m_objectName(new QLineEdit(this))
+    , m_location(new QComboBox(this))
+{
+    setWindowTitle(tr("Add Dock Widget"));
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    QGridLayout *layout = new QGridLayout(this);
+
+    layout->addWidget(new QLabel(tr("Object name:")), 0, 0);
+    layout->addWidget(m_objectName, 0, 1);
+
+    layout->addWidget(new QLabel(tr("Location:")), 1, 0);
+    m_location->setEditable(false);
+    m_location->addItem(tr("Top"));
+    m_location->addItem(tr("Left"));
+    m_location->addItem(tr("Right"));
+    m_location->addItem(tr("Bottom"));
+    m_location->addItem(tr("Restore"));
+    layout->addWidget(m_location, 1, 1);
+
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    layout->addWidget(buttonBox, 2, 0, 1, 2);
+}
+
+Qt::DockWidgetArea CreateDockWidgetDialog::location() const
+{
+    switch (m_location->currentIndex()) {
+        case 0: return Qt::TopDockWidgetArea;
+        case 1: return Qt::LeftDockWidgetArea;
+        case 2: return Qt::RightDockWidgetArea;
+        case 3: return Qt::BottomDockWidgetArea;
+        default:
+            break;
+    }
+    return Qt::NoDockWidgetArea;
+}
+
+void RealGUI::createDockWidget()
+{
+    CreateDockWidgetDialog dialog(this);
+    if (dialog.exec() == QDialog::Rejected)
+        return;
+
+    QDockWidget *dw = new QDockWidget;
+    const QString name = dialog.enteredObjectName();
+    dw->setObjectName(name);
+    dw->setWindowTitle(name);
+    dw->setWidget(new QTextEdit);
+
+    Qt::DockWidgetArea area = dialog.location();
+    switch (area) {
+        case Qt::LeftDockWidgetArea:
+        case Qt::RightDockWidgetArea:
+        case Qt::TopDockWidgetArea:
+        case Qt::BottomDockWidgetArea:
+            addDockWidget(area, dw);
+            break;
+        default:
+            if (!restoreDockWidget(dw)) {
+                QMessageBox::warning(this, QString(), tr("Failed to restore dock widget"));
+                delete dw;
+                return;
+            }
+            break;
+    }
+
+    m_extraDockWidgets.append(dw);
+    m_extraDestroyDockWidgetMenu->setEnabled(true);
+    m_extraDestroyDockWidgetMenu->addAction(new QAction(name, this));
+}
+
+void RealGUI::destroyDockWidget(QAction *action)
+{
+    int index = m_extraDestroyDockWidgetMenu->actions().indexOf(action);
+    delete m_extraDockWidgets.takeAt(index);
+    m_extraDestroyDockWidgetMenu->removeAction(action);
+    action->deleteLater();
+
+    if (m_extraDestroyDockWidgetMenu->isEmpty())
+        m_extraDestroyDockWidgetMenu->setEnabled(false);
+}
+
 
 namespace
 {
