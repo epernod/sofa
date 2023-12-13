@@ -261,6 +261,8 @@ public:
 
     void dropEvent(QDropEvent* event) override;
 
+    void addCustomDockWidget(QDockWidget* widget);
+
 protected:
     /// init data member from RealGUI for the viewer initialisation in the GUI
     void init();
