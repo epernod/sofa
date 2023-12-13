@@ -396,6 +396,7 @@ RealGUI::RealGUI ( const char* viewername)
         timerIdle->start(50);
     }
 
+    std::cout <<"m_extraDestroyDockWidgetMenu CREATION" << std::endl;
     m_extraDockWidgetMenu = menuBar()->addMenu(tr("&Dock Widgets"));
     m_extraDestroyDockWidgetMenu = new QMenu(tr("Destroy dock widget"), this);
     m_extraDestroyDockWidgetMenu->setEnabled(false);
@@ -470,10 +471,23 @@ RealGUI::RealGUI ( const char* viewername)
 
     m_filelistener = new RealGUIFileListener(this);
 
+    // Add stylesheet
     QFile file(":/RealGUI/style5");
     file.open(QFile::ReadOnly);
     QString styleSheet = QLatin1String(file.readAll());
     qApp->setStyleSheet(styleSheet);
+
+
+    // Add registered external dock widdgets to the UI
+    for(QDockWidget * dw : m_extraDockWidgets)
+    {
+        const QString name = dw->objectName();
+        m_extraDestroyDockWidgetMenu->setEnabled(true);
+        m_extraDestroyDockWidgetMenu->addAction(new QAction(name, this));
+
+        Qt::DockWidgetArea area = Qt::DockWidgetArea::RightDockWidgetArea;
+        addDockWidget(area, dw);
+    }
 }
 
 //------------------------------------
@@ -2421,6 +2435,19 @@ Qt::DockWidgetArea CreateDockWidgetDialog::location() const
     }
     return Qt::NoDockWidgetArea;
 }
+
+
+void RealGUI::addCustomDockWidget(QDockWidget* widget)
+{
+    const QString name = widget->objectName();
+    m_extraDockWidgets.append(widget);
+//    m_extraDestroyDockWidgetMenu->setEnabled(true);
+//    m_extraDestroyDockWidgetMenu->addAction(new QAction(name, this));
+
+//    Qt::DockWidgetArea area = Qt::DockWidgetArea::RightDockWidgetArea;
+//    addDockWidget(area, widget);
+}
+
 
 void RealGUI::createDockWidget()
 {
