@@ -251,13 +251,13 @@ QDockWidget::float-button:hover
 /*-----QTreeWidget-----*/
 QTreeWidget
 {
-	show-decoration-selected: 0;
+        show-decoration-selected: 1;
 	selection-background-color: transparent; /* Used on Mac */
 	selection-color: #fff; /* Used on Mac */
 	background-color: #292929;
 	border: 1px solid gray;
 	padding-top : 5px;
-	color: #fff;
+        color: #fff;
 	font: 8pt;
 
 }
@@ -276,22 +276,6 @@ QTreeView::item:!selected:hover
 {
 	background-color: #8f8f8f;
 	color: #000;
-}
-
-
-QTreeView::branch:has-children:!has-siblings:closed,
-QTreeView::branch:closed:has-children:has-siblings 
-{
-	image: url(://tree-closed.png);
-
-}
-
-
-QTreeView::branch:open:has-children:!has-siblings,
-QTreeView::branch:open:has-children:has-siblings  
-{
-	image: url(://tree-open.png);
-
 }
 
 
