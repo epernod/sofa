@@ -769,19 +769,4 @@ sofa::type::vector< SReal > EdgeSetGeometryAlgorithms<DataTypes>::computeRest2Po
 }
 
 
-
-template <class DataTypes>
-sofa::type::vector< SReal > EdgeSetGeometryAlgorithms<DataTypes>::compute2PointsBarycoefs(const sofa::type::Vec<3, Real> &p, PointID ind_p1, PointID ind_p2) const
-{
-    return computeEdgeBarycentricCoordinates(p, ind_p1, ind_p2);
-}
-
-
-template <class DataTypes>
-sofa::type::vector< SReal > EdgeSetGeometryAlgorithms<DataTypes>::computeRest2PointsBarycoefs(const sofa::type::Vec<3, Real> &p, PointID ind_p1, PointID ind_p2) const
-{
-    return computeEdgeBarycentricCoordinates(p, ind_p1, ind_p2, true);
-}
-
-
 } //namespace sofa::component::topology::container::dynamic
