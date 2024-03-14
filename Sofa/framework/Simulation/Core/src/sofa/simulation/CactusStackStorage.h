@@ -26,16 +26,16 @@
 #include <sofa/simulation/LocalStorage.h>
 #include <stack>
 
+SOFA_HEADER_DEPRECATED_LOCALSTORAGE()
 
-namespace sofa
-{
 
-namespace simulation
+namespace sofa::simulation
 {
 
 
 /// Cactus Stack implementation of LocalStorage.
 /// See http://www.nist.gov/dads/HTML/cactusstack.html
+SOFA_ATTRIBUTE_DEPRECATED_LOCALSTORAGE()
 class SOFA_SIMULATION_CORE_API CactusStackStorage : public simulation::LocalStorage
 {
 protected:
@@ -71,8 +71,7 @@ public:
     virtual const char* getClassName() const { return "CactusStackStorage"; }
 };
 
-} // namespace simulation
+} // namespace sofa::simulation
 
-} // namespace sofa
 
 #endif

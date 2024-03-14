@@ -47,9 +47,6 @@
 
 #include <sofa/helper/system/FileMonitor.h>
 
-// Recorder GUI is not used (broken in most scenes)
-#define SOFA_GUI_QT_NO_RECORDER
-
 class WDoubleLineEdit;
 class QDragEnterEvent;
 
@@ -57,10 +54,6 @@ namespace sofa::gui::qt
 {
 #if(SOFA_GUI_QT_HAVE_QT5_WEBENGINE)
 class DocBrowser ;
-#endif
-
-#ifndef SOFA_GUI_QT_NO_RECORDER
-class QSofaRecorder;
 #endif
 
 //enum TYPE{ NORMAL, PML, LML};
@@ -130,23 +123,11 @@ public:
     void showFPS(double fps) override;
 
 protected:
-
-#ifndef SOFA_GUI_QT_NO_RECORDER
-    QSofaRecorder* recorder;
-#else
     QLabel* fpsLabel;
     QLabel* timeLabel;
-#endif
 
 
 private:
-
-#ifdef SOFA_PML
-    virtual void pmlOpen(const char* filename, bool resetView=true);
-    virtual void lmlOpen(const char* filename);
-    filemanager::pml::PMLReader *pmlreader;
-    filemanager::pml::LMLReader *lmlreader;
-#endif
 
 #ifdef SOFA_DUMP_VISITOR_INFO
     WindowVisitor* windowTraceVisitor;    
@@ -242,8 +223,6 @@ public:
     virtual void unloadScene(bool _withViewer = true);
 
     virtual void setTitle( std::string windowTitle );
-    virtual void fileSaveAs(Node* node,const char* filename);
-//    virtual void saveXML();
 
     void setViewerResolution(int w, int h) override;
     void setFullScreen() override { setFullScreen(true); }
@@ -258,7 +237,6 @@ public:
     void setDumpState(bool) override;
     void setLogTime(bool) override;
     void setExportState(bool) override;
-    virtual void setRecordPath(const std::string & path) override;
     virtual void setGnuplotPath(const std::string & path) override;
 
     /// create a viewer according to the argument key
@@ -313,7 +291,7 @@ protected:
     void sleep(float seconds, float init_time)
     {
         [[maybe_unused]] unsigned int t = 0;
-        clock_t goal = (clock_t) (seconds + init_time);
+        const clock_t goal = (clock_t) (seconds + init_time);
         while (goal > clock()/(float)CLOCKS_PER_SEC) t++;
     }
 
@@ -342,7 +320,6 @@ public slots:
     virtual void newRootNode(sofa::simulation::Node* root, const char* path);
     virtual void activateNode(sofa::simulation::Node* , bool );
     virtual void setSleepingNode(sofa::simulation::Node*, bool);
-    virtual void fileSaveAs(sofa::simulation::Node *node);
     virtual void lockAnimation(bool);
     virtual void fileRecentlyOpened(QAction * action);
     virtual void playpauseGUI(bool value);
@@ -377,14 +354,9 @@ public slots:
     virtual void displayProflierWindow(bool);
     virtual void currentTabChanged(int index);
 
-    virtual void fileNew();
     virtual void popupOpenFileSelector();
     virtual void fileReload();
-    virtual void fileSave();
     virtual void fileExit();
-    virtual void fileSaveAs() {
-        fileSaveAs((Node *)nullptr);
-    }
     virtual void helpAbout() { /* TODO */ }
     virtual void editRecordDirectory();
     virtual void editGnuplotDirectory();
@@ -452,7 +424,7 @@ struct ActivationFunctor
             desact_text.remove(QString("Deactivated "), Qt::CaseInsensitive);
             item->setText(0,desact_text);
             //Remove the icon
-            QPixmap *p = getPixmap(n, false,false, false);
+            const QPixmap *p = getPixmap(n, false,false, false);
             item->setIcon(0, QIcon(*p));
 //            item->setOpen(true);
             item->setExpanded(true);

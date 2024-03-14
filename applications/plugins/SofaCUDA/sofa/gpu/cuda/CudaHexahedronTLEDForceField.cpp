@@ -28,13 +28,8 @@
 #include <fstream>
 using namespace std;
 
-namespace sofa
-{
 
-namespace gpu
-{
-
-namespace cuda
+namespace sofa::gpu::cuda
 {
 
 int CudaHexahedronTLEDForceFieldCudaClass = core::RegisterObject("GPU-side TLED hexahedron forcefield using CUDA")
@@ -221,13 +216,13 @@ void CudaHexahedronTLEDForceField::reinit()
         nbVertex = nelems.rbegin()->first + 1;
     }
 
-    std::cout << "CudaHexahedronTLEDForceField: " << nbElems << " elements, " << nbVertex << " nodes, max " << nbElementPerVertex << " elements per node" << std::endl;
+    msg_info() << "CudaHexahedronTLEDForceField: " << nbElems << " elements, " << nbVertex << " nodes, max " << nbElementPerVertex << " elements per node";
 
 
     /**
      * Precomputations
      */
-    std::cout << "CudaHexahedronTLEDForceField: precomputations..." << std::endl;
+    msg_info() << "CudaHexahedronTLEDForceField: precomputations...";
 
     const VecCoord& x = this->mstate->read(core::ConstVecCoordId::position())->getValue();
     nelems.clear();
@@ -503,7 +498,6 @@ void CudaHexahedronTLEDForceField::addDForce (const sofa::core::MechanicalParams
 
 }
 
-
 // --------------------------------------------------------------------------------------
 // Computes Jacobian determinant
 // --------------------------------------------------------------------------------------
@@ -523,7 +517,7 @@ float CudaHexahedronTLEDForceField::ComputeDetJ(const Element& e, const VecCoord
     }
 
     // Jacobian determinant
-    float detJ = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1]) +
+    const float detJ = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1]) +
             J[1][0]*(J[0][2]*J[2][1] - J[0][1]*J[2][2]) +
             J[2][0]*(J[0][1]*J[1][2] - J[0][2]*J[1][1]);
 
@@ -560,8 +554,8 @@ float CudaHexahedronTLEDForceField::CompElVolHexa(const Element& e, const VecCoo
 // --------------------------------------------------------------------------------------
 void CudaHexahedronTLEDForceField::ComputeCIJK(float C[8][8][8])
 {
-    float a = (float)(1./12);
-    float Ctemp[8*8*8] =
+    const float a = (float)(1./12);
+    const float Ctemp[8*8*8] =
     {
         0,0,0,0,0,0,0,0,
         0,0,-a,-a,a,a,0,0,
@@ -701,18 +695,18 @@ void CudaHexahedronTLEDForceField::ComputeHGParams(const Element& e, const VecCo
     updateLameCoefficients();
 
     // This value is hard coded for simplicity. We are not sure of its actual meaning, but this value (0.04) seems to work well
-    float HourGlassKappa = 0.5f;
+    const float HourGlassKappa = 0.5f;
 
-    float k = HourGlassKappa*volume*(Lambda+2*Mu)*a/8;
+    const float k = HourGlassKappa*volume*(Lambda+2*Mu)*a/8;
 
-    float Gamma[8][4] = {   {1,1,1,-1},
-        {-1,1,-1,1},
-        {1,-1,-1,-1},
-        {-1,-1,1,1},
-        {1,-1,-1,1},
-        {-1,-1,1,-1},
-        {1,1,1,1},
-        {-1,1,-1,-1}
+    const float Gamma[8][4] = {   {1,1,1,-1},
+                                  {-1,1,-1,1},
+                                  {1,-1,-1,-1},
+                                  {-1,-1,1,1},
+                                  {1,-1,-1,1},
+                                  {-1,-1,1,-1},
+                                  {1,1,1,1},
+                                  {-1,1,-1,-1}
     };
 
     // A = DhDx * x^T
@@ -780,8 +774,8 @@ void CudaHexahedronTLEDForceField::updateLameCoefficients(void)
     Mu = youngModulus.getValue()/(2*(1 + poissonRatio.getValue()));
 }
 
-} // namespace cuda
+} // namespace sofa::gpu::cuda
 
-} // namespace gpu
 
-} // namespace sofa
+
+

@@ -61,7 +61,7 @@ void STLExporter::doInit()
 
 void STLExporter::doReInit()
 {
-    BaseContext* context = this->getContext();
+    const BaseContext* context = this->getContext();
 
     context->get(m_inputtopology, BaseContext::Local);
     context->get(m_inputmstate, BaseContext::Local);
@@ -124,9 +124,9 @@ bool STLExporter::writeSTL(bool autonumbering)
         return false;
     }
 
-    helper::ReadAccessor< Data< type::vector< BaseMeshTopology::Triangle > > > triangleIndices = d_triangle;
-    helper::ReadAccessor< Data< type::vector< BaseMeshTopology::Quad > > > quadIndices = d_quad;
-    helper::ReadAccessor<Data<defaulttype::Vec3Types::VecCoord> > positionIndices = d_position;
+    const helper::ReadAccessor< Data< type::vector< BaseMeshTopology::Triangle > > > triangleIndices = d_triangle;
+    const helper::ReadAccessor< Data< type::vector< BaseMeshTopology::Quad > > > quadIndices = d_quad;
+    const helper::ReadAccessor<Data<defaulttype::Vec3Types::VecCoord> > positionIndices = d_position;
 
     type::vector< BaseMeshTopology::Triangle > vecTri;
 
@@ -137,24 +137,24 @@ bool STLExporter::writeSTL(bool autonumbering)
     }
     if(!triangleIndices.empty())
     {
-        for(unsigned int i=0;i<triangleIndices.size();i++)
+        for(const auto& triangleIndex : triangleIndices)
         {
-            vecTri.push_back(triangleIndices[i]);
+            vecTri.push_back(triangleIndex);
         }
     }
     else if(!quadIndices.empty())
     {
         BaseMeshTopology::Triangle tri;
-        for(unsigned int i=0;i<quadIndices.size();i++)
+        for(const auto& quadIndex : quadIndices)
         {
             for(int j=0;j<3;j++)
             {
-                tri[j] = quadIndices[i][j];
+                tri[j] = quadIndex[j];
             }
             vecTri.push_back(tri);
-            tri[0] = quadIndices[i][0];
-            tri[1] = quadIndices[i][2];
-            tri[2] = quadIndices[i][3];
+            tri[0] = quadIndex[0];
+            tri[1] = quadIndex[2];
+            tri[2] = quadIndex[3];
             vecTri.push_back(tri);
         }
     }
@@ -213,9 +213,9 @@ bool STLExporter::writeSTLBinary(bool autonumbering)
         return false;
     }
 
-    helper::ReadAccessor< Data< type::vector< BaseMeshTopology::Triangle > > > triangleIndices = d_triangle;
-    helper::ReadAccessor< Data< type::vector< BaseMeshTopology::Quad > > > quadIndices = d_quad;
-    helper::ReadAccessor< Data< defaulttype::Vec3Types::VecCoord> > positionIndices = d_position;
+    const helper::ReadAccessor< Data< type::vector< BaseMeshTopology::Triangle > > > triangleIndices = d_triangle;
+    const helper::ReadAccessor< Data< type::vector< BaseMeshTopology::Quad > > > quadIndices = d_quad;
+    const helper::ReadAccessor< Data< defaulttype::Vec3Types::VecCoord> > positionIndices = d_position;
 
     type::vector< BaseMeshTopology::Triangle > vecTri;
 
@@ -226,24 +226,24 @@ bool STLExporter::writeSTLBinary(bool autonumbering)
     }
     if(!triangleIndices.empty())
     {
-        for(unsigned int i=0;i<triangleIndices.size();i++)
+        for(const auto& triangleIndex : triangleIndices)
         {
-            vecTri.push_back(triangleIndices[i]);
+            vecTri.push_back(triangleIndex);
         }
     }
     else if(!quadIndices.empty())
     {
         BaseMeshTopology::Triangle tri;
-        for(unsigned int i=0;i<quadIndices.size();i++)
+        for(const auto& quadIndex : quadIndices)
         {
             for(int j=0;j<3;j++)
             {
-                tri[j] = quadIndices[i][j];
+                tri[j] = quadIndex[j];
             }
             vecTri.push_back(tri);
-            tri[0] = quadIndices[i][0];
-            tri[1] = quadIndices[i][2];
-            tri[2] = quadIndices[i][3];
+            tri[0] = quadIndex[0];
+            tri[1] = quadIndex[2];
+            tri[2] = quadIndex[3];
             vecTri.push_back(tri);
         }
     }
@@ -308,7 +308,7 @@ void STLExporter::handleEvent(Event *event)
 
     if (GUIEvent::checkEventType(event))
     {
-        GUIEvent *guiEvent = static_cast<GUIEvent *>(event);
+        const GUIEvent *guiEvent = static_cast<GUIEvent *>(event);
 
         if (guiEvent->getValueName().compare("STLExport") == 0)
         {

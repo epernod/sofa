@@ -29,5 +29,4 @@
             CudaHexa.push_back(cube[c]);
         }
 
-SOFA_DEPRECATED_HEADER("v23.06", "v23.12", "SofaCUDA/component/mapping/linear/CudaBarycentricMapping.inl")
-#include <SofaCUDA/component/mapping/linear/CudaBarycentricMapping.inl>
+SOFA_DISABLED_HEADER("v23.06", "v23.12", "SofaCUDA/component/mapping/linear/CudaBarycentricMapping.inl")

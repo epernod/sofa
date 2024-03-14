@@ -28,11 +28,8 @@
 #include <string>
 #include <vector>
 
-namespace sofa
-{
-namespace helper
-{
-namespace system
+
+namespace sofa::helper::system
 {
 
 /// @brief Contains functions to interact with the file system.
@@ -96,6 +93,8 @@ static bool removeDirectory(const std::string& path);
 /// @return true on error
 static bool removeAll(const std::string& path) ;
 
+static bool removeFile(const std::string& path);
+
 /// @brief check that all element in the path exists or create them. (This function accepts relative paths)
 ///
 /// @return the valid path.
@@ -141,11 +140,23 @@ static std::string getParentDirectory(const std::string& path);
 /// E.g. /a/b/c --> c
 static std::string stripDirectory(const std::string& path);
 
+
+/// Appends a string to an existing path, ensuring exactly one directory
+/// separator (/) between each part.
+static std::string append(const std::string_view& existingPath, const std::string_view& toAppend);
+
+/// Appends strings to an existing path, ensuring exactly one directory
+/// separator (/) between each part.
+template<typename... Args>
+static std::string append(const std::string_view& existingPath, const std::string_view& toAppend, Args&&... args)
+{
+    return append(append(existingPath, toAppend), args...);
+}
+
 };
 
 
-} // namespace system
-} // namespace helper
-} // namespace sofa
+} // namespace sofa::helper::system
+
 
 #endif

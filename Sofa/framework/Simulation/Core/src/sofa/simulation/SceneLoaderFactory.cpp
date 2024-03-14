@@ -25,9 +25,7 @@
 #include <sofa/helper/system/SetDirectory.h>
 
 
-namespace sofa
-{
-namespace simulation
+namespace sofa::simulation
 {
 
 SceneLoader::Listeners SceneLoader::s_listeners;
@@ -85,14 +83,14 @@ void SceneLoader::notifyReloadingSceneAfter(sofa::simulation::NodeSPtr node,
 
 bool SceneLoader::canLoadFileName(const char *filename)
 {
-    std::string ext = sofa::helper::system::SetDirectory::GetExtension(filename);
+    const std::string ext = sofa::helper::system::SetDirectory::GetExtension(filename);
     return canLoadFileExtension(ext.c_str());
 }
 
 /// Pre-saving check
 bool SceneLoader::canWriteFileName(const char *filename)
 {
-    std::string ext = sofa::helper::system::SetDirectory::GetExtension(filename);
+    const std::string ext = sofa::helper::system::SetDirectory::GetExtension(filename);
     return canWriteFileExtension(ext.c_str());
 }
 
@@ -224,8 +222,8 @@ SceneLoader* SceneLoaderFactory::addEntry(SceneLoader *loader)
     return loader;
 }
 
-} // namespace simulation
+} // namespace sofa::simulation
 
-} // namespace sofa
+
 
 

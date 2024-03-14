@@ -117,8 +117,6 @@ public:
     Data<Real> f_poissonRatio;
     Data<Real> f_youngModulus;
     Data<bool> f_updateStiffnessMatrix;
-    SOFA_ATTRIBUTE_DISABLED__REMOVE_UNUSED_ASSEMBLING()
-    DeprecatedAndRemoved f_assembling;
     Data< sofa::helper::OptionsGroup > _gatherPt; ///< use in GPU version
     Data< sofa::helper::OptionsGroup > _gatherBsize; ///< use in GPU version
     Data<bool> f_drawing; ///<  draw the forcefield if true
@@ -131,8 +129,6 @@ public:
     void setPoissonRatio(Real val) { this->f_poissonRatio.setValue(val); }
     void setYoungModulus(Real val) { this->f_youngModulus.setValue(val); }
     void setMethod(int val) ;
-    SOFA_ATTRIBUTE_DISABLED("v22.06 (PR#2901)", "v22.12", "Removing unused boolean data assembling in forcefields.")
-    void setComputeGlobalMatrix(bool val) = delete;
 
     void setUpdateStiffnessMatrix(bool val) { this->f_updateStiffnessMatrix.setValue(val); }
 
@@ -199,7 +195,7 @@ protected:
     inline const VecElement *getIndexedElements(){ return & (m_topology->getHexahedra()); }
 
     virtual void computeElementStiffness( ElementStiffness &K, const MaterialStiffness &M,
-                                          const type::fixed_array<Coord,8> &nodes, const sofa::Index elementIndice,
+                                          const type::Vec<8, Coord> &nodes, const sofa::Index elementIndice,
                                           double stiffnessFactor=1.0) const;
     static Mat33 integrateStiffness( int signx0, int signy0, int signz0, int signx1, int signy1, int signz1,
                               const Real u, const Real v, const Real w, const Mat33& J_1  );
@@ -229,7 +225,7 @@ protected:
     bool _alreadyInit;
 };
 
-#if  !defined(SOFA_COMPONENT_FORCEFIELD_HEXAHEDRONFEMFORCEFIELD_CPP)
+#if !defined(SOFA_COMPONENT_FORCEFIELD_HEXAHEDRONFEMFORCEFIELD_CPP)
 extern template class SOFA_COMPONENT_SOLIDMECHANICS_FEM_ELASTIC_API HexahedronFEMForceField<defaulttype::Vec3Types>;
 
 #endif

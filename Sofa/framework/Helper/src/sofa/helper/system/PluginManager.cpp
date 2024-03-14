@@ -27,24 +27,29 @@ using sofa::helper::system::FileSystem;
 #include <sofa/helper/Utils.h>
 #include <sofa/helper/logging/Messaging.h>
 
-#include <filesystem>
+#if __has_include(<filesystem>)
+  #include <filesystem>
+  namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+  #include <experimental/filesystem>
+  namespace fs = std::experimental::filesystem;
+#else
+  error "Missing the <filesystem> header."
+#endif
+
 #include <fstream>
 #include <array>
 
 using sofa::helper::Utils;
 
-namespace sofa
-{
-namespace helper
-{
-namespace system
+namespace sofa::helper::system
 {
 
 namespace
 {
 
 template <class LibraryEntry>
-bool getPluginEntry(LibraryEntry& entry, DynamicLibrary::Handle handle)
+[[nodiscard]] bool getPluginEntry(LibraryEntry& entry, DynamicLibrary::Handle handle)
 {
     typedef typename LibraryEntry::FuncPtr FuncPtr;
     entry.func = (FuncPtr)DynamicLibrary::getSymbolAddress(handle, entry.symbol);
@@ -176,7 +181,7 @@ PluginManager::PluginLoadStatus PluginManager::loadPluginByPath(const std::strin
         return PluginLoadStatus::PLUGIN_FILE_NOT_FOUND;
     }
 
-    DynamicLibrary::Handle d  = DynamicLibrary::load(pluginPath);
+    const DynamicLibrary::Handle d  = DynamicLibrary::load(pluginPath);
     Plugin p;
     if( ! d.isValid() )
     {
@@ -194,17 +199,21 @@ PluginManager::PluginLoadStatus PluginManager::loadPluginByPath(const std::strin
             if (errlog) (*errlog) << msg << std::endl;
             return PluginLoadStatus::MISSING_SYMBOL;
         }
-        getPluginEntry(p.getModuleName,d);
+
+        if(!getPluginEntry(p.getModuleName,d))
+        {
+            dmsg_warning("PluginManager") << DynamicLibrary::getLastError();
+        }
 
         if (checkDuplicatedPlugin(p, pluginPath))
         {
             return PluginLoadStatus::ALREADY_LOADED;
         }
 
-        getPluginEntry(p.getModuleDescription,d);
-        getPluginEntry(p.getModuleLicense,d);
-        getPluginEntry(p.getModuleComponentList,d);
-        getPluginEntry(p.getModuleVersion,d);
+        [[maybe_unused]] const auto moduleDescriptionResult = getPluginEntry(p.getModuleDescription,d);
+        [[maybe_unused]] const auto moduleLicenseResult = getPluginEntry(p.getModuleLicense,d);
+        [[maybe_unused]] const auto moduleComponentListResult = getPluginEntry(p.getModuleComponentList,d);
+        [[maybe_unused]] const auto moduleVersionResult = getPluginEntry(p.getModuleVersion,d);
     }
 
     p.dynamicLibrary = d;
@@ -316,7 +325,7 @@ bool PluginManager::unloadPlugin(const std::string &pluginPath, std::ostream* er
 
 Plugin* PluginManager::getPlugin(const std::string& plugin, const std::string& /*suffix*/, bool /*ignoreCase*/)
 {
-    std::string pluginPath = plugin;
+    const std::string pluginPath = plugin;
 
     if (!FileSystem::isFile(plugin)) {
         return getPluginByName(plugin);
@@ -393,7 +402,7 @@ void PluginManager::init()
 
 void PluginManager::init(const std::string& pluginPath)
 {
-    PluginMap::iterator iter = m_pluginMap.find(pluginPath);
+    const PluginMap::iterator iter = m_pluginMap.find(pluginPath);
     if(m_pluginMap.end() != iter)
     {
         Plugin& plugin = iter->second;
@@ -412,12 +421,13 @@ std::string PluginManager::findPlugin(const std::string& pluginName, const std::
     const std::string libName = DynamicLibrary::prefix + name + "." + DynamicLibrary::extension;
 
     // First try: case sensitive
-    for (const auto & prefix : searchPaths) {
+    for (const auto & prefix : searchPaths)
+    {
         const std::array<std::string, 4> paths = {
-                prefix + "/" + libName,
-                prefix + "/" + pluginName + "/" + libName,
-                prefix + "/" + pluginName + "/bin/" + libName,
-                prefix + "/" + pluginName + "/lib/" + libName
+            FileSystem::append(prefix, libName),
+            FileSystem::append(prefix, pluginName, libName),
+            FileSystem::append(prefix, pluginName, "bin", libName),
+            FileSystem::append(prefix, pluginName, "lib", libName)
         };
         for (const auto & path : paths) {
             if (FileSystem::isFile(path)) {
@@ -436,8 +446,8 @@ std::string PluginManager::findPlugin(const std::string& pluginName, const std::
         {
             const std::string& dir = *i;
 
-            std::filesystem::recursive_directory_iterator iter(dir);
-            std::filesystem::recursive_directory_iterator end;
+            fs::recursive_directory_iterator iter(dir);
+            fs::recursive_directory_iterator end;
 
             while (iter != end)
             {
@@ -445,7 +455,7 @@ std::string PluginManager::findPlugin(const std::string& pluginName, const std::
                 {
                     iter.disable_recursion_pending(); // skip
                 }
-                else if ( !std::filesystem::is_directory(iter->path()) )
+                else if ( !fs::is_directory(iter->path()) )
                 {
                     const std::string path = iter->path().string();
                     const std::string filename = iter->path().filename().string();
@@ -541,10 +551,6 @@ bool PluginManager::checkDuplicatedPlugin(const Plugin& plugin, const std::strin
     }
 
     return false;
-}
-
-}
-
 }
 
 }

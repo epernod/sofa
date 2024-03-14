@@ -75,9 +75,9 @@ public:
     void computeForce(SReal x, SReal y, SReal z,
                       SReal u, SReal v, SReal w,
                       SReal q, SReal& fx, SReal& fy, SReal& fz) override;
-    void computeWrench(const sofa::defaulttype::SolidTypes<SReal>::Transform &world_H_tool,
-                       const sofa::defaulttype::SolidTypes<SReal>::SpatialVector &V_tool_world,
-                       sofa::defaulttype::SolidTypes<SReal>::SpatialVector &W_tool_world ) override;
+    void computeWrench(const sofa::type::Transform<SReal> &world_H_tool,
+                       const sofa::type::SpatialVector<SReal> &V_tool_world,
+                       sofa::type::SpatialVector<SReal> &W_tool_world ) override;
     void computeForce(const  VecCoord& state,  VecDeriv& forces) override;
 
 protected:
@@ -136,7 +136,7 @@ protected:
     std::mutex lockForce;
 };
 
-#if  !defined(SOFA_COMPONENT_CONTROLLER_LCPFORCEFEEDBACK_CPP)
+#if !defined(SOFA_COMPONENT_CONTROLLER_LCPFORCEFEEDBACK_CPP)
 extern template class SOFA_COMPONENT_HAPTICS_API LCPForceFeedback<defaulttype::Vec1Types>;
 extern template class SOFA_COMPONENT_HAPTICS_API LCPForceFeedback<defaulttype::Rigid3Types>;
 #endif

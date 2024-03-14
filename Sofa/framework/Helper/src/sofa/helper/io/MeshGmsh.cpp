@@ -30,13 +30,8 @@
 #include <string>
 #include <sofa/helper/narrow_cast.h>
 
-namespace sofa
-{
 
-namespace helper
-{
-
-namespace io
+namespace sofa::helper::io
 {
 
 using namespace sofa::type;
@@ -115,7 +110,7 @@ void MeshGmsh::addInGroup(type::vector< sofa::type::PrimitiveGroup>& group, int 
     }
 
     std::stringstream ss;
-    std::string s;
+    const std::string s;
     ss << tag;
 
     group.push_back(sofa::type::PrimitiveGroup(tag, 1, s, s, -1));
@@ -562,8 +557,8 @@ bool MeshGmsh::readGmsh(std::ifstream &file, const unsigned int gmshFormat)
     return true;
 }
 
-} // namespace io
+} // namespace sofa::helper::io
 
-} // namespace helper
 
-} // namespace sofa
+
+

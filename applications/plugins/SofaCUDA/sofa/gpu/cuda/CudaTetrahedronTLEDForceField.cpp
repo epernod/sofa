@@ -29,13 +29,8 @@
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/component/topology/container/grid/RegularGridTopology.h>
 
-namespace sofa
-{
 
-namespace gpu
-{
-
-namespace cuda
+namespace sofa::gpu::cuda
 {
 
 int CudaTetrahedronTLEDForceFieldCudaClass = core::RegisterObject("GPU TLED tetrahedron forcefield using CUDA")
@@ -270,13 +265,13 @@ void CudaTetrahedronTLEDForceField::reinit()
         nbVertex = nelems.rbegin()->first + 1;
     }
 
-    std::cout << "CudaTetrahedronTLEDForceField: " << nbElems << " elements, " << nbVertex << " nodes, max " << nbElementPerVertex << " elements per node" << std::endl;
+    msg_info() << "CudaTetrahedronTLEDForceField: " << nbElems << " elements, " << nbVertex << " nodes, max " << nbElementPerVertex << " elements per node";
 
 
     /**
      * Precomputations
      */
-    std::cout << "CudaTetrahedronTLEDForceField: precomputations..." << std::endl;
+    msg_info() << "CudaTetrahedronTLEDForceField: precomputations...";
 
     const VecCoord& x = this->mstate->read(core::ConstVecCoordId::position())->getValue();
     nelems.clear();
@@ -516,7 +511,6 @@ void CudaTetrahedronTLEDForceField::addDForce (const sofa::core::MechanicalParam
 
 }
 
-
 // --------------------------------------------------------------------------------------
 // Computes element volumes for tetrahedral elements
 // --------------------------------------------------------------------------------------
@@ -555,7 +549,7 @@ void CudaTetrahedronTLEDForceField::ComputeDhDxTetra(const Element& e, const Vec
     }
 
     // Jacobian determinant
-    float detJ = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1]) +
+    const float detJ = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1]) +
             J[1][0]*(J[0][2]*J[2][1] - J[0][1]*J[2][2]) +
             J[2][0]*(J[0][1]*J[1][2] - J[0][2]*J[1][1]);
 
@@ -595,8 +589,8 @@ void CudaTetrahedronTLEDForceField::updateLameCoefficients(void)
     Mu = youngModulus.getValue()/(2*(1 + poissonRatio.getValue()));
 }
 
-} // namespace cuda
+} // namespace sofa::gpu::cuda
 
-} // namespace gpu
 
-} // namespace sofa
+
+

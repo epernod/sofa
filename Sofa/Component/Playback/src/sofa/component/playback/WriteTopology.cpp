@@ -80,7 +80,7 @@ simulation::Visitor::Result WriteTopologyCreator::processNodeTopDown( simulation
 
 void WriteTopologyCreator::addWriteTopology(core::topology::BaseMeshTopology* topology, simulation::Node* gnode)
 {
-    sofa::core::objectmodel::BaseContext* context = gnode->getContext();
+    const sofa::core::objectmodel::BaseContext* context = gnode->getContext();
     sofa::core::BaseMapping *mapping;
     context->get(mapping);
     if ( createInMapping || mapping == nullptr)
@@ -94,8 +94,10 @@ void WriteTopologyCreator::addWriteTopology(core::topology::BaseMeshTopology* to
             gnode->addObject(wt);
             wt->f_writeContainers.setValue(recordContainers);
             wt->f_writeShellContainers.setValue(recordShellContainers);
-            for (core::objectmodel::TagSet::iterator it=this->subsetsToManage.begin(); it != this->subsetsToManage.end(); ++it)
-                wt->addTag(*it);
+            for (const auto& subset : this->subsetsToManage)
+            {
+                wt->addTag(subset);
+            }
         }
 
         std::ostringstream ofilename;

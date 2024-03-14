@@ -37,7 +37,7 @@ namespace sofa::core::topology
 /////////////////////////////   Generic Topology Data Implementation   /////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template< class TopologyElementType, class VecT>
+template< class ElementType, class VecT>
 class TopologyDataHandler : public sofa::core::topology::TopologyHandler
 {
 public:

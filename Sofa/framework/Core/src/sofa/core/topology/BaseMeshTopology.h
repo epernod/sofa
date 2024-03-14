@@ -34,9 +34,6 @@ public:
     SOFA_ABSTRACT_CLASS(BaseMeshTopology, core::topology::Topology);
     SOFA_BASE_CAST_IMPLEMENTATION(BaseMeshTopology)
 
-    SOFA_ATTRIBUTE_DISABLED("v20.12 (PR#1515)", "v21.06", "Use sofa::Index instead of sofa::core::topology::BaseMeshTopology::index_type")
-    typedef DeprecatedAndRemoved index_type;
-
     using SeqEdges      = sofa::type::vector<Edge>;
     using SeqTriangles  = sofa::type::vector<Triangle>;
     using SeqQuads      = sofa::type::vector<Quad>;
@@ -59,12 +56,12 @@ public:
     using QuadsInHexahedron         = sofa::type::fixed_array<QuadID, 6>;
     using EdgesInHexahedron         = sofa::type::fixed_array<EdgeID, 12>;
         
-    static EdgesInTriangle        InvalidEdgesInTriangles;
-    static EdgesInQuad            InvalidEdgesInQuad;
-    static TrianglesInTetrahedron InvalidTrianglesInTetrahedron;
-    static EdgesInTetrahedron     InvalidEdgesInTetrahedron;
-    static QuadsInHexahedron      InvalidQuadsInHexahedron;
-    static EdgesInHexahedron      InvalidEdgesInHexahedron;
+    static constexpr EdgesInTriangle        InvalidEdgesInTriangles       = type::makeHomogeneousArray<EdgesInTriangle>(sofa::InvalidID);
+    static constexpr EdgesInQuad            InvalidEdgesInQuad            = type::makeHomogeneousArray<EdgesInQuad>(sofa::InvalidID);
+    static constexpr TrianglesInTetrahedron InvalidTrianglesInTetrahedron = type::makeHomogeneousArray<TrianglesInTetrahedron>(sofa::InvalidID);
+    static constexpr EdgesInTetrahedron     InvalidEdgesInTetrahedron     = type::makeHomogeneousArray<EdgesInTetrahedron>(sofa::InvalidID);
+    static constexpr QuadsInHexahedron      InvalidQuadsInHexahedron      = type::makeHomogeneousArray<QuadsInHexahedron>(sofa::InvalidID);
+    static constexpr EdgesInHexahedron      InvalidEdgesInHexahedron      = type::makeHomogeneousArray<EdgesInHexahedron>(sofa::InvalidID);
 
     /// @}
 
@@ -124,8 +121,8 @@ public:
     virtual const Tetra getTetrahedron(TetraID i)    { return getTetrahedra()[i]; }
     virtual const Hexa getHexahedron(HexaID i)       { return getHexahedra()[i]; }   
 	   
-    /// Type of higher topology element contains in this container @see TopologyElementType
-    virtual sofa::core::topology::TopologyElementType getTopologyType() const = 0;
+    /// Type of higher topology element contains in this container @see ElementType
+    virtual sofa::geometry::ElementType getTopologyType() const = 0;
     /// @}
 
     /// Bridge from old functions (using Tetra/Tetras and Hexa/Hexas) to new ones

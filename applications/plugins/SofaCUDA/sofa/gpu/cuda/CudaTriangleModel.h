@@ -25,5 +25,4 @@
 //SOFA_CUDA_ATTRIBUTE_DEPRECATED("v22.06 (PR #2673)", "CudaTriangleCollisionModel")
 //DeprecatedAndRemoved CudaTriangleModel;
 
-SOFA_DEPRECATED_HEADER("v23.06", "v23.12", "SofaCUDA/component/collision/geometry/CudaTriangleModel.h")
-#include <SofaCUDA/component/collision/geometry/CudaTriangleModel.h>
+SOFA_DISABLED_HEADER("v23.06", "v23.12", "SofaCUDA/component/collision/geometry/CudaTriangleModel.h")

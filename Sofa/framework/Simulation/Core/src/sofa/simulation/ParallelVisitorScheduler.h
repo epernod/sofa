@@ -22,18 +22,19 @@
 #ifndef SOFA_SIMULATION_CORE_PARALLELACTIONSCHEDULER_H
 #define SOFA_SIMULATION_CORE_PARALLELACTIONSCHEDULER_H
 
+#include <sofa/simulation/config.h>
+SOFA_HEADER_DEPRECATED_PARALLELVISITORSCHEDULER()
 
 #include <sofa/simulation/VisitorScheduler.h>
 #include <sofa/simulation/fwd.h>
 
-namespace sofa
-{
 
-namespace simulation
+namespace sofa::simulation
 {
 
 
 /// Specialized VisitorScheduler for parallel implementations.
+SOFA_ATTRIBUTE_DEPRECATED_PARALLELVISITORSCHEDULER()
 class SOFA_SIMULATION_CORE_API ParallelVisitorScheduler : public simulation::VisitorScheduler
 {
 public:
@@ -53,8 +54,7 @@ protected:
     virtual void executeParallelVisitor(Node* node, Visitor* action) = 0;
 };
 
-} // namespace simulation
+} // namespace sofa::simulation
 
-} // namespace sofa
 
 #endif

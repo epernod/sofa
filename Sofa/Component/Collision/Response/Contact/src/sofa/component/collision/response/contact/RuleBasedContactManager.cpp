@@ -43,11 +43,9 @@ RuleBasedContactManager::RuleBasedContactManager()
 
 RuleBasedContactManager::~RuleBasedContactManager()
 {
-    for(std::map<std::string,Data<std::string>*>::iterator it = variablesData.begin(),
-        itend = variablesData.end(); it != itend; ++it)
+    for(const auto& d : variablesData)
     {
-        //this->removeData(it->second);
-        delete it->second;
+        delete d.second;
     }
 }
 
@@ -55,7 +53,7 @@ void RuleBasedContactManager::createVariableData ( std::string variable )
 {
     Data<std::string>* d = new Data<std::string>("", true, false);
     d->setName(variable);
-    std::size_t sep = variable.find('_');
+    const std::size_t sep = variable.find('_');
     if (sep != std::string::npos)
     {
         // store group names in static set so that pointer to string content is kept valid
@@ -77,7 +75,7 @@ std::string RuleBasedContactManager::replaceVariables(std::string response)
     std::string::size_type next = 0;
     while(next < response.size())
     {
-        std::string::size_type var = response.find('$', next);
+        const std::string::size_type var = response.find('$', next);
         if (var == std::string::npos) // no more variables
         {
             res.append(response.substr(next));
@@ -87,7 +85,7 @@ std::string RuleBasedContactManager::replaceVariables(std::string response)
         {
             if (var > next)
                 res.append(response.substr(next,var-next));
-            std::string::size_type varEnd = response.find('$', var+1);
+            const std::string::size_type varEnd = response.find('$', var+1);
             if (varEnd == std::string::npos) // parse error
             {
                 msg_error() << "Error parsing variables in rule " << response;
@@ -125,14 +123,14 @@ std::string RuleBasedContactManager::getContactResponse(core::CollisionModel* mo
     if (!response1.empty()) return response1;
     else if (!response2.empty()) return response2;
 
-    const type::vector<Rule>& r = rules.getValue();
-    for (type::vector<Rule>::const_iterator it = r.begin(), itend = r.end(); it != itend; ++it)
+    const type::vector<Rule>& rulesValue = rules.getValue();
+    for (const auto& rule : rulesValue)
     {
-        if (it->match(model1, model2) || it->match(model2, model1))
-            return replaceVariables(it->response); // rule it matched
+        if (rule.match(model1, model2) || rule.match(model2, model1))
+            return replaceVariables(rule.response); // rule it matched
     }
     // no rule matched
-    return replaceVariables(DefaultContactManager::getContactResponse(model1, model2));
+    return replaceVariables(CollisionResponse::getContactResponse(model1, model2));
 }
 
 void RuleBasedContactManager::parse ( sofa::core::objectmodel::BaseObjectDescription* arg )

@@ -35,9 +35,8 @@
 #include <cassert>
 #include <cstdarg>
 
-namespace sofa
-{
-namespace helper
+
+namespace sofa::helper
 {
 
 
@@ -235,7 +234,7 @@ inline std::istream & operator>>(std::istream & stream, Polynomial_LD<FReal,FN> 
 
 
 
-#if  !defined(SOFA_HELPER_POLYNOMIAL_LD_CPP)
+#if !defined(SOFA_HELPER_POLYNOMIAL_LD_CPP)
 
 extern template class SOFA_HELPER_API Monomial_LD<double,1>;
 extern template class SOFA_HELPER_API Monomial_LD<double,2>;
@@ -253,10 +252,8 @@ extern template class SOFA_HELPER_API Polynomial_LD<double,5>;
 #endif
 
 
+} // namespace sofa::helper
 
-} // namespace helper
-
-} // namespace sofa
 
 #endif
 

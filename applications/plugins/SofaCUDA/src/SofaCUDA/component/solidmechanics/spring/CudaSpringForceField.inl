@@ -160,7 +160,7 @@ void SpringForceFieldInternalData< gpu::cuda::CudaVectorTypes<TCoord,TDeriv,TRea
     const sofa::type::vector<Spring>& springs = m->springs.getValue();
     if (!springs.empty())
     {
-        bool external = (m->mstate1!=m->mstate2);
+        const bool external = (m->mstate1!=m->mstate2);
         if (external)
         {
             std::map<int,int> nsprings1;
@@ -213,7 +213,7 @@ void SpringForceFieldInternalData< gpu::cuda::CudaVectorTypes<TCoord,TDeriv,TRea
                 if (it->second > nmax)
                     nmax = it->second;
             data.springs1.init(nsprings.begin()->first, nsprings.rbegin()->first - nsprings.begin()->first + 1, nmax);
-            std::cout << "CUDA SpringForceField: "<<springs.size()<<" springs, "<<data.springs1.nbVertex<<" attached points, max "<<data.springs1.nbSpringPerVertex<<" springs per point."<<std::endl;
+            msg_info("SpringForceFieldInternalData") << "CUDA SpringForceField: "<<springs.size()<<" springs, "<<data.springs1.nbVertex<<" attached points, max "<<data.springs1.nbSpringPerVertex<<" springs per point.";
             nsprings.clear();
             for (unsigned int i=0; i<springs.size(); i++)
             {

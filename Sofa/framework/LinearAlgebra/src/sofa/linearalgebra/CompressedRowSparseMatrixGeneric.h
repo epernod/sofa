@@ -34,6 +34,30 @@
 #include <sofa/linearalgebra/matrix_bloc_traits.h>
 #include <algorithm>
 
+namespace // anonymous
+{
+    // Boiler-plate code to test if a type implements a method
+    // explanation https://stackoverflow.com/a/30848101
+
+    template <typename...>
+    using void_t = void;
+
+    // Primary template handles all types not supporting the operation.
+    template <typename, template <typename> class, typename = void_t<>>
+    struct detectMatrix : std::false_type {};
+
+    // Specialization recognizes/validates only types supporting the archetype.
+    template <typename T, template <typename> class Op>
+    struct detectMatrix<T, Op, void_t<Op<T>>> : std::true_type {};
+
+    // Actual test if T implements transposed() (hence is a type::Mat)
+    template <typename T>
+    using isMatrix_t = decltype(std::declval<T>().transposed());
+
+    template <typename T>
+    using isMatrix = detectMatrix<T, isMatrix_t>;
+} // anonymous
+
 namespace sofa::linearalgebra
 {
 
@@ -92,6 +116,7 @@ public:
     using VecIndex = typename CRSBlockTraits<Block>::VecIndex;
     using VecFlag  = typename CRSBlockTraits<Block>::VecFlag;
     using Index = typename VecIndex::value_type;
+    static constexpr Index s_invalidIndex = std::is_signed_v<Index> ? std::numeric_limits<Index>::lowest() : std::numeric_limits<Index>::max();
 
     typedef sofa::type::Vec<NC,Real> DBlock;
 
@@ -156,6 +181,10 @@ public:
         typename VecIndex::const_iterator end  (const VecIndex& b) const { return b.begin() + end  (); }
         void operator++() { ++this->first; }
         void operator++(int) { ++this->first; }
+        bool isInvalid() const
+        {
+            return this->first == s_invalidIndex || this->second == s_invalidIndex;
+        }
     };
 
     static bool sortedFind(const VecIndex& v, Range in, Index val, Index& result)
@@ -187,7 +216,7 @@ public :
     VecIndex rowIndex;    ///< indices of non-empty block rows
     VecIndex rowBegin;    ///< column indices of non-empty blocks in each row. The column indices of the non-empty block within the i-th non-empty row are all the colsIndex[j],  j  in [rowBegin[i],rowBegin[i+1])
     VecIndex colsIndex;   ///< column indices of all the non-empty blocks, sorted by increasing row index and column index
-    VecBlock  colsValue;   ///< values of the non-empty blocks, in the same order as in colsIndex
+    VecBlock colsValue;   ///< values of the non-empty blocks, in the same order as in colsIndex
     VecFlag  touchedBlock; ///< boolean vector, i-th value is true if block has been touched since last compression.
 
     /// Additional storage to make block insertion more efficient
@@ -214,6 +243,8 @@ public :
     {
     }
 
+    virtual ~CompressedRowSparseMatrixGeneric() = default;
+
     /// \returns the number of row blocks
     Index rowBSize() const
     {
@@ -228,7 +259,17 @@ public :
 
     const VecIndex& getRowIndex() const { return rowIndex; }
     const VecIndex& getRowBegin() const { return rowBegin; }
-    Range getRowRange(Index id) const { return Range(rowBegin[id], rowBegin[id+1]); }
+
+    /// Returns the range of indices from the column indices corresponding to the id-th row
+    Range getRowRange(Index id) const
+    {
+        if (id + 1 >= static_cast<Index>(rowBegin.size()))
+        {
+            return Range(s_invalidIndex, s_invalidIndex);
+        }
+        return Range(rowBegin[id], rowBegin[id+1]);
+    }
+
     const VecIndex& getColsIndex() const { return colsIndex; }
     const VecBlock& getColsValue() const { return colsValue; }
 
@@ -255,7 +296,7 @@ public :
         }
     }
 
-    SOFA_ATTRIBUTE_DEPRECATED__CRS_BLOCK_RENAMING()
+    SOFA_ATTRIBUTE_DISABLED__CRS_BLOCK_RENAMING()
     void resizeBloc(Index nbBRow, Index nbBCol)
     {
         resizeBlock(nbBRow, nbBCol);
@@ -737,7 +778,7 @@ public:
         return colsValue[colId];
     }
 
-    SOFA_ATTRIBUTE_DEPRECATED__CRS_BLOCK_RENAMING()
+    SOFA_ATTRIBUTE_DISABLED__CRS_BLOCK_RENAMING()
     const Block& bloc(Index i, Index j) const
     {
         return block(i, j);
@@ -846,7 +887,7 @@ public:
         }
     }
 
-    SOFA_ATTRIBUTE_DEPRECATED__CRS_BLOCK_RENAMING()
+    SOFA_ATTRIBUTE_DISABLED__CRS_BLOCK_RENAMING()
     Block* wbloc(Index i, Index j, bool create = false)
     {
         return wblock(i, j, create);
@@ -1101,7 +1142,6 @@ public:
             nBlockRow = 0;
             nBlockCol = 0;
             skipCompressZero = true;
-            if constexpr (Policy::StoreTouchFlags) touchedBlock.clear();
         }
 
         btemp.clear();
@@ -1224,8 +1264,8 @@ public:
     template< typename = typename std::enable_if< Policy::IsAlwaysSymmetric> >
     void addSymDBlock(unsigned int bi, unsigned int bj, const DBlock& b)
     {
-        unsigned int i = std::min(bi, bj);
-        unsigned int j = std::max(bi, bj);
+        const unsigned int i = std::min(bi, bj);
+        const unsigned int j = std::max(bi, bj);
         addDBlock(i, j, b);
         if constexpr (Policy::StoreLowerTriangularBlock) addDBlock(j, i, b);
     }
@@ -1233,8 +1273,8 @@ public:
     template< typename = typename std::enable_if< Policy::IsAlwaysSymmetric> >
     void addSymDValue(unsigned int bi, unsigned int bj, const Real b)
     {
-        unsigned int i = std::min(bi, bj);
-        unsigned int j = std::max(bi, bj);
+        const unsigned int i = std::min(bi, bj);
+        const unsigned int j = std::max(bi, bj);
         addDValue(i, j, b);
         if constexpr (Policy::StoreLowerTriangularBlock) addDValue(j, i, b);
     }
@@ -1242,8 +1282,8 @@ public:
     template< typename = typename std::enable_if< Policy::IsAlwaysSymmetric> >
     void addSymDValue(unsigned int bi, unsigned int bj, int& rowId, int& colId, int& rowIdT, int& colIdT, Real b)
     {
-        unsigned int i = std::min(bi, bj);
-        unsigned int j = std::max(bi, bj);
+        const unsigned int i = std::min(bi, bj);
+        const unsigned int j = std::max(bi, bj);
         addDValue(i, j, rowId, colId, b);
         if constexpr (Policy::StoreLowerTriangularBlock) addDValue(j, i, rowIdT, colIdT, b);
     }
@@ -1370,13 +1410,13 @@ public:
 
     static auto blockMultTranspose(const TBlock& blockA, const TBlock& blockB)
     {
-        if constexpr (std::is_scalar_v<TBlock>)
+        if constexpr (isMatrix<Block>())
         {
-            return blockA * blockB;
+            return blockA.multTranspose(blockB);
         }
         else
         {
-            return blockA.multTranspose(blockB);
+            return blockA * blockB;
         }
     }
 
@@ -1408,7 +1448,7 @@ public:
 
         if( m.rowIndex.empty() ) return; // if m is null
 
-        for( Index xi = 0 ; xi < rowIndex.size() ; ++xi )  // for each non-null transpose block column
+        for( Size xi = 0 ; xi < rowIndex.size() ; ++xi )  // for each non-null transpose block column
         {
             unsigned mr = 0; // block row index in m
 
@@ -1587,7 +1627,7 @@ protected:
     }
 };
 
-#if !defined(SOFA_COMPONENT_LINEARSOLVER_COMPRESSEDROWSPARSEMATRIXGENERIC_CPP) 
+#if !defined(SOFA_COMPONENT_LINEARSOLVER_COMPRESSEDROWSPARSEMATRIXGENERIC_CPP)
 extern template class SOFA_LINEARALGEBRA_API CompressedRowSparseMatrixGeneric<double>;
 extern template class SOFA_LINEARALGEBRA_API CompressedRowSparseMatrixGeneric<float>;
 extern template class SOFA_LINEARALGEBRA_API CompressedRowSparseMatrixGeneric<type::Mat1x1d>;

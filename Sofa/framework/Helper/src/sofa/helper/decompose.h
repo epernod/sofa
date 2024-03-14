@@ -26,10 +26,7 @@
 #include <sofa/type/Mat.h>
 
 
-namespace sofa
-{
-
-namespace helper
+namespace sofa::helper
 {
 
 template<class Real>
@@ -389,13 +386,12 @@ SOFA_HELPER_API inline double Decompose<double>::zeroTolerance()
     return 1e-8;
 }
 
-#if  !defined(SOFA_BUILD_HELPER)
+#if !defined(SOFA_BUILD_HELPER)
 extern template class SOFA_HELPER_API Decompose<double>;
 extern template class SOFA_HELPER_API Decompose<float>;
 #endif
 
-} // namespace helper
+} // namespace sofa::helper
 
-} // namespace sofa
 
 #endif // SOFA_HELPER_DECOMPOSE_H

@@ -61,10 +61,10 @@ void MechanicalObject<defaulttype::Rigid3Types>::applyRotation (const type::Quat
 {
     helper::WriteAccessor< Data<VecCoord> > x = *this->write(core::VecCoordId::position());
 
-    for (unsigned int i = 0; i < x.size(); i++)
+    for (RigidCoord<3, SReal>& xi : x)
     {
-        x[i].getCenter() = q.rotate(x[i].getCenter());
-        x[i].getOrientation() = q * x[i].getOrientation();
+        xi.getCenter() = q.rotate(xi.getCenter());
+        xi.getOrientation() = q * xi.getOrientation();
     }
 }
 
@@ -203,7 +203,7 @@ void MechanicalObject<defaulttype::Rigid3Types>::draw(const core::visual::Visual
     if (showObject.getValue())
     {
         const float scale = showObjectScale.getValue();
-        helper::ReadAccessor<Data<VecCoord> > x = *this->read(core::VecCoordId::position());
+        const helper::ReadAccessor<Data<VecCoord> > x = *this->read(core::VecCoordId::position());
         const size_t vsize = d_size.getValue();
         for (size_t i = 0; i < vsize; ++i)
         {

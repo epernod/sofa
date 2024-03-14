@@ -25,8 +25,8 @@
 namespace sofa::core::topology
 {
 
-template <typename TopologyElementType, typename VecT>
-TopologyDataHandler< TopologyElementType, VecT>::TopologyDataHandler(t_topologicalData *_topologicalData,
+template <typename ElementType, typename VecT>
+TopologyDataHandler< ElementType, VecT>::TopologyDataHandler(t_topologicalData *_topologicalData,
         sofa::core::topology::BaseMeshTopology *_topology, value_type defaultValue)
     : TopologyHandler()
     , m_topologyData(_topologicalData)
@@ -36,8 +36,8 @@ TopologyDataHandler< TopologyElementType, VecT>::TopologyDataHandler(t_topologic
 }
 
 
-template <typename TopologyElementType, typename VecT>
-TopologyDataHandler< TopologyElementType, VecT>::TopologyDataHandler(t_topologicalData* _topologicalData,
+template <typename ElementType, typename VecT>
+TopologyDataHandler< ElementType, VecT>::TopologyDataHandler(t_topologicalData* _topologicalData,
     value_type defaultValue)
     : TopologyHandler()
     , m_topologyData(_topologicalData)
@@ -46,8 +46,8 @@ TopologyDataHandler< TopologyElementType, VecT>::TopologyDataHandler(t_topologic
 }
 
 
-template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::init()
+template <typename ElementType, typename VecT>
+void TopologyDataHandler<ElementType,  VecT>::init()
 {
     // Name creation
     if (m_prefix.empty()) m_prefix = "TopologyDataHandler( " + this->m_topologyData->getOwner()->getName() + " )";
@@ -75,8 +75,8 @@ void TopologyDataHandler<TopologyElementType,  VecT>::init()
 }
 
 
-template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::handleTopologyChange()
+template <typename ElementType, typename VecT>
+void TopologyDataHandler<ElementType,  VecT>::handleTopologyChange()
 {
     if (!this->isTopologyHandlerRegistered() || m_topology == nullptr)
         return;
@@ -85,8 +85,8 @@ void TopologyDataHandler<TopologyElementType,  VecT>::handleTopologyChange()
 }
 
 
-template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType, VecT>::linkToTopologyDataArray(sofa::geometry::ElementType elementType)
+template <typename ElementType, typename VecT>
+void TopologyDataHandler<ElementType, VecT>::linkToTopologyDataArray(sofa::geometry::ElementType elementType)
 {
     if (m_topology == nullptr)
     {
@@ -114,14 +114,14 @@ void TopologyDataHandler<TopologyElementType, VecT>::linkToTopologyDataArray(sof
 }
 
 
-template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType, VecT>::unlinkFromTopologyDataArray(sofa::geometry::ElementType elementType)
+template <typename ElementType, typename VecT>
+void TopologyDataHandler<ElementType, VecT>::unlinkFromTopologyDataArray(sofa::geometry::ElementType elementType)
 {
-    auto it = m_registeredElements.find(elementType);
+    const auto it = m_registeredElements.find(elementType);
     if (it == m_registeredElements.end()) // case if this element type has never been registered or topology has already been deleted
         return;
 
-    bool res = m_topology->unlinkTopologyHandlerToData(this, elementType);
+    const bool res = m_topology->unlinkTopologyHandlerToData(this, elementType);
     msg_error_when(!res, m_topologyData->getOwner()) << "Owner topology is not able to unlink with Data Array, Data '" << m_data_name << "' won't be unlinked.";
     
     m_topology->removeTopologyHandler(this, elementType);
@@ -131,15 +131,15 @@ void TopologyDataHandler<TopologyElementType, VecT>::unlinkFromTopologyDataArray
 
 
 
-template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType, VecT>::unlinkFromAllTopologyDataArray()
+template <typename ElementType, typename VecT>
+void TopologyDataHandler<ElementType, VecT>::unlinkFromAllTopologyDataArray()
 {
     if (m_registeredElements.empty()) // Will be false if topology has already been deleted
         return;
 
     for (auto elementType : m_registeredElements)
     {
-        bool res = m_topology->unlinkTopologyHandlerToData(this, elementType);
+        const bool res = m_topology->unlinkTopologyHandlerToData(this, elementType);
         msg_error_when(!res, m_topologyData->getOwner()) << "Owner topology is not able to unlink with Data Array, Data '" << m_data_name << "' won't be unlinked.";
 
         m_topology->removeTopologyHandler(this, elementType);
@@ -150,38 +150,38 @@ void TopologyDataHandler<TopologyElementType, VecT>::unlinkFromAllTopologyDataAr
 
 
 /// Apply swap between indices elements.
-template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementIndicesSwap* event)
+template <typename ElementType, typename VecT>
+void TopologyDataHandler<ElementType,  VecT>::ApplyTopologyChange(const EIndicesSwap* event)
 {
     m_topologyData->swap(event->index[0], event->index[1]);
 }
 
 
 /// Apply adding elements.
-template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementAdded* event)
+template <typename ElementType, typename VecT>
+void TopologyDataHandler<ElementType,  VecT>::ApplyTopologyChange(const EAdded* event)
 {
     m_topologyData->add(event->getIndexArray(), event->getElementArray(),
         event->ancestorsList, event->coefs, event->ancestorElems);
 }
 
 /// Apply removing elements.
-template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementRemoved* event)
+template <typename ElementType, typename VecT>
+void TopologyDataHandler<ElementType,  VecT>::ApplyTopologyChange(const ERemoved* event)
 {
     m_topologyData->remove(event->getArray());
 }
 
 /// Apply renumbering on elements.
-template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementRenumbering* event)
+template <typename ElementType, typename VecT>
+void TopologyDataHandler<ElementType,  VecT>::ApplyTopologyChange(const ERenumbering* event)
 {
     m_topologyData->renumber(event->getIndexArray());
 }
 
 /// Apply moving elements.
-template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementMoved* /*event*/)
+template <typename ElementType, typename VecT>
+void TopologyDataHandler<ElementType,  VecT>::ApplyTopologyChange(const EMoved* /*event*/)
 {
     msg_warning(m_topologyData->getOwner()) << "MOVED topology event not handled on " << ElementInfo::name()
         << " (it should not even exist!)";

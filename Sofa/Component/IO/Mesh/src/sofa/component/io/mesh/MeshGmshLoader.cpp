@@ -128,15 +128,15 @@ void MeshGmshLoader::doClearBuffers()
 }
 
 void MeshGmshLoader::addInGroup(type::vector< sofa::core::loader::PrimitiveGroup>& group,int tag,int /*eid*/) {
-    for (unsigned i=0;i<group.size();i++) {
-        if (tag == group[i].p0) {
-            group[i].nbp++;
+    for (auto& group_i : group) {
+        if (tag == group_i.p0) {
+            group_i.nbp++;
             return;
         }
     }
 
     stringstream ss;
-    string s;
+    const string s;
     ss << tag;
 
     group.push_back(sofa::core::loader::PrimitiveGroup(tag,1,s,s,-1));
@@ -144,9 +144,9 @@ void MeshGmshLoader::addInGroup(type::vector< sofa::core::loader::PrimitiveGroup
 
 void MeshGmshLoader::normalizeGroup(type::vector< sofa::core::loader::PrimitiveGroup>& group) {
     int start = 0;
-    for (unsigned i=0;i<group.size();i++) {
-        group[i].p0 = start;
-        start += group[i].nbp;
+    for (auto& group_i : group) {
+        group_i.p0 = start;
+        start += group_i.nbp;
     }
 }
 

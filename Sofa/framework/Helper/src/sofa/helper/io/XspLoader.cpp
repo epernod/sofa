@@ -35,13 +35,8 @@ using sofa::type::Vec3;
 #include <string>
 #include <cmath>
 
-namespace sofa
-{
 
-namespace helper
-{
-
-namespace io
+namespace sofa::helper::io
 {
 
 XspLoaderDataHook::~XspLoaderDataHook(){}
@@ -101,7 +96,7 @@ bool XspLoader::ReadXspContent(std::ifstream &file,
                 msg_error("XspLoader") << "Error while reading 'mass' command.";
                 return false;
             }
-            bool isASurfacePoint = (location == 's');
+            const bool isASurfacePoint = (location == 's');
             bool isAFixedPoint = false;
             if (mass < 0)
             {
@@ -239,9 +234,9 @@ bool XspLoader::Load(const std::string& filename,
     return isOk;
 }
 
-} // namespace io
+} // namespace sofa::helper::io
 
-} // namespace helper
 
-} // namespace sofa
+
+
 
