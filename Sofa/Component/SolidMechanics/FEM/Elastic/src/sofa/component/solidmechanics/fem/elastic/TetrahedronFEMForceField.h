@@ -224,7 +224,7 @@ public:
     Data<int> _computeVonMisesStress; ///< compute and display von Mises stress: 0: no computations, 1: using corotational strain, 2: using full Green strain
     Data<type::vector<Real> > _vonMisesPerElement; ///< von Mises Stress per element
     Data<type::vector<Real> > _vonMisesPerNode; ///< von Mises Stress per node
-    Data<type::vector<type::Vec4f> > _vonMisesStressColors; ///< Vector of colors describing the VonMises stress
+    Data<type::vector<type::RGBAColor> > _vonMisesStressColors; ///< Vector of colors describing the VonMises stress
 
     Real m_minVonMisesPerNode;
     Real m_maxVonMisesPerNode;
@@ -286,6 +286,7 @@ public:
     void addKToMatrix(sofa::linearalgebra::BaseMatrix *m, SReal kFactor, unsigned int &offset) override;
     void addKToMatrix(const core::MechanicalParams* /*mparams*/, const sofa::core::behavior::MultiMatrixAccessor* /*matrix*/ ) override;
     void buildStiffnessMatrix(core::behavior::StiffnessMatrix* matrix) override;
+    void buildDampingMatrix(core::behavior::DampingMatrix* /*matrix*/) final;
 
     void draw(const core::visual::VisualParams* vparams) override;
 

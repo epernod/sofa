@@ -118,7 +118,7 @@ public:
     static int size(const data_type&) { return size(); }
     static const char* header(const data_type& d, int i = 0)
     {
-        int s = prev::size();
+        const int s = prev::size();
         if (i < s)
             return prev::header(d, i);
         else
@@ -139,7 +139,7 @@ public:
     }
     static value_type* get(const data_type& d, int i = 0)
     {
-        int s = prev::size();
+        const int s = prev::size();
         if (i < s)
             return prev::get(d, i);
         else
@@ -151,7 +151,7 @@ public:
     }
     static void setS(const std::string& v, data_type& d, int i = 0)
     {
-        int s = prev::size();
+        const int s = prev::size();
         if (i < s)
             prev::setS(v, d, i);
         else
@@ -218,7 +218,7 @@ public:
     static int size(const data_type&) { return size(); }
     static const char* header(const data_type& d, int i = 0)
     {
-        int s = vtrait::size();
+        const int s = vtrait::size();
         int j = i / s;
         i = i % s;
         const char* h1 = vhelper::header(d, j);
@@ -236,14 +236,14 @@ public:
     }
     static const value_type* get(const data_type& d, int i = 0)
     {
-        int s = vtrait::size();
+        const int s = vtrait::size();
         int j = i / s;
         i = i % s;
         return vtrait::get(*vhelper::get(d, j), i);
     }
     static void set(const value_type& v, data_type& d, int i = 0)
     {
-        int s = vtrait::size();
+        const int s = vtrait::size();
         int j = i / s;
         i = i % s;
         vtype t = *vhelper::get(d, j);
@@ -252,7 +252,7 @@ public:
     }
     static void setS(const std::string& v, data_type& d, int i = 0)
     {
-        int s = vtrait::size();
+        const int s = vtrait::size();
         int j = i / s;
         i = i % s;
         vtype t = *vhelper::get(d, j);
@@ -372,7 +372,7 @@ public:
     bool createWidgets(DataWidget* parent, const data_type& d, bool readOnly)
     {
         rows = 0;
-        int dataRows = rhelper::size(d);
+        const int dataRows = rhelper::size(d);
 
         wSize = new QSpinBox(parent);
         wSize->setMinimum(0);
@@ -492,12 +492,12 @@ public:
         rows = wSize->value();
         if (!(FLAGS & TABLE_FIXEDSIZE))
         {
-            int oldrows = rhelper::size(d);
+            const int oldrows = rhelper::size(d);
             if( rows != oldrows)
             {
                 rhelper::resize(rows,d);
             }
-            int newrows = rhelper::size(d);
+            const int newrows = rhelper::size(d);
             if( rows != newrows)
             {
                 wSize->setValue(newrows);
@@ -535,7 +535,7 @@ public:
             currentTableNumRows=wTableModel->columnCount();
         else
             currentTableNumRows=wTableModel->rowCount();
-        int rowSize = wSize->value();
+        const int rowSize = wSize->value();
 
         QStringList horizontalHeaders;
         QStringList verticalHeaders;
@@ -602,7 +602,7 @@ public:
     void fillTable(const data_type &d)
     {
         int currentNum;
-        int dsize = (int)d.size();
+        const int dsize = (int)d.size();
         if (FLAGS & TABLE_HORIZONTAL)
             currentNum=wTableModel->columnCount() > dsize ? dsize : wTableModel->columnCount();
         else

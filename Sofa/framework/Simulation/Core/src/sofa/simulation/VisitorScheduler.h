@@ -23,18 +23,19 @@
 #define SOFA_SIMULATION_VISITORSCHEDULER_H
 
 #include <sofa/simulation/config.h>
+SOFA_HEADER_DEPRECATED_VISITORSCHEDULER()
+
 #include <sofa/core/objectmodel/BaseObject.h>
 #include <sofa/simulation/fwd.h>
 
-namespace sofa
-{
 
-namespace simulation
+namespace sofa::simulation
 {
 
 class Visitor;
 
 /// Abstract class defining custom schedule of action execution through the graph.
+SOFA_ATTRIBUTE_DEPRECATED_VISITORSCHEDULER()
 class SOFA_SIMULATION_CORE_API VisitorScheduler : public virtual sofa::core::objectmodel::BaseObject
 {
 public:
@@ -61,8 +62,7 @@ private:
 	
 };
 
-} // namespace simulation
+} // namespace sofa::simulation
 
-} // namespace sofa
 
 #endif

@@ -76,7 +76,7 @@ void DynamicSparseGridTopologyContainer::init()
     }
 
     // Init values
-    int dataSize = VoxelLoader->getDataSize();
+    const int dataSize = VoxelLoader->getDataSize();
 
     if ( !dataSize )
     {
@@ -98,9 +98,9 @@ void DynamicSparseGridTopologyContainer::init()
     viirg.resize( dataSize);
     //for( int i = 0; i < dataSize; i++)
     //  viirg[i] = data[i];
-    for( unsigned int i = 0; i < iirg.size(); ++i)
+    for(const unsigned int hexaId : iirg)
     {
-        viirg[iirg[i]] = 255;
+        viirg[hexaId] = 255;
     }
 
     // init values in topo. (pas dense).

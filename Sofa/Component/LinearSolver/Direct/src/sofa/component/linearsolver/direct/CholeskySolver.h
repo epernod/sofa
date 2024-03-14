@@ -47,7 +47,9 @@ public:
     typedef sofa::component::linearsolver::MatrixLinearSolver<TMatrix,TVector> Inherit;
 
     SOFA_ATTRIBUTE_DEPRECATED__SOLVER_DIRECT_VERBOSEDATA()
-    Data<bool> f_verbose; ///< Dump system state at each iteration
+    sofa::core::objectmodel::lifecycle::RemovedData f_verbose{this, "v22.06", "v22.12", "verbose",
+                                                              "Attribute 'verbose' has no use in this component. "
+                                                              "To remove this error, remove the use of the attribute from the scene."};
 
     CholeskySolver();
 
@@ -57,13 +59,11 @@ public:
     /// Factors the matrix. Must be done before solving
     void invert(Matrix& M) override;
 
-    void parse(core::objectmodel::BaseObjectDescription *arg) override;
-
 private :
     linearalgebra::FullMatrix<typename Vector::Real> L;
 };
 
-#if  !defined(SOFA_COMPONENT_LINEARSOLVER_CHOLESKYSOLVER_CPP)
+#if !defined(SOFA_COMPONENT_LINEARSOLVER_CHOLESKYSOLVER_CPP)
 extern template class SOFA_COMPONENT_LINEARSOLVER_DIRECT_API CholeskySolver< linearalgebra::SparseMatrix<SReal>, linearalgebra::FullVector<SReal> >;
 extern template class SOFA_COMPONENT_LINEARSOLVER_DIRECT_API CholeskySolver< linearalgebra::FullMatrix<SReal>, linearalgebra::FullVector<SReal> >;
 

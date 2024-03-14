@@ -89,14 +89,14 @@ private:
 
 bool EdgeSetTopology_test::loadTopologyContainer(const std::string& filename)
 {
-    m_scene = std::make_unique<fake_TopologyScene>(filename, sofa::core::topology::TopologyElementType::EDGE);
+    m_scene = std::make_unique<fake_TopologyScene>(filename, sofa::geometry::ElementType::EDGE);
 
     if (m_scene == nullptr) {
         msg_error("EdgeSetTopology_test") << "Fake Topology creation failed.";
         return false;
     }
 
-    auto root = m_scene->getNode().get();
+    const auto root = m_scene->getNode().get();
     m_topoCon = root->get<EdgeSetTopologyContainer>(sofa::core::objectmodel::BaseContext::SearchDown);
 
     if (m_topoCon == nullptr)
@@ -111,7 +111,7 @@ bool EdgeSetTopology_test::loadTopologyContainer(const std::string& filename)
 
 bool EdgeSetTopology_test::testEmptyContainer()
 {
-    EdgeSetTopologyContainer::SPtr edgeContainer = sofa::core::objectmodel::New< EdgeSetTopologyContainer >();
+    const EdgeSetTopologyContainer::SPtr edgeContainer = sofa::core::objectmodel::New< EdgeSetTopologyContainer >();
     EXPECT_EQ(edgeContainer->getNbEdges(), 0);
     EXPECT_EQ(edgeContainer->getNumberOfElements(), 0);
     EXPECT_EQ(edgeContainer->getNumberOfEdges(), 0);
@@ -214,7 +214,7 @@ bool EdgeSetTopology_test::checkTopology()
     if (!loadTopologyContainer("mesh/square1_edges.obj"))
         return false;
 
-    bool res = m_topoCon->checkTopology();
+    const bool res = m_topoCon->checkTopology();
     
     return res;
 }
@@ -230,15 +230,15 @@ bool EdgeSetTopology_test::testRemovingVertices()
     EXPECT_EQ(m_topoCon->getNbEdges(), nbrEdge);
 
     // Get access to the Edge modifier
-    auto root = m_scene->getNode().get();
-    EdgeSetTopologyModifier::SPtr edgeModifier = root->get<EdgeSetTopologyModifier>(sofa::core::objectmodel::BaseContext::SearchDown);
+    const auto root = m_scene->getNode().get();
+    const EdgeSetTopologyModifier::SPtr edgeModifier = root->get<EdgeSetTopologyModifier>(sofa::core::objectmodel::BaseContext::SearchDown);
 
     if (edgeModifier == nullptr)
         return false;
 
     // Check edge around point to be removed
     sofa::type::vector< EdgeID > vIds = { 0, 1, 2 };
-    const EdgesAroundVertex& edgeAVertex = m_topoCon->getEdgesAroundVertex(0);
+    //const EdgesAroundVertex& edgeAVertex = m_topoCon->getEdgesAroundVertex(0);
 
     edgeModifier->removePoints(vIds);
 
@@ -262,15 +262,15 @@ bool EdgeSetTopology_test::testRemovingEdges()
     EXPECT_EQ(edges.size(), nbrEdge);
 
     // Get access to the Edge modifier
-    auto root = m_scene->getNode().get();
-    EdgeSetTopologyModifier::SPtr edgeModifier = root->get<EdgeSetTopologyModifier>(sofa::core::objectmodel::BaseContext::SearchDown);
+    const auto root = m_scene->getNode().get();
+    const EdgeSetTopologyModifier::SPtr edgeModifier = root->get<EdgeSetTopologyModifier>(sofa::core::objectmodel::BaseContext::SearchDown);
 
     if (edgeModifier == nullptr)
         return false;
 
     // Check first the swap + pop_back method
     Edge lastEdge = edges.back();
-    sofa::type::vector< EdgeID > edgeIds = { 0 };
+    const sofa::type::vector< EdgeID > edgeIds = { 0 };
     
     // Remove first edge from the buffer
     edgeModifier->removeEdges(edgeIds);
@@ -286,7 +286,7 @@ bool EdgeSetTopology_test::testRemovingEdges()
 
     // Check isolate vertex removal
     const EdgesAroundVertex& edgeALastVertex = m_topoCon->getEdgesAroundVertex(nbrVertex - 1);
-    auto nbr = nbrEdge - 1 - edgeALastVertex.size();
+    const auto nbr = nbrEdge - 1 - edgeALastVertex.size();
 
     edgeModifier->removeEdges(edgeALastVertex);
     
@@ -307,8 +307,8 @@ bool EdgeSetTopology_test::testAddingEdges()
     EXPECT_EQ(m_topoCon->getNbEdges(), nbrEdge);
 
     // Get access to the Edge modifier
-    auto root = m_scene->getNode().get();
-    EdgeSetTopologyModifier::SPtr edgeModifier = root->get<EdgeSetTopologyModifier>(sofa::core::objectmodel::BaseContext::SearchDown);
+    const auto root = m_scene->getNode().get();
+    const EdgeSetTopologyModifier::SPtr edgeModifier = root->get<EdgeSetTopologyModifier>(sofa::core::objectmodel::BaseContext::SearchDown);
 
     if (edgeModifier == nullptr)
         return false;
@@ -338,8 +338,8 @@ bool EdgeSetTopology_test::checkEdgeDataGraph()
     auto& outputs = m_topoCon->d_edge.getOutputs();
     EXPECT_EQ(outputs.size(), 2);
 
-    auto edgeHandlers = m_topoCon->getTopologyHandlerList(sofa::core::topology::TopologyElementType::EDGE);
-    auto vertexHandlers = m_topoCon->getTopologyHandlerList(sofa::core::topology::TopologyElementType::POINT);
+    auto edgeHandlers = m_topoCon->getTopologyHandlerList(sofa::geometry::ElementType::EDGE);
+    const auto vertexHandlers = m_topoCon->getTopologyHandlerList(sofa::geometry::ElementType::POINT);
     
     EXPECT_EQ(vertexHandlers.size(), 1);
     EXPECT_EQ(edgeHandlers.size(), 2);

@@ -26,11 +26,13 @@
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 #include <sofa/core/behavior/BaseLocalMassMatrix.h>
 #include <sofa/core/BaseLocalMappingMatrix.h>
-#include <sofa/linearalgebra/CompressedRowSparseMatrix.h>
 #include <sofa/component/linearsystem/MappingGraph.h>
 #include <sofa/core/behavior/BaseProjectiveConstraintSet.h>
 #include <sofa/component/linearsystem/matrixaccumulators/AssemblingMappedMatrixAccumulator.h>
+#include <sofa/component/linearsystem/CreateMatrixDispatcher.h>
 #include <optional>
+#include <sofa/component/linearsystem/BaseMatrixProjectionMethod.h>
+
 
 namespace sofa::component::linearsystem
 {
@@ -80,6 +82,7 @@ public:
     Data< bool > d_applyProjectiveConstraints; ///< If true, projective constraints are applied on the global matrix
     Data< bool > d_applyMappedComponents; ///< If true, mapped components contribute to the global matrix
     Data< bool > d_checkIndices; ///< If true, indices are verified before being added in to the global matrix, favoring security over speed
+    Data< bool > d_parallelAssemblyIndependentMatrices; ///< If true, independent matrices (global matrix vs mapped matrices) are assembled in parallel
 
 protected:
 
@@ -100,6 +103,19 @@ protected:
     std::map<BaseForceField*, core::behavior::StiffnessMatrix> m_stiffness;
     std::map<BaseForceField*, core::behavior::DampingMatrix> m_damping;
     std::map<BaseMapping*, core::GeometricStiffnessMatrix> m_geometricStiffness;
+    std::map<BaseMass*, BaseAssemblingMatrixAccumulator<Contribution::MASS>*> m_mass;
+
+    struct IndependentContributors
+    {
+        std::map<BaseForceField*, core::behavior::StiffnessMatrix> m_stiffness;
+        std::map<BaseForceField*, core::behavior::DampingMatrix> m_damping;
+        std::map<BaseMapping*, core::GeometricStiffnessMatrix> m_geometricStiffness;
+        std::map<BaseMass*, BaseAssemblingMatrixAccumulator<Contribution::MASS>*> m_mass;
+        int id {};
+    };
+
+    sofa::type::vector<IndependentContributors> m_independentContributors;
+
 
     /// List of shared local matrices under mappings
     sofa::type::vector< std::pair<
@@ -115,12 +131,17 @@ protected:
     template<Contribution c>
     void contribute(const core::MechanicalParams* mparams);
 
+    template<Contribution c>
+    void contribute(const core::MechanicalParams* mparams, IndependentContributors& contributors);
+
     void assembleSystem(const core::MechanicalParams* mparams) override;
 
     /**
      * Gather all components associated to the same mechanical state into groups
      */
     void makeLocalMatrixGroups(const core::MechanicalParams* mparams);
+
+    void makeIndependentLocalMatrixGroups();
 
     /**
      * Create the matrix accumulators and associate them to all components that have a contribution
@@ -169,13 +190,6 @@ protected:
      */
     virtual void projectMappedMatrices(const core::MechanicalParams* mparams);
 
-
-    /**
-     * Build the jacobian matrices of mappings from a mapped state to its top most parents (in the
-     * sense of mappings)
-     */
-    MappingJacobians<JacobianMatrixType> computeJacobiansFrom(BaseMechanicalState* mstate, const core::MechanicalParams* mparams);
-
     /**
      * Assemble the matrices under mappings into the global matrix
      */
@@ -218,6 +232,29 @@ protected:
 
     void buildGroupsOfComponentAssociatedToMechanicalStates(
         std::map< PairMechanicalStates, GroupOfComponentsAssociatedToAPairOfMechanicalStates>& groups);
+
+    /// An object with factory methods to create local matrices
+    std::tuple<
+        std::unique_ptr<CreateMatrixDispatcher<Contribution::STIFFNESS          >>,
+        std::unique_ptr<CreateMatrixDispatcher<Contribution::MASS               >>,
+        std::unique_ptr<CreateMatrixDispatcher<Contribution::DAMPING            >>,
+        std::unique_ptr<CreateMatrixDispatcher<Contribution::GEOMETRIC_STIFFNESS>>
+    > m_createDispatcher;
+
+    /// Define the type of dispatcher, itself defining the type of local matrices
+    /// To override if matrix accumulation methods differs from this class.
+    virtual void makeCreateDispatcher();
+
+    virtual std::shared_ptr<sofa::core::matrixaccumulator::IndexVerificationStrategy>
+    makeIndexVerificationStrategy(sofa::core::objectmodel::BaseObject* component);
+
+    std::map< PairMechanicalStates, BaseMatrixProjectionMethod<LocalMappedMatrixType<Real> >* > m_matrixMappings;
+
+    virtual typename BaseMatrixProjectionMethod<LocalMappedMatrixType<Real> >::SPtr createMatrixMapping(const PairMechanicalStates& pair);
+
+private:
+    template<Contribution c>
+    static std::unique_ptr<CreateMatrixDispatcher<c>> makeCreateDispatcher();
 };
 
 template<Contribution c, class Real>
@@ -227,39 +264,24 @@ struct LocalMatrixMaps
     using ComponentType = sofa::core::matrixaccumulator::get_component_type<c>;
     using PairMechanicalStates = sofa::type::fixed_array<core::behavior::BaseMechanicalState*, 2>;
 
-    /// List of local matrices that components will use to add their contributions
-    std::map< ComponentType*, ListMatrixType > accumulators;
-    /// The local matrix (value) that has been created and associated to a non-mapped component (key)
-    std::map< ComponentType*, BaseAssemblingMatrixAccumulator<c>* > localMatrix;
     /// The local matrix (value) that has been created and associated to a mapped component (key)
     std::map< ComponentType*, std::map<PairMechanicalStates, AssemblingMappedMatrixAccumulator<c, Real>*> > mappedLocalMatrix;
     /// A verification strategy allowing to verify that the matrix indices provided are valid
-    std::map< ComponentType*, std::shared_ptr<core::matrixaccumulator::RangeVerification> > indexVerificationStrategy;
+    std::map< ComponentType*, std::shared_ptr<core::matrixaccumulator::IndexVerificationStrategy> > indexVerificationStrategy;
 
 
     std::map< ComponentType*, std::map<PairMechanicalStates, BaseAssemblingMatrixAccumulator<c>* > > componentLocalMatrix;
 
     void clear()
     {
-        for (const auto [component, matrix] : localMatrix)
-        {
-            if (component)
-            {
-                component->removeSlave(matrix);
-            }
-        }
-
-        for (const auto& [component, matrixMap] : mappedLocalMatrix)
+        for (const auto& [component, matrixMap] : componentLocalMatrix)
         {
             for (const auto& [pair, matrix] : matrixMap)
             {
                 component->removeSlave(matrix);
-                matrix->reset();
             }
         }
 
-        accumulators.clear();
-        localMatrix.clear();
         mappedLocalMatrix.clear();
         indexVerificationStrategy.clear();
         componentLocalMatrix.clear();

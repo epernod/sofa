@@ -87,7 +87,7 @@ void GridMeshCreator::insertQuad(unsigned a, unsigned b, unsigned c, unsigned d)
 bool GridMeshCreator::doLoad()
 {
     auto my_positions = getWriteOnlyAccessor(d_positions);
-    unsigned numX = resolution.getValue()[0], numY=resolution.getValue()[1];
+    const unsigned numX = resolution.getValue()[0], numY=resolution.getValue()[1];
 
     // Warning: Vertex creation order must be consistent with method vert.
     for(unsigned y=0; y<numY; y++)
@@ -145,8 +145,8 @@ bool GridMeshCreator::doLoad()
         }
 
     auto my_edges = getWriteOnlyAccessor(d_edges);
-    for( std::set<Edge>::const_iterator it=uniqueEdges.begin(),itEnd=uniqueEdges.end(); it!=itEnd; ++it )
-        my_edges.push_back( *it );
+    for (const auto& uniqueEdge : uniqueEdges)
+        my_edges.push_back( uniqueEdge );
 
     return true;
 }

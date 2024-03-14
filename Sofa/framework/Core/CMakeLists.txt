@@ -17,6 +17,7 @@ set(HEADER_FILES
     ${SRC_ROOT}/CollisionModel.h
     ${SRC_ROOT}/ComponentLibrary.h
     ${SRC_ROOT}/ComponentNameHelper.h
+    ${SRC_ROOT}/ConstraintOrder.h
     ${SRC_ROOT}/ConstraintParams.h
     ${SRC_ROOT}/DataEngine.h
     ${SRC_ROOT}/DataTracker.h
@@ -60,6 +61,7 @@ set(HEADER_FILES
     ${SRC_ROOT}/behavior/BaseMass.h
     ${SRC_ROOT}/behavior/BaseMatrixLinearSystem.h
     ${SRC_ROOT}/behavior/BaseMechanicalState.h
+    ${SRC_ROOT}/behavior/BaseOrderingMethod.h
     ${SRC_ROOT}/behavior/BaseProjectiveConstraintSet.h
     ${SRC_ROOT}/behavior/BaseRotationFinder.h
     ${SRC_ROOT}/behavior/BaseVectorOperations.h
@@ -145,6 +147,8 @@ set(HEADER_FILES
     ${SRC_ROOT}/objectmodel/DataFileName.h
     ${SRC_ROOT}/objectmodel/DataFileNameVector.h
     ${SRC_ROOT}/objectmodel/DataLink.h
+    ${SRC_ROOT}/objectmodel/DeprecatedData.h
+    ${SRC_ROOT}/objectmodel/RemovedData.h
     ${SRC_ROOT}/objectmodel/DetachNodeEvent.h
     ${SRC_ROOT}/objectmodel/Event.h
     ${SRC_ROOT}/objectmodel/GUIEvent.h
@@ -229,6 +233,7 @@ set(SOURCE_FILES
     ${SRC_ROOT}/behavior/BaseMass.cpp
     ${SRC_ROOT}/behavior/BaseMatrixLinearSystem.cpp
     ${SRC_ROOT}/behavior/BaseMechanicalState.cpp
+    ${SRC_ROOT}/behavior/BaseOrderingMethod.cpp
     ${SRC_ROOT}/behavior/BaseProjectiveConstraintSet.cpp
     ${SRC_ROOT}/behavior/Constraint.cpp
     ${SRC_ROOT}/behavior/ConstraintCorrection.cpp
@@ -284,6 +289,7 @@ set(SOURCE_FILES
     ${SRC_ROOT}/objectmodel/DataFileNameVector.cpp
     ${SRC_ROOT}/objectmodel/DataLink.cpp
     ${SRC_ROOT}/objectmodel/DetachNodeEvent.cpp
+    ${SRC_ROOT}/objectmodel/DeprecatedData.cpp
     ${SRC_ROOT}/objectmodel/Event.cpp
     ${SRC_ROOT}/objectmodel/GUIEvent.cpp
     ${SRC_ROOT}/objectmodel/HapticDeviceEvent.cpp
@@ -302,6 +308,7 @@ set(SOURCE_FILES
     ${SRC_ROOT}/topology/Topology.cpp
     ${SRC_ROOT}/topology/TopologyChange.cpp
     ${SRC_ROOT}/topology/TopologyHandler.cpp
+    ${SRC_ROOT}/topology/TopologyData.cpp
     ${SRC_ROOT}/topology/TopologySubsetIndices.cpp
     ${SRC_ROOT}/visual/Data[DisplayFlags].cpp
     ${SRC_ROOT}/visual/DisplayFlags.cpp

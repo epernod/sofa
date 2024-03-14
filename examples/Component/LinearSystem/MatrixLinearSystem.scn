@@ -1,7 +1,7 @@
 <Node name="root" dt="0.02" gravity="0 -10 0">
 
     <Node name="plugins">
-        <RequiredPlugin name="Sofa.Component.Constraint.Projective"/> <!-- Needed to use components [FixedConstraint] -->
+        <RequiredPlugin name="Sofa.Component.Constraint.Projective"/> <!-- Needed to use components [FixedProjectiveConstraint] -->
         <RequiredPlugin name="Sofa.Component.Engine.Select"/> <!-- Needed to use components [BoxROI] -->
         <RequiredPlugin name="Sofa.Component.LinearSolver.Direct"/> <!-- Needed to use components [SparseLDLSolver] -->
         <RequiredPlugin name="Sofa.Component.LinearSystem"/> <!-- Needed to use components [MatrixLinearSystem] -->
@@ -29,7 +29,7 @@
         <EulerImplicitSolver name="odesolver" rayleighStiffness="0.1" rayleighMass="0.1" />
 
         <Node name="matrices">
-            <MatrixLinearSystem template="CompressedRowSparseMatrixd" name="system" checkIndices="true"/>
+            <MatrixLinearSystem template="CompressedRowSparseMatrixd" name="system" checkIndices="true" printLog="true"/>
             <MatrixLinearSystem template="CompressedRowSparseMatrixd" name="GS" assembleStiffness="false" assembleMass="false" assembleDamping="false" assembleGeometricStiffness="true" applyProjectiveConstraints="false"/>
             <GlobalSystemMatrixImage name="imageA" linearSystem="@system"/>
             <GlobalSystemMatrixImage name="imageGS" linearSystem="@GS"/>
@@ -42,7 +42,7 @@
 
             <RegularGridTopology name="grid" nx="1" ny="1" nz="20" xmin="0" xmax="0" ymin="-1.5" ymax="1.5" zmin="0" zmax="19" />
             <MechanicalObject template="Rigid3d" name="DOFs" showObject="true" showObjectScale="1" position="@grid.position"/>
-            <FixedConstraint indices="0" />
+            <FixedProjectiveConstraint indices="0" />
             <Node name="FEM">
                 <RegularGridTopology name="FEM_grid" nx="4" ny="4" nz="20" xmin="-1.5" xmax="1.5" ymin="-1.5" ymax="1.5" zmin="0" zmax="19" />
                 <MechanicalObject template="Vec3d" name="DOFs" position="@FEM_grid.position" printLog="false"/>
@@ -67,7 +67,7 @@
             <HexahedronSetGeometryAlgorithms/>
             <MeshMatrixMass totalMass="320"/>
             <BoxROI template="Vec3d" name="box" box="-1.6 -9.1 -0.1 1.6 -5.1 0.0001"/>
-            <FixedConstraint indices="@box.indices" />
+            <FixedProjectiveConstraint indices="@box.indices" />
             <HexahedronFEMForceField name="FEM_b" youngModulus="10000" poissonRatio="0.45" method="large" printLog="false"/>
 
             <Node name="a">
@@ -80,6 +80,10 @@
                 <MechanicalObject template="Vec3d" name="DOFs"/>
                 <SubsetMapping input="@../DOFs" output="@DOFs" indices="@box.indices"/>
             </Node>
+            <MatrixProjectionMethod areJacobiansConstant="true" mechanicalStates="@/rigidSections/green/a/DOFs @/rigidSections/green/a/DOFs"/>
+            <MatrixProjectionMethod areJacobiansConstant="true" mechanicalStates="@/rigidSections/green/a/DOFs @/rigidSections/green/b/DOFs"/>
+            <MatrixProjectionMethod areJacobiansConstant="true" mechanicalStates="@/rigidSections/green/b/DOFs @/rigidSections/green/a/DOFs"/>
+            <MatrixProjectionMethod areJacobiansConstant="true" mechanicalStates="@/rigidSections/green/b/DOFs @/rigidSections/green/b/DOFs"/>
             <StiffSpringForceField object1="@a/DOFs" object2="@b/DOFs" spring="0 0 100 1 1" showArrowSize="0.05" drawMode="2"/>
 
             <Node name="Visual">
@@ -93,12 +97,12 @@
 
             <RegularGridTopology name="grid" nx="1" ny="1" nz="20" xmin="5" xmax="5" ymin="-1.5" ymax="1.5" zmin="0" zmax="19" />
             <MechanicalObject template="Rigid3d" name="DOFs" showObject="true" showObjectScale="1" position="@grid.position"/>
-            <FixedConstraint indices="0" />
+            <FixedProjectiveConstraint indices="0" />
 
             <Node name="intermediateMapping"> <!-- this mapping is introduced just to verify that geometric stiffness is well projected -->
 
                 <MechanicalObject template="Rigid3d" name="DOFs" showObject="false"/>
-                <ConstantForceField force="0 0 0.0005 0 0 0"/>
+                <ConstantForceField forces="0 0 0.0005 0 0 0"/>
                 <IdentityMapping input="@../DOFs" output="@DOFs"/>
 
                 <Node name="FEM">

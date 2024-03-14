@@ -67,13 +67,8 @@ Year = {2009}                                                                   
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/component/topology/container/constant/MeshTopology.h>
 
-namespace sofa
-{
 
-namespace gpu
-{
-
-namespace cuda
+namespace sofa::gpu::cuda
 {
 
 using namespace sofa::defaulttype;
@@ -110,6 +105,8 @@ public:
     virtual void addForce(const sofa::core::MechanicalParams* /*mparams*/, DataVecDeriv& dataF, const DataVecCoord& dataX, const DataVecDeriv& /*dataV*/ ) override;
 //    void addDForce (VecDeriv& /*df*/, const VecDeriv& /*dx*/);
     virtual void addDForce(const sofa::core::MechanicalParams* /*mparams*/, DataVecDeriv& datadF, const DataVecDeriv& datadX ) override;
+    void buildStiffnessMatrix(core::behavior::StiffnessMatrix*) final {}
+    void buildDampingMatrix(core::behavior::DampingMatrix*) final {}
     SReal getPotentialEnergy(const sofa::core::MechanicalParams* , const DataVecCoord&) const override { return 0.0; }
 
     // Computes lambda and mu based on Young's modulus and Poisson ratio
@@ -162,10 +159,7 @@ protected:
     float4* m_device_F7 { nullptr };
 };
 
-} // namespace cuda
+} // namespace sofa::gpu::cuda
 
-} // namespace gpu
-
-} // namespace sofa
 
 #endif

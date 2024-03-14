@@ -92,10 +92,10 @@ void MeshTetraStuffing::doUpdate()
     {
         // triangulate quads
         inT.reserve(inQ.size()*2);
-        for (unsigned int i=0; i < inQ.size(); ++i)
+        for (const auto& quad : inQ)
         {
-            inT.push_back(Triangle(inQ[i][0], inQ[i][1], inQ[i][2]));
-            inT.push_back(Triangle(inQ[i][0], inQ[i][2], inQ[i][3]));
+            inT.push_back(Triangle(quad[0], quad[1], quad[2]));
+            inT.push_back(Triangle(quad[0], quad[2], quad[3]));
         }
     }
     SeqPoints inTN;
@@ -335,15 +335,14 @@ void MeshTetraStuffing::doUpdate()
         do
         {
             nwraps = 0;
-            for (std::set<int>::const_iterator it = violatedOutsidePoints.begin(), itend = violatedOutsidePoints.end(); it != itend; ++it)
+            for (const int violatedOutsidePoint : violatedOutsidePoints)
             {
-                int p = *it;
-                if (pInside[p] == 0) continue; // point already wrapped
+                if (pInside[violatedOutsidePoint] == 0) continue; // point already wrapped
                 Real minDist = 0;
                 int minEdge = -1;
                 for (int e=0; e<EDGESHELL; ++e)
                 {
-                    int p2 = getEdgePoint2(p,e);
+                    int p2 = getEdgePoint2(violatedOutsidePoint,e);
                     if (p2 == -1) continue;
                     bool in2 = (pInside[p2] > 0);
                     if (in2 || pViolated[p2]) continue; // only move towards unviolated points
@@ -352,8 +351,8 @@ void MeshTetraStuffing::doUpdate()
                         alpha = alphaLong;
                     else
                         alpha = alphaShort;
-                    if (eBDist[p][e] == 0.0 || eBDist[p][e] >= alpha) continue; // this edge is not violated
-                    Real dist = eBDist[p][e] * eBDist[p][e] * getEdgeSize2(e);
+                    if (eBDist[violatedOutsidePoint][e] == 0.0 || eBDist[violatedOutsidePoint][e] >= alpha) continue; // this edge is not violated
+                    Real dist = eBDist[violatedOutsidePoint][e] * eBDist[violatedOutsidePoint][e] * getEdgeSize2(e);
                     if (minEdge == -1 || dist < minDist)
                     {
                         minEdge = e;
@@ -362,18 +361,18 @@ void MeshTetraStuffing::doUpdate()
                 }
                 if (minEdge == -1) continue; // no violated edge toward an unviolated point
                 int e = minEdge;
-                int p2 = getEdgePoint2(p,e);
+                int p2 = getEdgePoint2(violatedOutsidePoint,e);
                 // Wrap p toward p2
-                msg_info() << "Wrapping outside point " << p << " toward " << p2 << " by " << eBDist[p][e];
-                outP[p] += (outP[p2]-outP[p]) * (eBDist[p][e]);
-                snaps.push_back(outP[p]);
+                msg_info() << "Wrapping outside point " << violatedOutsidePoint << " toward " << p2 << " by " << eBDist[violatedOutsidePoint][e];
+                outP[violatedOutsidePoint] += (outP[p2]-outP[violatedOutsidePoint]) * (eBDist[violatedOutsidePoint][e]);
+                snaps.push_back(outP[violatedOutsidePoint]);
                 ++nwraps;
-                pInside[p] = 0; // p is now on the surface
-                pViolated[p] = false; // and now longer violated
+                pInside[violatedOutsidePoint] = 0; // p is now on the surface
+                pViolated[violatedOutsidePoint] = false; // and now longer violated
                 for (int e=0; e<EDGESHELL; ++e)
                 {
-                    eBDist[p][e] = 0; // remove all cut points from p
-                    int p2 = getEdgePoint2(p,e);
+                    eBDist[violatedOutsidePoint][e] = 0; // remove all cut points from p
+                    int p2 = getEdgePoint2(violatedOutsidePoint,e);
                     if (p2 == -1) continue;
                     eBDist[p2][e^1] = 0; // remove all cut points toward p
                     if (pViolated[p2] && pInside[p2] > 0)
@@ -405,19 +404,18 @@ void MeshTetraStuffing::doUpdate()
         }
         while (nwraps > 0);
         // then order remaining violated inside points
-        for (std::set<int>::const_iterator it = violatedInsidePoints.begin(), itend = violatedInsidePoints.end(); it != itend; ++it)
+        for (const int violatedOutsidePoint : violatedInsidePoints)
         {
-            int p = *it;
-            if (pInside[p] == 0)
+            if (pInside[violatedOutsidePoint] == 0)
             {
-                msg_error() << "Inside point " << p << " already wrapped.";
+                msg_error() << "Inside point " << violatedOutsidePoint << " already wrapped.";
                 continue;
             }
             Real minDist = 0;
             int minEdge = -1;
             for (int e=0; e<EDGESHELL; ++e)
             {
-                int p2 = getEdgePoint2(p,e);
+                int p2 = getEdgePoint2(violatedOutsidePoint,e);
                 if (p2 == -1) continue;
                 if (pInside[p2] >= 0) continue; // only move towards outside points
                 Real alpha;
@@ -425,8 +423,8 @@ void MeshTetraStuffing::doUpdate()
                     alpha = alphaLong;
                 else
                     alpha = alphaShort;
-                if (eBDist[p][e] == 0.0 || eBDist[p][e] >= alpha) continue; // this edges is not violated
-                Real dist = eBDist[p][e] * eBDist[p][e] * getEdgeSize2(e);
+                if (eBDist[violatedOutsidePoint][e] == 0.0 || eBDist[violatedOutsidePoint][e] >= alpha) continue; // this edges is not violated
+                Real dist = eBDist[violatedOutsidePoint][e] * eBDist[violatedOutsidePoint][e] * getEdgeSize2(e);
                 if (minEdge == -1 || dist < minDist)
                 {
                     minEdge = e;
@@ -435,21 +433,21 @@ void MeshTetraStuffing::doUpdate()
             }
             if (minEdge == -1) // no violated edge
             {
-                msg_error() << "Inside point " << p << " has no violated edges.";
+                msg_error() << "Inside point " << violatedOutsidePoint << " has no violated edges.";
                 continue;
             }
             int e = minEdge;
-            int p2 = getEdgePoint2(p,e);
+            int p2 = getEdgePoint2(violatedOutsidePoint,e);
             // Wrap p toward p2
-            msg_info() << "Wrapping inside point " << p << " toward " << p2 << " by " << eBDist[p][e];
-            outP[p] += (outP[p2]-outP[p]) * (eBDist[p][e]);
-            snaps.push_back(outP[p]);
-            pInside[p] = 0; // p is now on the surface
-            pViolated[p] = false; // and now longer violated
+            msg_info() << "Wrapping inside point " << violatedOutsidePoint << " toward " << p2 << " by " << eBDist[violatedOutsidePoint][e];
+            outP[violatedOutsidePoint] += (outP[p2]-outP[violatedOutsidePoint]) * (eBDist[violatedOutsidePoint][e]);
+            snaps.push_back(outP[violatedOutsidePoint]);
+            pInside[violatedOutsidePoint] = 0; // p is now on the surface
+            pViolated[violatedOutsidePoint] = false; // and now longer violated
             for (int e=0; e<EDGESHELL; ++e)
             {
-                eBDist[p][e] = 0; // remove all cut points from p
-                int p2 = getEdgePoint2(p,e);
+                eBDist[violatedOutsidePoint][e] = 0; // remove all cut points from p
+                int p2 = getEdgePoint2(violatedOutsidePoint,e);
                 if (p2 == -1) continue;
                 eBDist[p2][e^1] = 0; // remove all cut points toward p
             }
@@ -525,9 +523,9 @@ void MeshTetraStuffing::doUpdate()
     // compress output points to remove unused ones
     vector<int> newPid;
     newPid.resize(outP.size());
-    for (unsigned int t=0; t<outT.size(); ++t)
+    for (const auto& t : outT)
         for (int i=0; i<4; ++i)
-            newPid[outT[t][i]] = 1;
+            newPid[t[i]] = 1;
     nbp = 0;
     for (unsigned int p=0; p<newPid.size(); ++p)
     {
@@ -549,9 +547,9 @@ void MeshTetraStuffing::doUpdate()
     pInside.resize(nbp);
     eBDist.clear();
 
-    for (unsigned int t=0; t<outT.size(); ++t)
+    for (auto& t : outT)
         for (int i=0; i<4; ++i)
-            outT[t][i] = newPid[outT[t][i]];
+            t[i] = newPid[t[i]];
 
     std::set<Triangle> triSet;
 
@@ -588,16 +586,16 @@ void MeshTetraStuffing::addFinalTetra(SeqTetrahedra& outT, SeqPoints& outP, int 
 {
     if (flip)
     {
-        int tmp = p3; p3 = p4; p4 = tmp;
+        const int tmp = p3; p3 = p4; p4 = tmp;
     }
-    Point a = outP[p2] - outP[p1];
-    Point b = outP[p3] - outP[p1];
-    Point c = outP[p4] - outP[p1];
-    Real vol6 = a*(b.cross(c));
+    const Point a = outP[p2] - outP[p1];
+    const Point b = outP[p3] - outP[p1];
+    const Point c = outP[p4] - outP[p1];
+    const Real vol6 = a*(b.cross(c));
     if (vol6 < 0)
     {
         msg_info() << __FILE__ << "(" << line << "): WARNING: final tetra " << p1 << " " << p2 << " " << p3 << " " << p4 << " is inverted.";
-        int tmp = p3; p3 = p4; p4 = tmp;
+        const int tmp = p3; p3 = p4; p4 = tmp;
     }
     outT.push_back(Tetra(p1,p2,p3,p4));
 }
@@ -608,21 +606,21 @@ bool MeshTetraStuffing::needFlip(int p1, int p2, int p3, int p4, int q1, int q2,
     // make the smallest indice the first vertex
     while(p1 > p2 || p1 > p3 || p1 > p4)
     {
-        int tmp = p1; p1 = p2; p2 = p3; p3 = p4; p4 = tmp; flip = !flip;
+        const int tmp = p1; p1 = p2; p2 = p3; p3 = p4; p4 = tmp; flip = !flip;
     }
     while(q1 > q2 || q1 > q3 || q1 > q4)
     {
-        int tmp = q1; q1 = q2; q2 = q3; q3 = q4; q4 = tmp; flip = !flip;
+        const int tmp = q1; q1 = q2; q2 = q3; q3 = q4; q4 = tmp; flip = !flip;
     }
 
     // make the second smallest indice the second vertex
     while(p2 > p3 || p2 > p4)
     {
-        int tmp = p2; p2 = p3; p3 = p4; p4 = tmp; //flip = !flip;
+        const int tmp = p2; p2 = p3; p3 = p4; p4 = tmp; //flip = !flip;
     }
     while(q2 > q3 || q2 > q4)
     {
-        int tmp = q2; q2 = q3; q3 = q4; q4 = tmp; //flip = !flip;
+        const int tmp = q2; q2 = q3; q3 = q4; q4 = tmp; //flip = !flip;
     }
 
     // the tetrahedra are flipped if the last edge is flipped
@@ -633,20 +631,20 @@ bool MeshTetraStuffing::needFlip(int p1, int p2, int p3, int p4, int q1, int q2,
 void MeshTetraStuffing::addTetra(SeqTetrahedra& outT, SeqPoints& outP, int p1, int p2, int p3, int p4, int line)
 {
     {
-        Point a = outP[p2] - outP[p1];
-        Point b = outP[p3] - outP[p1];
-        Point c = outP[p4] - outP[p1];
-        Real vol6 = a*(b.cross(c));
+        const Point a = outP[p2] - outP[p1];
+        const Point b = outP[p3] - outP[p1];
+        const Point c = outP[p4] - outP[p1];
+        const Real vol6 = a*(b.cross(c));
         if (vol6 < 0)
         {
             msg_info() << "line("<<line<<"): grid tetra " << p1 << " " << p2 << " " << p3 << " " << p4 << " is inverted.";
-            int tmp = p3; p3 = p4; p4 = tmp;
+            const int tmp = p3; p3 = p4; p4 = tmp;
         }
     }
-    int in1 = pInside[p1];
-    int in2 = pInside[p2];
-    int in3 = pInside[p3];
-    int in4 = pInside[p4];
+    const int in1 = pInside[p1];
+    const int in2 = pInside[p2];
+    const int in3 = pInside[p3];
+    const int in4 = pInside[p4];
     int nneg = 0, npos = 0, nzero = 0;
     int pneg[4];
     int ppos[4];
@@ -663,7 +661,7 @@ void MeshTetraStuffing::addTetra(SeqTetrahedra& outT, SeqPoints& outP, int p1, i
     else if (npos == 1)
     {
         // only one tetra, move the negative points
-        int p0 = ppos[0];
+        const int p0 = ppos[0];
         if (in1 < 0) p1 = getSplitPoint(p1,p0);
         if (in2 < 0) p2 = getSplitPoint(p2,p0);
         if (in3 < 0) p3 = getSplitPoint(p3,p0);
@@ -673,11 +671,11 @@ void MeshTetraStuffing::addTetra(SeqTetrahedra& outT, SeqPoints& outP, int p1, i
     else if (npos == 2 && nneg == 1)
     {
         // two tetrahedra
-        int p0 = pzero[0];
-        int cut1 = getSplitPoint(pneg[0],ppos[0]);
-        int cut2 = getSplitPoint(pneg[0],ppos[1]);
-        bool flipD = flipDiag(outP, ppos[0],ppos[1],cut2,cut1,pneg[0]);
-        bool flipT = needFlip(p0, ppos[0], ppos[1], pneg[0], p1,p2,p3,p4);
+        const int p0 = pzero[0];
+        const int cut1 = getSplitPoint(pneg[0],ppos[0]);
+        const int cut2 = getSplitPoint(pneg[0],ppos[1]);
+        const bool flipD = flipDiag(outP, ppos[0],ppos[1],cut2,cut1,pneg[0]);
+        const bool flipT = needFlip(p0, ppos[0], ppos[1], pneg[0], p1,p2,p3,p4);
         if (!flipD)
         {
             addFinalTetra(outT,outP, p0,ppos[0],ppos[1],cut2, flipT,__LINE__);
@@ -691,13 +689,13 @@ void MeshTetraStuffing::addTetra(SeqTetrahedra& outT, SeqPoints& outP, int p1, i
     }
     else if (npos == 2 && nneg == 2)
     {
-        int cut1 = getSplitPoint(pneg[0],ppos[0]);
-        int cut2 = getSplitPoint(pneg[0],ppos[1]);
-        int cut3 = getSplitPoint(pneg[1],ppos[0]);
-        int cut4 = getSplitPoint(pneg[1],ppos[1]);
-        bool flipA = flipDiag(outP, ppos[0],ppos[1],cut2,cut1,pneg[0]);
-        bool flipB = flipDiag(outP, ppos[0],ppos[1],cut4,cut3,pneg[1]);
-        bool flipT = needFlip(ppos[0],ppos[1],pneg[0],pneg[1], p1,p2,p3,p4);
+        const int cut1 = getSplitPoint(pneg[0],ppos[0]);
+        const int cut2 = getSplitPoint(pneg[0],ppos[1]);
+        const int cut3 = getSplitPoint(pneg[1],ppos[0]);
+        const int cut4 = getSplitPoint(pneg[1],ppos[1]);
+        const bool flipA = flipDiag(outP, ppos[0],ppos[1],cut2,cut1,pneg[0]);
+        const bool flipB = flipDiag(outP, ppos[0],ppos[1],cut4,cut3,pneg[1]);
+        const bool flipT = needFlip(ppos[0],ppos[1],pneg[0],pneg[1], p1,p2,p3,p4);
         if (!flipA && flipB)
         {
             addFinalTetra(outT,outP, ppos[0],ppos[1],cut2,cut3, flipT,__LINE__);
@@ -718,11 +716,11 @@ void MeshTetraStuffing::addTetra(SeqTetrahedra& outT, SeqPoints& outP, int p1, i
     }
     else // npos == 3 && nneg == 1
     {
-        int cut1 = getSplitPoint(pneg[0],ppos[0]);
-        int cut2 = getSplitPoint(pneg[0],ppos[1]);
-        int cut3 = getSplitPoint(pneg[0],ppos[2]);
-        bool flip1 = flipDiag(outP, ppos[0],ppos[1],cut2,cut1,pneg[0]);
-        bool flip2 = flipDiag(outP, ppos[1],ppos[2],cut3,cut2,pneg[0]);
+        const int cut1 = getSplitPoint(pneg[0],ppos[0]);
+        const int cut2 = getSplitPoint(pneg[0],ppos[1]);
+        const int cut3 = getSplitPoint(pneg[0],ppos[2]);
+        const bool flip1 = flipDiag(outP, ppos[0],ppos[1],cut2,cut1,pneg[0]);
+        const bool flip2 = flipDiag(outP, ppos[1],ppos[2],cut3,cut2,pneg[0]);
         bool flip3 = flipDiag(outP, ppos[2],ppos[0],cut1,cut3,pneg[0]);
         if (flip1 == flip2 && flip2 == flip3)
         {
@@ -737,7 +735,7 @@ void MeshTetraStuffing::addTetra(SeqTetrahedra& outT, SeqPoints& outP, int p1, i
         if (!flip1 && flip2)    pc0 = cut2;
         else if (!flip2 && flip3)    pc0 = cut3;
         else /* (!flip3 && flip1) */ pc0 = cut1;
-        bool flipT = needFlip(pneg[0],ppos[0],ppos[1],ppos[2], p1,p2,p3,p4);
+        const bool flipT = needFlip(pneg[0],ppos[0],ppos[1],ppos[2], p1,p2,p3,p4);
         addFinalTetra(outT,outP, pp0, cut1, cut3, cut2, flipT,__LINE__);
         addFinalTetra(outT,outP, pc0, ppos[0], ppos[1], ppos[2], flipT,__LINE__);
         if (flip1 == flip2)    addFinalTetra(outT,outP, ppos[1], cut2, pp0, pc0, needFlip(ppos[1],pneg[0],pp0,(pp0 == ppos[0] ? ppos[2] : ppos[0]), p1,p2,p3,p4),__LINE__);

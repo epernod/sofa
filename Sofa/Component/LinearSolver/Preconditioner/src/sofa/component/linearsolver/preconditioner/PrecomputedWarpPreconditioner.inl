@@ -39,11 +39,8 @@
 
 #include <sofa/component/odesolver/backward/EulerImplicitSolver.h>
 #include <sofa/component/linearsolver/iterative/CGLinearSolver.h>
-
-#if SOFA_COMPONENT_LINEARSOLVER_DIRECT_HAVE_CSPARSE && !defined(SOFA_FLOAT)
-#include <sofa/component/linearsolver/direct/SparseCholeskySolver.inl>
-#endif
-#include <sofa/linearalgebra/CompressedRowSparseMatrix.h>
+#include <sofa/component/linearsolver/direct/EigenSimplicialLLT.h>
+#include <sofa/component/linearsolver/direct/EigenDirectSparseSolver.inl>
 
 #include <sofa/simulation/Node.h>
 
@@ -184,13 +181,7 @@ void PrecomputedWarpPreconditioner<TDataTypes>::loadMatrix(TMatrix& M)
             msg_info() << "Precompute : " << fname << " compliance.";
             if (l_linearSolver.empty())
             {
-#if SOFA_COMPONENT_LINEARSOLVER_DIRECT_HAVE_CSPARSE && !defined(SOFA_FLOAT)
-                loadMatrixWithCSparse(M);
-#else
-                msg_error() << "Link \"linearSolver\" is empty, but it is required to load matrix.";
-                this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
-                return;
-#endif  // SOFA_COMPONENT_LINEARSOLVER_DIRECT_HAVE_CSPARSE && !defined(SOFA_FLOAT)
+                loadMatrixWithCholeskyDecomposition(M);
             }
             else
             {
@@ -222,9 +213,8 @@ void PrecomputedWarpPreconditioner<TDataTypes>::loadMatrix(TMatrix& M)
     }
 }
 
-#if SOFA_COMPONENT_LINEARSOLVER_DIRECT_HAVE_CSPARSE && !defined(SOFA_FLOAT)
 template<class TDataTypes>
-void PrecomputedWarpPreconditioner<TDataTypes>::loadMatrixWithCSparse(TMatrix& M)
+void PrecomputedWarpPreconditioner<TDataTypes>::loadMatrixWithCholeskyDecomposition(TMatrix& M)
 {
     msg_info() << "Compute the initial invert matrix with CS_PARSE" ;
 
@@ -237,7 +227,7 @@ void PrecomputedWarpPreconditioner<TDataTypes>::loadMatrixWithCSparse(TMatrix& M
     b.resize(systemSize);
     for (unsigned int j=0; j<systemSize; j++) b.set(j,0.0);
 
-    component::linearsolver::direct::SparseCholeskySolver<CompressedRowSparseMatrix<Real>, FullVector<Real> > solver;
+    direct::EigenSimplicialLLT<Real> solver;
 
     msg_info() << "Precomputing constraint correction LU decomposition " ;
     solver.invert(M);
@@ -277,7 +267,6 @@ void PrecomputedWarpPreconditioner<TDataTypes>::loadMatrixWithCSparse(TMatrix& M
     tmpStr << "Precomputing constraint correction : " << std::fixed << 100.0f << " %" ;
     msg_info() << tmpStr.str();
 }
-#endif  // SOFA_COMPONENT_LINEARSOLVER_DIRECT_HAVE_CSPARSE && !defined(SOFA_FLOAT)
 
 template<class TDataTypes>
 void PrecomputedWarpPreconditioner<TDataTypes>::loadMatrixWithSolver()
@@ -481,7 +470,7 @@ void PrecomputedWarpPreconditioner<TDataTypes>::rotateConstraints()
     _rotate = true;
     if (! use_rotations.getValue()) return;
 
-    simulation::Node *node = dynamic_cast<simulation::Node *>(this->getContext());
+    const simulation::Node *node = dynamic_cast<simulation::Node *>(this->getContext());
     sofa::core::behavior::RotationFinder<TDataTypes>* rotationFinder = nullptr;
 
     if (node != nullptr)
@@ -592,7 +581,7 @@ void PrecomputedWarpPreconditioner<TDataTypes>::ComputeResult(linearalgebra::Bas
             int l = jit1->first;
             for (typename JMatrix::LElementConstIterator i1 = jit1->second.begin(); i1 != jit1->second.end();)
             {
-                int c = i1->first;
+                const int c = i1->first;
                 Real v0 = (Real)i1->second; i1++; Real v1 = (Real)i1->second; i1++; Real v2 = (Real)i1->second; i1++;
                 internalData.JR.set(l,c+0,v0 * R[(c+0)*3+0] + v1 * R[(c+1)*3+0] + v2 * R[(c+2)*3+0] );
                 internalData.JR.set(l,c+1,v0 * R[(c+0)*3+1] + v1 * R[(c+1)*3+1] + v2 * R[(c+2)*3+1] );
@@ -659,7 +648,7 @@ template<class TDataTypes>
 void PrecomputedWarpPreconditioner<TDataTypes>::init()
 {
     Inherit1::init();
-    simulation::Node *node = dynamic_cast<simulation::Node *>(this->getContext());
+    const simulation::Node *node = dynamic_cast<simulation::Node *>(this->getContext());
     if (node != nullptr) mstate = node->get<MState> ();
 }
 

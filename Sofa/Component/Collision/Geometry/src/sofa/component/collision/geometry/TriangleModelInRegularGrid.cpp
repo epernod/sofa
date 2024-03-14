@@ -74,15 +74,15 @@ void TriangleModelInRegularGrid::init()
     while ( found )
     {
         found = false;
-        for ( vector<TopologicalMapping*>::iterator it = topoVec.begin(); it != topoVec.end(); ++it )
+        for (const auto& v : topoVec)
         {
-            if ( ( *it )->getTo() == _higher_topo )
+            if ( v->getTo() == _higher_topo )
             {
                 found = true;
-                _topoMapping = *it;
+                _topoMapping = v;
                 _higher_topo = _topoMapping->getFrom();
                 if ( !_higher_topo ) break;
-                sofa::simulation::Node* node = static_cast< sofa::simulation::Node* > ( _higher_topo->getContext() );
+                const sofa::simulation::Node* node = static_cast< sofa::simulation::Node* > ( _higher_topo->getContext() );
                 _higher_mstate = dynamic_cast< core::behavior::MechanicalState<Vec3Types>* > ( node->getMechanicalState() );
             }
         }

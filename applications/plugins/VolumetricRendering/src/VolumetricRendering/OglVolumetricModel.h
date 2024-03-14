@@ -34,11 +34,7 @@
 #include <sofa/gl/component/shader/OglAttribute.h>
 
 
-namespace sofa
-{
-namespace component
-{
-namespace visualmodel
+namespace sofa::component::visualmodel
 {
 
 /**
@@ -49,7 +45,7 @@ namespace visualmodel
 class SOFA_VOLUMETRICRENDERING_API OglVolumetricModel : public core::visual::VisualModel, public component::visual::Vec3State
 {
 public:
-    SOFA_CLASS2(OglVolumetricModel, core::visual::VisualModel, Vec3State);
+    SOFA_CLASS2(OglVolumetricModel, core::visual::VisualModel, component::visual::Vec3State);
 
     typedef sofa::core::topology::Tetrahedron Tetrahedron;
     typedef sofa::core::topology::Hexahedron Hexahedron;
@@ -94,8 +90,8 @@ private:
 
     sofa::type::vector<Tetrahedron> m_hexaToTetrahedra;
 
-    sofa::type::vector<Coord> m_tetraBarycenters;
-    sofa::type::vector<Coord> m_hexaBarycenters;
+    sofa::type::vector<type::Vec3f> m_tetraBarycenters;
+    sofa::type::vector<type::Vec3f> m_hexaBarycenters;
 
 public:
     void init() override;
@@ -113,11 +109,7 @@ public:
 
 };
 
-} // namespace visualmodel
-
-} // namesapce component
-
-} // namespace sofa
+} // namespace sofa::component::visualmodel
 
 
 #endif // OGLVOLUMETRICMODEL_H_

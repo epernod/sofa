@@ -36,6 +36,7 @@ BaseMapping::BaseMapping()
     , f_mapMatrices(initData(&f_mapMatrices, false, "mapMatrices", "Are matrix explicit mapped?"))
 {
     this->addAlias(&f_mapForces, "isMechanical");
+    this->addAlias(&f_mapConstraints, "isMechanical");
     this->addAlias(&f_mapMasses, "isMechanical");
 }
 
@@ -149,7 +150,7 @@ bool BaseMapping::testMechanicalState(BaseState* state)
     bool isMecha = false;
     if(state)
     {
-        behavior::BaseMechanicalState* toMechaModel = state->toBaseMechanicalState();
+        const behavior::BaseMechanicalState* toMechaModel = state->toBaseMechanicalState();
         isMecha = (toMechaModel) ? true : false;
     }
     return isMecha;

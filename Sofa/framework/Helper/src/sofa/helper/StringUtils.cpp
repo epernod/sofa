@@ -21,11 +21,10 @@
 ******************************************************************************/
 #include <cstring>
 #include <sofa/helper/StringUtils.h>
+#include <algorithm>
 
-namespace sofa
-{
 
-namespace helper
+namespace sofa::helper
 {
 
 /// Taken from https://www.fluentcpp.com/2017/04/21/how-to-split-a-string-in-c/
@@ -85,8 +84,27 @@ std::string safeCharToString(const char* c)
     return std::string(c);
 }
 
+std::string_view removeTrailingCharacter(std::string_view sv, char character)
+{
+    auto end = sv.end();
+    while (end != sv.begin() && *(end - 1) == character)
+    {
+        --end;
+    }
+    return sv.substr(0, end - sv.begin());
+}
 
-} // namespace helper
+std::string_view removeTrailingCharacters(std::string_view sv, const std::initializer_list<char> characters)
+{
+    auto end = sv.end();
+    while (end != sv.begin() && std::find(characters.begin(), characters.end(), *(end - 1)) != characters.end())
+    {
+        --end;
+    }
+    return sv.substr(0, end - sv.begin());
+}
 
-} // namespace sofa
+} // namespace sofa::helper
+
+
 

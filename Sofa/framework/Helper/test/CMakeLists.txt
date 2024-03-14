@@ -8,6 +8,7 @@ set(SOURCE_FILES
     KdTree_test.cpp
     NameDecoder_test.cpp
     OptionsGroup_test.cpp
+    StringUtils_test.cpp
     TagFactory_test.cpp
     Utils_test.cpp
     accessor/ReadAccessor.cpp
@@ -24,7 +25,8 @@ set(SOURCE_FILES
     system/thread/CircularQueue_test.cpp
 )
 
-add_subdirectory(system/TestPlugin)
+add_subdirectory(system/TestPluginA)
+add_subdirectory(system/TestPluginB)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} Sofa.Testing Sofa.Helper)
