@@ -85,7 +85,7 @@ public:
     void init() override;
 
     /// Method called by component Init method. Will create all the topology buffers
-    void computeCrossElementBuffers() override;
+    void computeCrossElementArrays() override;
 
     Size getNbPoints() const override;
 
