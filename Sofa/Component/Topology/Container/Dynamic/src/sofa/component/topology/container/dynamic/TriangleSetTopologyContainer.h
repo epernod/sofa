@@ -151,8 +151,8 @@ public:
 
     /// Dynamic Topology API
     /// @{
-    /// Method called by component Init method. Will create all the topology neighboorhood buffers and call @see EdgeSetTopologyContainer::computeCrossElementBuffers()
-    void computeCrossElementBuffers() override;
+    /// Method called by component Init method. Will create all the topology neighboorhood buffers and call @see EdgeSetTopologyContainer::computeCrossElementArrays()
+    void computeCrossElementArrays() override;
 
     /** \brief Checks if the topology is coherent
      *
