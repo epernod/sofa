@@ -942,6 +942,7 @@ void TriangularFEMForceField<DataTypes>::computeStressPerVertex()
     }
 }
 
+
 // ----------------------------------------------------------------------------------------------------------------------------------------
 // ---	Compute value of stress along a given direction (typically the fiber direction and transverse direction in anisotropic materials)
 // ----------------------------------------------------------------------------------------------------------------------------------------
@@ -1212,6 +1213,9 @@ void TriangularFEMForceField<DataTypes>::accumulateForceLarge(VecCoord& f, const
         const Coord deforme_b = R_0_2 * (pB - pA);
         const Coord deforme_c = R_0_2 * (pC - pA);
 
+        const Real determinant = deforme_b[0] * deforme_c[1];
+        tInfo.area = determinant * 0.5;
+
         // Strain-displacement matrix
         StrainDisplacement J(type::NOINIT);
         try
@@ -1370,7 +1374,6 @@ void TriangularFEMForceField<DataTypes>::draw(const core::visual::VisualParams* 
     {
         const type::vector<VertexInformation>& vertexInf = vertexInfo.getValue();
         std::vector<sofa::type::Vec3> vertices;
-
         std::vector<sofa::type::RGBAColor> colorVector;
  
         auto evalColor = p_drawColorMap->getEvaluator(m_minStress, m_maxStress);

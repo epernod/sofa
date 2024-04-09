@@ -88,7 +88,6 @@ public:
 
     /// Accessor to index maps :
     const std::map<Index, Index>& getGlob2LocMap() { return Glob2LocMap;}
-
     virtual Index getGlobIndex(Index ind);
 
     virtual Index getFromIndex(Index ind);
@@ -209,6 +208,9 @@ protected:
     std::map<Index, Index> Glob2LocMap;
 
     std::map<Index, sofa::type::vector<Index> > In2OutMap;
+
+    TopologyElementType m_inputType = TopologyElementType::UNKNOWN;
+    TopologyElementType m_outputType = TopologyElementType::UNKNOWN;
 
     ElementType m_inputType = geometry::ElementType::UNKNOWN;
     ElementType m_outputType = geometry::ElementType::UNKNOWN;

@@ -32,6 +32,11 @@ SofaPhysicsOutputMesh::~SofaPhysicsOutputMesh()
     delete impl;
 }
 
+const std::string& SofaPhysicsOutputMesh::getNameStr()
+{
+    return impl->getNameStr();
+}
+
 const char* SofaPhysicsOutputMesh::getName() ///< (non-unique) name of this object
 {
     return impl->getName();

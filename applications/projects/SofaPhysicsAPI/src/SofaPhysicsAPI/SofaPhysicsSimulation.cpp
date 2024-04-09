@@ -448,6 +448,8 @@ int SofaPhysicsSimulation::loadPlugin(const char* pluginPath)
         return API_PLUGIN_FILE_NOT_FOUND;
     else
         return API_PLUGIN_LOADING_FAILED;
+    else
+        return API_PLUGIN_LOADING_FAILED;
 }
 
 void SofaPhysicsSimulation::createScene()
@@ -779,6 +781,45 @@ std::string SofaPhysicsSimulation::getMessage(int messageId, int& msgType)
     const std::vector<sofa::helper::logging::Message>& msgs = m_msgHandler->getMessages();
 
     if (messageId >= (int)msgs.size()) {
+        msgType = -1;
+        return "Error messageId out of bounds";
+    }
+
+    msgType = static_cast<int>(msgs[messageId].type());
+    return msgs[messageId].messageAsString();
+}
+
+int SofaPhysicsSimulation::clearMessages()
+{
+    m_msgHandler->reset();
+
+    return API_SUCCESS;
+}
+
+
+
+int SofaPhysicsSimulation::activateMessageHandler(bool value)
+{
+    if (value)
+        m_msgHandler->activate();
+    else
+        m_msgHandler->deactivate();
+
+    m_msgIsActivated = value;
+
+    return API_SUCCESS;
+}
+
+int SofaPhysicsSimulation::getNbMessages()
+{
+    return static_cast<int>(m_msgHandler->getMessages().size());
+}
+
+std::string SofaPhysicsSimulation::getMessage(int messageId, int& msgType)
+{
+    const std::vector<sofa::helper::logging::Message>& msgs = m_msgHandler->getMessages();
+
+    if (messageId >= msgs.size()) {
         msgType = -1;
         return "Error messageId out of bounds";
     }

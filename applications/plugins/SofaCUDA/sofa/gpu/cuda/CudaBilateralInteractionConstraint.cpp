@@ -1,4 +1,4 @@
-﻿/******************************************************************************
+/******************************************************************************
 *                 SOFA, Simulation Open-Framework Architecture                *
 *                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
 *                                                                             *
@@ -19,14 +19,35 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#pragma once
+#include <sofa/gpu/cuda/CudaTypes.h>
+#include <sofa/core/ObjectFactory.h>
+#include <sofa/component/constraint/lagrangian/model/BilateralInteractionConstraint.inl>
+#include <sofa/core/behavior/PairInteractionConstraint.inl>
 
-#include <SofaCUDA/config.h>
-    const sofa::type::vector<Hexahedron>& hexaArray = this->topology->getHexahedra();
-    for (unsigned i = 0; i < hexaArray.size(); i++)
-        const Hexahedron& cube = hexaArray[i];
-        for (int c = 0; c < 8; c++) {
-            CudaHexa.push_back(cube[c]);
-        }
+namespace sofa::component::constraint::lagrangian::model
+{
 
-SOFA_DISABLED_HEADER("v23.06", "v23.12", "SofaCUDA/component/mapping/linear/CudaBarycentricMapping.inl")
+template class SOFA_GPU_CUDA_API BilateralInteractionConstraint<gpu::cuda::CudaVec3fTypes>;
+template class SOFA_GPU_CUDA_API BilateralInteractionConstraint<gpu::cuda::CudaVec3f1Types>;
+
+#ifdef SOFA_GPU_CUDA_DOUBLE
+template class SOFA_GPU_CUDA_API BilateralInteractionConstraint<gpu::cuda::CudaVec3dTypes>;
+template class SOFA_GPU_CUDA_API BilateralInteractionConstraint<gpu::cuda::CudaVec3d1Types>;
+#endif // SOFA_GPU_CUDA_DOUBLE
+
+} //namespace sofa::component::constraint::lagrangian::model
+
+namespace sofa::gpu::cuda
+{
+
+using namespace sofa::component::constraint::lagrangian::model;
+
+int BilateralInteractionConstraintCudaClass = core::RegisterObject("Supports GPU-side computations using CUDA")
+    .add< BilateralInteractionConstraint<CudaVec3fTypes> >()
+    .add< BilateralInteractionConstraint<CudaVec3f1Types> >()
+#ifdef SOFA_GPU_CUDA_DOUBLE
+    .add< BilateralInteractionConstraint<CudaVec3dTypes> >()
+    .add< BilateralInteractionConstraint<CudaVec3d1Types> >()
+#endif // SOFA_GPU_CUDA_DOUBLE
+    ;
+} // namespace sofa::gpu::cuda

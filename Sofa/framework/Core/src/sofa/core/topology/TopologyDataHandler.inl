@@ -53,6 +53,25 @@ void TopologyDataHandler<ElementType,  VecT>::init()
     if (m_prefix.empty()) m_prefix = "TopologyDataHandler( " + this->m_topologyData->getOwner()->getName() + " )";
     m_data_name = this->m_topologyData->getName();
     this->addOutput(this->m_topologyData);
+
+  /*  TopologyChangeElementInfo elem;
+  
+    this->addCallBack(elem.EINFOADDED, [this](const core::topology::TopologyChange* eventTopo) {
+        this->ApplyTopologyChange(static_cast<const ElementAdded*>(eventTopo));
+    });
+    
+    this->addCallBack(elem.EINFOREMOVED, [this](const core::topology::TopologyChange* eventTopo) {
+        this->ApplyTopologyChange(static_cast<const ElementRemoved*>(eventTopo));
+    });
+
+    this->addCallBack(elem.EINFORENUMBERING, [this](const core::topology::TopologyChange* eventTopo) {
+        this->ApplyTopologyChange(static_cast<const ElementRenumbering*>(eventTopo));
+    });
+
+    this->addCallBack(elem.EINFOSWAP, [this](const core::topology::TopologyChange* eventTopo) {
+        this->ApplyTopologyChange(static_cast<const ElementIndicesSwap*>(eventTopo));
+    });
+ */   
 }
 
 
@@ -77,7 +96,8 @@ void TopologyDataHandler<ElementType, VecT>::linkToTopologyDataArray(sofa::geome
 
     if (m_topology->linkTopologyHandlerToData(this, elementType))
     {
-        if (m_topology->addTopologyHandler(this, elementType) == false)
+        bool res = m_topology->addTopologyHandler(this, elementType);
+        if (!res)
         {
             msg_warning(m_topologyData->getOwner()) << "TopologyHandler linked to Data '" << m_data_name << "' has already been registered.";
         }

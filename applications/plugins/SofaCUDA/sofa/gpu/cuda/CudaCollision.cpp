@@ -23,10 +23,13 @@
 #include <SofaCUDA/component/solidmechanics/spring/CudaSpringForceField.inl>
 #include <SofaCUDA/component/statecontainer/CudaMechanicalObject.inl>
 #include <SofaCUDA/component/mapping/linear/CudaIdentityMapping.inl>
-#include "CudaContactMapper.h"
+#include <sofa/gpu/cuda/CudaContactMapper.h>
 #include <SofaCUDA/component/collision/response/contact/CudaPenalityContactForceField.h>
 #include <SofaCUDA/component/collision/geometry/CudaSphereModel.h>
 #include <SofaCUDA/component/collision/geometry/CudaPointModel.h>
+#include <sofa/gpu/cuda/CudaTriangleModel.h>
+//#include <sofa/gpu/cuda/CudaLineModel.h>
+#include <sofa/gpu/cuda/CudaPointModel.h>
 
 
 
@@ -47,6 +50,17 @@
 #include <sofa/helper/Factory.inl>
 #include <sofa/core/Mapping.inl>
 #include <fstream>
+
+
+///////////////////////////////////////////////
+/////   Add CUDA support for Contact    ///////
+///////////////////////////////////////////////
+
+//using namespace core::collision;
+//using namespace sofa::helper;
+//const Creator<Contact::Factory, BarycentricPenalityContact<CudaSphereCollisionModel, CudaSphereCollisionModel, gpu::cuda::CudaVec3Types> > CudaSphereSpherePenalityContactClass("PenalityContactForceField", true);
+//
+//template class SOFA_GPU_CUDA_API BarycentricPenalityContact<CudaSphereCollisionModel, CudaSphereCollisionModel, gpu::cuda::CudaVec3Types>;
 
 
 
@@ -80,9 +94,27 @@ public:
 };
 
 
-int CudaProximityIntersectionClass = core::RegisterObject("GPGPU Proximity Intersection based on CUDA")
-        .add< CudaProximityIntersection >()
-        ;
+//const int CudaProximityIntersectionClass = core::RegisterObject("CUDA support for MinProximityIntersection. No optimisation.")
+//    .add< CudaProximityIntersection >();
+
+
+//class CudaMinProximityIntersection : public sofa::component::collision::detection::intersection::MinProximityIntersection
+//{
+//public:
+//    SOFA_CLASS(CudaMinProximityIntersection, sofa::component::collision::detection::intersection::MinProximityIntersection);
+//    
+//    virtual void init() override
+//    {
+//        intersectors.add<CudaSphereCollisionModel, CudaSphereCollisionModel, CudaMinProximityIntersection>(this);
+//
+//        MinProximityIntersection::init();
+//    }
+//};
+//
+//int CudaMinProximityIntersectionClass = core::RegisterObject("GPGPU Proximity Intersection based on CUDA")
+//    .add< CudaMinProximityIntersection >();
+
+
 
 sofa::helper::Creator<core::collision::Contact::Factory, RayContact<SphereCollisionModel<gpu::cuda::CudaVec3Types>> > RayCudaSphereContactClass("RayContact",true);
 

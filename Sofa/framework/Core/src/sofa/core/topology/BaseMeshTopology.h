@@ -34,28 +34,28 @@ public:
     SOFA_ABSTRACT_CLASS(BaseMeshTopology, core::topology::Topology);
     SOFA_BASE_CAST_IMPLEMENTATION(BaseMeshTopology)
 
-    typedef sofa::type::vector<Edge> 		        SeqEdges;
-    typedef sofa::type::vector<Triangle>		    SeqTriangles;
-    typedef sofa::type::vector<Quad>		        SeqQuads;
-    typedef sofa::type::vector<Tetra>		        SeqTetrahedra;
-    typedef sofa::type::vector<Hexa>		        SeqHexahedra;
+    using SeqEdges      = sofa::type::vector<Edge>;
+    using SeqTriangles  = sofa::type::vector<Triangle>;
+    using SeqQuads      = sofa::type::vector<Quad>;
+    using SeqTetrahedra = sofa::type::vector<Tetra>;
+    using SeqHexahedra  = sofa::type::vector<Hexa>;
 
     /// @name Deprecated types, for backward-compatibility
     /// @{
-    typedef EdgeID		                LineID;
-    typedef Edge		                Line;
-    typedef SeqEdges	                SeqLines;
+    using LineID    = EdgeID;
+    using Line      = Edge;
+    using SeqLines  = SeqEdges;
     /// @}
 
     /// fixed-size neighbors arrays
     /// @{
-    typedef sofa::type::fixed_array<EdgeID,3>		EdgesInTriangle;
-    typedef sofa::type::fixed_array<EdgeID,4>		EdgesInQuad;
-    typedef sofa::type::fixed_array<TriangleID,4>	TrianglesInTetrahedron;
-    typedef sofa::type::fixed_array<EdgeID,6>		EdgesInTetrahedron;
-    typedef sofa::type::fixed_array<QuadID,6>		QuadsInHexahedron;
-    typedef sofa::type::fixed_array<EdgeID,12>    EdgesInHexahedron;
-
+    using EdgesInTriangle           = sofa::type::fixed_array<EdgeID, 3>;
+    using EdgesInQuad               = sofa::type::fixed_array<EdgeID, 4>;
+    using TrianglesInTetrahedron    = sofa::type::fixed_array<TriangleID, 4>;
+    using EdgesInTetrahedron        = sofa::type::fixed_array<EdgeID, 6>;
+    using QuadsInHexahedron         = sofa::type::fixed_array<QuadID, 6>;
+    using EdgesInHexahedron         = sofa::type::fixed_array<EdgeID, 12>;
+        
     static constexpr EdgesInTriangle        InvalidEdgesInTriangles       = type::makeHomogeneousArray<EdgesInTriangle>(sofa::InvalidID);
     static constexpr EdgesInQuad            InvalidEdgesInQuad            = type::makeHomogeneousArray<EdgesInQuad>(sofa::InvalidID);
     static constexpr TrianglesInTetrahedron InvalidTrianglesInTetrahedron = type::makeHomogeneousArray<TrianglesInTetrahedron>(sofa::InvalidID);
@@ -67,23 +67,26 @@ public:
 
     /// dynamic-size neighbors arrays
     /// @{
-    typedef sofa::type::vector<PointID>		    VerticesAroundVertex;
-    typedef sofa::type::vector<EdgeID>			EdgesAroundVertex;
-    typedef sofa::type::vector<TriangleID>	    TrianglesAroundVertex;
-    typedef sofa::type::vector<QuadID>			QuadsAroundVertex;
-    typedef sofa::type::vector<TetraID>		    TetrahedraAroundVertex;
-    typedef sofa::type::vector<HexaID>			HexahedraAroundVertex;
-    typedef sofa::type::vector<TriangleID>	    TrianglesAroundEdge;
-    typedef sofa::type::vector<QuadID>			QuadsAroundEdge;
-    typedef sofa::type::vector<TetraID>		    TetrahedraAroundEdge;
-    typedef sofa::type::vector<HexaID>			HexahedraAroundEdge;
-    typedef sofa::type::vector<TetraID>		    TetrahedraAroundTriangle;
-    typedef sofa::type::vector<HexaID>			HexahedraAroundQuad;
+    using VerticesAroundVertex      = sofa::type::vector<PointID>;
+    using EdgesAroundVertex         = sofa::type::vector<EdgeID>;
+    using TrianglesAroundVertex     = sofa::type::vector<TriangleID>;
+    using QuadsAroundVertex         = sofa::type::vector<QuadID>;
+    using TetrahedraAroundVertex    = sofa::type::vector<TetraID>;
+    using HexahedraAroundVertex     = sofa::type::vector<HexaID>;
+    using TrianglesAroundEdge       = sofa::type::vector<TriangleID>;
+    using QuadsAroundEdge           = sofa::type::vector<QuadID>;
+    using TetrahedraAroundEdge      = sofa::type::vector<TetraID>;
+    using HexahedraAroundEdge       = sofa::type::vector<HexaID>;
+    using TetrahedraAroundTriangle  = sofa::type::vector<TetraID>;
+    using HexahedraAroundQuad       = sofa::type::vector<HexaID>;    
     /// @}
 protected:
     BaseMeshTopology()	;
 public:
     void init() override;
+
+    /// Method to be overriden by child class to create all the topology buffers
+    virtual void computeCrossElementBuffers() {}
 
     /// Load the topology from a file.
     ///

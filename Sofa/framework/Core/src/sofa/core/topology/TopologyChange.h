@@ -213,6 +213,13 @@ struct TopologyChangeElementInfo<Topology::Point>
     typedef PointsAdded          EAdded;
     typedef PointsRemoved        ERemoved;
     typedef PointsMoved          EMoved;
+
+    TopologyChangeType EINFOADDED = TopologyChangeType::POINTSADDED;
+    TopologyChangeType EINFOREMOVED = TopologyChangeType::POINTSREMOVED;
+    TopologyChangeType EINFOSWAP = TopologyChangeType::POINTSINDICESSWAP;
+    TopologyChangeType EINFOMOVED = TopologyChangeType::POINTSMOVED;
+    TopologyChangeType EINFORENUMBERING = TopologyChangeType::POINTSRENUMBERING;
+
     /// This event is not used for this type of element
     class EMoved_Removing { }; 
     /// This event is not used for this type of element
@@ -234,6 +241,13 @@ struct TopologyChangeElementInfo<Topology::Edge>
     typedef EdgesRemoved        ERemoved;
     typedef EdgesMoved_Removing EMoved_Removing;
     typedef EdgesMoved_Adding   EMoved_Adding;
+
+    TopologyChangeType EINFOADDED = TopologyChangeType::EDGESADDED;
+    TopologyChangeType EINFOREMOVED = TopologyChangeType::EDGESREMOVED;
+    TopologyChangeType EINFOSWAP = TopologyChangeType::EDGESINDICESSWAP;
+    TopologyChangeType EINFOMOVED = TopologyChangeType::BASE;
+    TopologyChangeType EINFORENUMBERING = TopologyChangeType::EDGESRENUMBERING;
+
     /// This event is not used for this type of element
     class EMoved ;
 
@@ -253,6 +267,13 @@ struct TopologyChangeElementInfo<Topology::Triangle>
     typedef TrianglesRemoved        ERemoved;
     typedef TrianglesMoved_Removing EMoved_Removing;
     typedef TrianglesMoved_Adding   EMoved_Adding;
+
+    TopologyChangeType EINFOADDED = TopologyChangeType::TRIANGLESADDED;
+    TopologyChangeType EINFOREMOVED = TopologyChangeType::TRIANGLESREMOVED;
+    TopologyChangeType EINFOSWAP = TopologyChangeType::TRIANGLESINDICESSWAP;
+    TopologyChangeType EINFOMOVED = TopologyChangeType::BASE;
+    TopologyChangeType EINFORENUMBERING = TopologyChangeType::TRIANGLESRENUMBERING;
+
     /// This event is not used for this type of element
     class EMoved { };
 
@@ -272,6 +293,13 @@ struct TopologyChangeElementInfo<Topology::Quad>
     typedef QuadsRemoved        ERemoved;
     typedef QuadsMoved_Removing EMoved_Removing;
     typedef QuadsMoved_Adding   EMoved_Adding;
+
+    TopologyChangeType EINFOADDED = TopologyChangeType::QUADSADDED;
+    TopologyChangeType EINFOREMOVED = TopologyChangeType::QUADSREMOVED;
+    TopologyChangeType EINFOSWAP = TopologyChangeType::QUADSINDICESSWAP;
+    TopologyChangeType EINFOMOVED = TopologyChangeType::BASE;
+    TopologyChangeType EINFORENUMBERING = TopologyChangeType::QUADSRENUMBERING;
+
     /// This event is not used for this type of element
     class EMoved { };
 
@@ -291,6 +319,14 @@ struct TopologyChangeElementInfo<Topology::Tetrahedron>
     typedef TetrahedraRemoved        ERemoved;
     typedef TetrahedraMoved_Removing EMoved_Removing;
     typedef TetrahedraMoved_Adding   EMoved_Adding;
+
+    TopologyChangeType EINFOADDED = TopologyChangeType::TETRAHEDRAADDED;
+    TopologyChangeType EINFOREMOVED = TopologyChangeType::TETRAHEDRAREMOVED;
+    TopologyChangeType EINFOSWAP = TopologyChangeType::TETRAHEDRAINDICESSWAP;
+    TopologyChangeType EINFOMOVED = TopologyChangeType::BASE;
+    TopologyChangeType EINFORENUMBERING = TopologyChangeType::TETRAHEDRARENUMBERING;
+
+
     /// This event is not used for this type of element
     class EMoved { };
 
@@ -310,6 +346,14 @@ struct TopologyChangeElementInfo<Topology::Hexahedron>
     typedef HexahedraRemoved        ERemoved;
     typedef HexahedraMoved_Removing EMoved_Removing;
     typedef HexahedraMoved_Adding   EMoved_Adding;
+
+    TopologyChangeType EINFOADDED = TopologyChangeType::HEXAHEDRAADDED;
+    TopologyChangeType EINFOREMOVED = TopologyChangeType::HEXAHEDRAREMOVED;
+    TopologyChangeType EINFOSWAP = TopologyChangeType::HEXAHEDRAINDICESSWAP;
+    TopologyChangeType EINFOMOVED = TopologyChangeType::BASE;
+    TopologyChangeType EINFORENUMBERING = TopologyChangeType::HEXAHEDRARENUMBERING;
+
+
     /// This event is not used for this type of element
     class EMoved { };
 

@@ -189,6 +189,7 @@ void TopologyContainer::resetTopologyHandlerList()
             topoHandler->unregisterTopologyHandler();
             topoHandler = nullptr;
         });
+
         topologyHandlerList.clear();
     }
 
