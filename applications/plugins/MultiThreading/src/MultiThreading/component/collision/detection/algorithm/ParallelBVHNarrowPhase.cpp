@@ -134,7 +134,7 @@ void ParallelBVHNarrowPhase::initializeTopology(sofa::core::topology::BaseMeshTo
         // We need to make sure All topology buffers are well created.
         // Those arrays cannot be created on the fly later, in a concurrent environment,
         // due to possible race conditions.
-        topology->computeCrossElementBuffers();
+        topology->computeCrossElementArrays();
     }
 }
 
