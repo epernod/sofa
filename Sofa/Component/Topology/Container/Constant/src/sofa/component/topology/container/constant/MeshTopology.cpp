@@ -533,7 +533,6 @@ void MeshTopology::init()
     else
         m_upperElementType = sofa::geometry::ElementType::POINT;
 
-
     computeCrossElementArrays();
 }
 
@@ -900,6 +899,7 @@ void MeshTopology::createEdgesInTriangleArray ()
 {
     //const SeqEdges& edges = getEdges(); // do not use seqEdges directly as it might not be up-to-date
     const SeqTriangles& triangles = getTriangles(); // do not use seqTriangles directly as it might not be up-to-date
+
     m_edgesInTriangle.clear();
     m_edgesInTriangle.resize(triangles.size());
     for (unsigned int i = 0; i < triangles.size(); ++i)
@@ -1141,6 +1141,7 @@ void MeshTopology::createTrianglesAroundEdgeArray ()
     const SeqTriangles& triangles = getTriangles(); // do not use seqTriangles directly as it might not be up-to-date
     if (m_edgesInTriangle.empty())
         createEdgesInTriangleArray();
+
     m_trianglesAroundEdge.clear();
     m_trianglesAroundEdge.resize( getNbEdges());
     const vector< EdgesInTriangle > &tea=m_edgesInTriangle;
@@ -1338,6 +1339,7 @@ void MeshTopology::createQuadsAroundEdgeArray ()
     const SeqQuads& quads = getQuads(); // do not use seqQuads directly as it might not be up-to-date
     if (m_edgesInQuad.empty())
         createEdgesInQuadArray();
+
     m_quadsAroundEdge.clear();
     m_quadsAroundEdge.resize( getNbEdges() );
     unsigned int j;
@@ -1389,6 +1391,7 @@ void MeshTopology::createQuadsInHexahedronArray ()
 
 void MeshTopology::createTetrahedraAroundVertexArray ()
 {
+    m_tetrahedraAroundVertex.clear();
     m_tetrahedraAroundVertex.resize( nbPoints );
     unsigned int j;
 
@@ -1403,6 +1406,8 @@ void MeshTopology::createTetrahedraAroundEdgeArray ()
 {
     if (!m_edgesInTetrahedron.size())
         createEdgesInTetrahedronArray();
+
+    m_tetrahedraAroundEdge.clear();
     m_tetrahedraAroundEdge.resize( getNbEdges() );
     const vector< EdgesInTetrahedron > &tea = m_edgesInTetrahedron;
     unsigned int j;
@@ -1418,6 +1423,8 @@ void MeshTopology::createTetrahedraAroundTriangleArray ()
 {
     if (!m_trianglesInTetrahedron.size())
         createTrianglesInTetrahedronArray();
+
+    m_tetrahedraAroundTriangle.clear();
     m_tetrahedraAroundTriangle.resize( getNbTriangles());
     unsigned int j;
     const vector< TrianglesInTetrahedron > &tta=m_trianglesInTetrahedron;
@@ -1431,6 +1438,7 @@ void MeshTopology::createTetrahedraAroundTriangleArray ()
 
 void MeshTopology::createHexahedraAroundVertexArray ()
 {
+    m_hexahedraAroundVertex.clear();
     m_hexahedraAroundVertex.resize( nbPoints );
     unsigned int j;
 
@@ -1445,6 +1453,8 @@ void MeshTopology::createHexahedraAroundEdgeArray ()
 {
     if (!m_edgesInHexahedron.size())
         createEdgesInHexahedronArray();
+
+    m_hexahedraAroundEdge.clear();
     m_hexahedraAroundEdge.resize(getNbEdges());
     unsigned int j;
     const vector< EdgesInHexahedron > &hea=m_edgesInHexahedron;
@@ -1460,6 +1470,8 @@ void MeshTopology::createHexahedraAroundQuadArray ()
 {
     if (!m_quadsInHexahedron.size())
         createQuadsInHexahedronArray();
+
+    m_hexahedraAroundQuad.clear();
     m_hexahedraAroundQuad.resize( getNbQuads());
     unsigned int j;
     const vector< QuadsInHexahedron > &qha=m_quadsInHexahedron;
