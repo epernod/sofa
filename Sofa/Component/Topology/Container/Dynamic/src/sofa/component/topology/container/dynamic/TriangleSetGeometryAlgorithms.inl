@@ -4702,8 +4702,10 @@ void TriangleSetGeometryAlgorithms<DataTypes>::SnapBorderPath(PointID pa, Coord&
 
                     auto new_coord = this->computePointProjectionOnEdge(theEdge, thePoint, intersected);
 
-                    if (!intersected)
-                        msg_error() << "Orthogonal projection failed";
+                    if (!intersected){
+                        // Orthogonal projection failed, not possible to snap this point on the ith edge of the triangle
+                        continue;
+                    }
 
                     intersected_topoElements[0] = sofa::geometry::ElementType::EDGE;
 
@@ -4806,8 +4808,10 @@ void TriangleSetGeometryAlgorithms<DataTypes>::SnapBorderPath(PointID pa, Coord&
                     DataTypes::get(thePoint[0], thePoint[1], thePoint[2], b);
                     auto new_coord = this->computePointProjectionOnEdge(theEdge, thePoint, intersected);
 
-                    if (!intersected)
-                        msg_error() << "Orthogonal projection failed";
+                    if (!intersected){
+                        // Orthogonal projection failed, not possible to snap this point on the ith edge of the triangle
+                        continue;
+                    }
 
                     intersected_topoElements.back() = sofa::geometry::ElementType::EDGE;
                     intersected_indices.back() = theEdge;

@@ -980,7 +980,7 @@ void RealGUI::setViewerResolution ( int w, int h )
 #if (QT_VERSION < QT_VERSION_CHECK(5, 11, 0))
     const QRect screen = QApplication::desktop()->availableGeometry(QApplication::desktop()->screenNumber(this));
 #else
-    const QRect screen = QGuiApplication::primaryScreen()->availableGeometry();// QGuiApplication::screens().at(QApplication::desktop()->screenNumber(this))->availableGeometry();
+    const QRect screen = QGuiApplication::primaryScreen()->availableGeometry();
 #endif
     QSize newWinSize(winSize.width() - viewSize.width() + w, winSize.height() - viewSize.height() + h);
     if (newWinSize.width() > screen.width()) newWinSize.setWidth(screen.width()-20);
@@ -1006,7 +1006,7 @@ void RealGUI::setFullScreen (bool enable)
 
     if (enable)
     {
-        std::cout << "Set Full Screen Mode" << std::endl;
+        msg_info("RealGUI") << "Set Full Screen Mode";
         showFullScreen();
         m_fullScreen = true;
 
@@ -1015,7 +1015,7 @@ void RealGUI::setFullScreen (bool enable)
     }
     else
     {
-        std::cout << "Set Windowed Mode" << std::endl;
+        msg_info("RealGUI") << "Set Windowed Mode";
         showNormal();
         m_fullScreen = false;
         dockWidget->setVisible(true);
@@ -1428,11 +1428,11 @@ void RealGUI::initViewer(BaseViewer* _viewer)
     }
     init(); //init data member from RealGUI for the viewer initialisation in the GUI
 
-    // Is our viewer embedded or not ?
+    // Is our viewer not a qt::viewer::SofaViewer ?
     sofa::gui::qt::viewer::SofaViewer* sofaViewer = dynamic_cast<sofa::gui::qt::viewer::SofaViewer*>(_viewer);
     if( sofaViewer == nullptr )
     {
-        std::cout<<"initViewer: The viewer isn't embedded in the GUI"<<std::endl;
+        msg_error("RealGUI") << "initViewer failed as given _viewer is not of type sofa::gui::qt::viewer::SofaViewer*";
     }
     else
     {

@@ -427,9 +427,13 @@ auto EdgeSetGeometryAlgorithms<DataTypes>::computePointProjectionOnEdge (const E
 
     // Compute Coord of projection point H:
     Coord coord_H = compute2EdgesIntersection ( coord_edge1, coord_edge2, intersected);
-    sofa::type::Vec<3, Real> h; DataTypes::get(h[0], h[1], h[2], coord_H);
-
-    return computeEdgeBarycentricCoordinates(h, theEdge[0], theEdge[1]);
+    if (intersected)
+    {
+        sofa::type::Vec<3, Real> h; DataTypes::get(h[0], h[1], h[2], coord_H);
+        return computeEdgeBarycentricCoordinates(h, theEdge[0], theEdge[1]);
+    }
+    else
+        return sofa::type::vector< SReal >();
 }
 
 template<class DataTypes>
@@ -486,10 +490,10 @@ bool EdgeSetGeometryAlgorithms<DataTypes>::computeRestEdgePlaneIntersection (Edg
 template<class DataTypes>
 typename DataTypes::Coord EdgeSetGeometryAlgorithms<DataTypes>::compute2EdgesIntersection (const Coord edge1[2], const Coord edge2[2], bool& intersected)
 {
-    type::Vec3 a0 = type::Vec3(DataTypes::getCPos(edge1[0]));
-    type::Vec3 a1 = type::Vec3(DataTypes::getCPos(edge1[1]));
-    type::Vec3 b0 = type::Vec3(DataTypes::getCPos(edge2[0]));
-    type::Vec3 b1 = type::Vec3(DataTypes::getCPos(edge2[1]));
+    auto a0 = type::Vec3(DataTypes::getCPos(edge1[0]));
+    auto a1 = type::Vec3(DataTypes::getCPos(edge1[1]));
+    auto b0 = type::Vec3(DataTypes::getCPos(edge2[0]));
+    auto b1 = type::Vec3(DataTypes::getCPos(edge2[1]));
 
     type::Vec2 baryCoords(type::NOINIT);
     intersected = sofa::geometry::Edge::intersectionWithEdge(a0, a1, b0, b1, baryCoords);
@@ -509,8 +513,8 @@ typename DataTypes::Coord EdgeSetGeometryAlgorithms<DataTypes>::computeEdgeSegme
 
     const typename DataTypes::Coord& e0 = pos[theEdge[0]];
     const typename DataTypes::Coord& e1 = pos[theEdge[1]];
-    type::Vec3 p0 = type::Vec3(DataTypes::getCPos(e0));
-    type::Vec3 p1 = type::Vec3(DataTypes::getCPos(e1));
+    auto p0 = type::Vec3(DataTypes::getCPos(e0));
+    auto p1 = type::Vec3(DataTypes::getCPos(e1));
 
     type::Vec2 baryCoords(type::NOINIT);
     intersected = sofa::geometry::Edge::intersectionWithEdge(p0, p1, a, b, baryCoords);
@@ -738,8 +742,8 @@ bool EdgeSetGeometryAlgorithms<DataTypes>::computeEdgeSegmentIntersection(EdgeID
 
     const typename DataTypes::Coord& e0 = pos[theEdge[0]];
     const typename DataTypes::Coord& e1 = pos[theEdge[1]];
-    type::Vec3 p0 = type::Vec3(DataTypes::getCPos(e0));
-    type::Vec3 p1 = type::Vec3(DataTypes::getCPos(e1));
+    auto p0 = type::Vec3(DataTypes::getCPos(e0));
+    auto p1 = type::Vec3(DataTypes::getCPos(e1));
 
     type::Vec2 baryCoords(type::NOINIT);
     bool is_intersect = sofa::geometry::Edge::intersectionWithEdge(p0, p1, a, b, baryCoords);
@@ -753,20 +757,5 @@ bool EdgeSetGeometryAlgorithms<DataTypes>::mustComputeBBox() const
 {
     return ( (this->m_topology->getNbEdges() != 0 && (d_drawEdges.getValue() || showEdgeIndices.getValue())) || Inherit1::mustComputeBBox() );
 }
-
-
-template <class DataTypes>
-sofa::type::vector< SReal > EdgeSetGeometryAlgorithms<DataTypes>::compute2PointsBarycoefs(const sofa::type::Vec<3, Real> &p, PointID ind_p1, PointID ind_p2) const
-{
-    return computeEdgeBarycentricCoordinates(p, ind_p1, ind_p2);
-}
-
-
-template <class DataTypes>
-sofa::type::vector< SReal > EdgeSetGeometryAlgorithms<DataTypes>::computeRest2PointsBarycoefs(const sofa::type::Vec<3, Real> &p, PointID ind_p1, PointID ind_p2) const
-{
-    return computeEdgeBarycentricCoordinates(p, ind_p1, ind_p2, true);
-}
-
 
 } //namespace sofa::component::topology::container::dynamic
