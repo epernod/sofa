@@ -264,7 +264,7 @@ BaseElement* loadFromFile(const char *filename)
     //dmsg_error("XML") << "clear doc";
     doc->Clear();
     //dmsg_error("XML") << "delete doc";
-    delete doc;
+    //delete doc;
     //dmsg_error("XML") << "<loadFromFile";
     return r;
 }
