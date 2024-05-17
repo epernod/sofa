@@ -172,7 +172,6 @@ public:
     SOFA_ATTRIBUTE_DEPRECATED("v24.06", "v24.12", "Use the method computeEdgeSegmentIntersection returning a Coord")
     bool computeEdgeSegmentIntersection(EdgeID edgeID, const type::Vec3& a, const type::Vec3& b, Real &baryCoef);
 
-
     // compute barycentric coefficients
     SOFA_ATTRIBUTE_DISABLED("v23.12", "v24.06", "Use sofa::component::topology::container::dynamic::EdgeSetGeometryAlgorithms::computeEdgeBarycentricCoordinates")
     sofa::type::vector< SReal > compute2PointsBarycoefs(const sofa::type::Vec<3, Real> &p, PointID ind_p1, PointID ind_p2) const = delete;

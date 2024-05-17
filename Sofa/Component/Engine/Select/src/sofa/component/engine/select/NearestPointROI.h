@@ -74,6 +74,7 @@ public:
     Data< sofa::type::vector<sofa::topology::Edge> > d_edges; ///< List of edges. The indices point to a list composed as an interleaved fusion of output degrees of freedom. It could be used to fuse two mechanical objects and create a topology from the fusion.
     Data< type::vector<unsigned> > d_indexPairs;        ///< Two indices per child: the parent, and the index within the parent. Could be used with a SubsetMultiMapping
     Data< type::vector<Real> > d_distances; ///< List of distances between pairs of points
+    Data<bool> d_drawPairs;
     ///@}
 
     explicit NearestPointROI(core::behavior::MechanicalState<DataTypes> * = nullptr, core::behavior::MechanicalState<DataTypes> *mm2 = nullptr);
@@ -82,6 +83,7 @@ public:
     void init() override;
     void reinit() override;
     void doUpdate() override;
+    void draw(const core::visual::VisualParams* vparams) override;
 
 protected:
     void computeNearestPointMaps(const VecCoord& x1, const VecCoord& x2);

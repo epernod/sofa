@@ -376,7 +376,6 @@ TEST(GeometryEdge_test, intersectionWithEdge2f)
 }
 
 
-
 TEST(GeometryEdge_test, intersectionWithEdge3f)
 {
     const sofa::type::Vec3f e01{ 0.f, 0.f, 0.f };
