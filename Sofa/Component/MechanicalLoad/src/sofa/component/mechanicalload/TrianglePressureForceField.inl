@@ -52,7 +52,6 @@ template <class DataTypes>  TrianglePressureForceField<DataTypes>::TrianglePress
         updateTriangleInformation();
         return sofa::core::objectmodel::ComponentState::Valid;
     }, {});
-}
 
 
     this->addUpdateCallback("triangles_change", { &triangleList }, [this](const core::DataTracker& t)
@@ -64,6 +63,15 @@ template <class DataTypes>  TrianglePressureForceField<DataTypes>::TrianglePress
     
 }
 
+
+    this->addUpdateCallback("triangles_change", { &triangleList }, [this](const core::DataTracker& t)
+    {
+        SOFA_UNUSED(t);
+        initTriangleInformation();
+        return sofa::core::objectmodel::ComponentState::Valid;
+    }, {});
+    
+}
 
 template <class DataTypes> void TrianglePressureForceField<DataTypes>::init()
 {
