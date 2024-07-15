@@ -95,7 +95,7 @@ void FastTetrahedralCorotationalForceField<gpu::cuda::CudaVec3fTypes>::addDForce
     {
         sofa::Size nbTetrahedra = m_topology->getNbTetrahedra();
         const VecTetrahedronRestInformation& tetrahedronInf = tetrahedronInfo.getValue();
-        VecMat3x3& edgeDfDx = *edgeInfo.beginEdit();
+        VecMat3x3& edgeDfDx = *d_edgeInfo.beginEdit();
 
         // reset all edge matrices
         for (unsigned int j = 0; j < edgeDfDx.size(); j++)
