@@ -1384,6 +1384,21 @@ void TetrahedralCorotationalFEMForceField<DataTypes>::draw(const core::visual::V
     
     if (d_drawing.getValue())
     {
+        //const sofa::Size nbrTetra = this->l_topology->getNbTetrahedra();
+        //const sofa::core::topology::BaseMeshTopology::SeqTetrahedra& tetras = this->l_topology->getTetrahedra();
+        //std::vector< type::Vec3 > newPoints;
+        //newPoints.reserve(nbrTetra * 4);
+
+        //for (auto& tetra : tetras)
+        //{
+        //    const auto& [a, b, c, d] = tetra.array();
+        //    newPoints.push_back(x[a]);
+        //    newPoints.push_back(x[b]);
+        //    newPoints.push_back(x[c]);
+        //    newPoints.push_back(x[d]);
+        //}
+        //vparams->drawTool()->drawScaledTetrahedra(newPoints, d_drawColor1.getValue(), d_drawColor2.getValue(), d_drawColor3.getValue(), d_drawColor4.getValue(), 0.666667);
+
         const sofa::Size nbrTetra = this->l_topology->getNbTetrahedra();
         std::vector< type::Vec3 > points[4];
         points[0].reserve(nbrTetra * 3);

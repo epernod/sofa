@@ -155,6 +155,7 @@ public:
     virtual void drawTetrahedra(const std::vector<Vec3> &points, const RGBAColor& color) = 0;
     //Scale each tetrahedron
     virtual void drawScaledTetrahedra(const std::vector<Vec3> &points, const RGBAColor& color, const float scale) = 0;
+    virtual void drawScaledTetrahedra(const std::vector<Vec3>& points, const type::RGBAColor& c1, const type::RGBAColor& c2, const type::RGBAColor& c3, const type::RGBAColor& c4, const float scale) = 0;
 
     virtual void drawHexahedron(const Vec3 &p0, const Vec3 &p1, const Vec3 &p2, const Vec3 &p3,
         const Vec3 &p4, const Vec3 &p5, const Vec3 &p6, const Vec3 &p7, const RGBAColor &color) = 0;

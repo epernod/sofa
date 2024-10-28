@@ -1054,6 +1054,33 @@ void DrawToolGL::drawScaledTetrahedra(const std::vector<Vec3> &points, const typ
 }
 
 
+void DrawToolGL::drawScaledTetrahedra(const std::vector<Vec3>& points, const type::RGBAColor& c1, const type::RGBAColor& c2, const type::RGBAColor& c3, const type::RGBAColor& c4, const float scale)
+{
+    glBegin(GL_TRIANGLES);
+    for (std::vector<Vec3>::const_iterator it = points.begin(), end = points.end(); it != end;)
+    {
+        const Vec3& p0 = *(it++);
+        const Vec3& p1 = *(it++);
+        const Vec3& p2 = *(it++);
+        const Vec3& p3 = *(it++);
+
+        Vec3 center = (p0 + p1 + p2 + p3) / 4.0;
+
+        Vec3 np0 = ((p0 - center) * scale) + center;
+        Vec3 np1 = ((p1 - center) * scale) + center;
+        Vec3 np2 = ((p2 - center) * scale) + center;
+        Vec3 np3 = ((p3 - center) * scale) + center;
+
+        //this->drawTetrahedron(p0,p1,p2,p3,color); // not recommended as it will call glBegin/glEnd <number of tetra> times
+        this->internalDrawTriangle(np0, np1, np2, cross((p1 - p0), (p2 - p0)), c1);
+        this->internalDrawTriangle(np0, np1, np3, cross((p1 - p0), (p3 - p0)), c2);
+        this->internalDrawTriangle(np0, np2, np3, cross((p2 - p0), (p3 - p0)), c3);
+        this->internalDrawTriangle(np1, np2, np3, cross((p2 - p1), (p3 - p1)), c4);
+    }
+    glEnd();
+}
+
+
 void DrawToolGL::drawHexahedron(const Vec3 &p0, const Vec3 &p1, const Vec3 &p2, const Vec3 &p3,
                                 const Vec3 &p4, const Vec3 &p5, const Vec3 &p6, const Vec3 &p7,
                                 const type::RGBAColor &color)
