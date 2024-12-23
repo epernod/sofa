@@ -20,38 +20,42 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 #pragma once
+#include <sofa/component/visual/config.h>
 
-#include <sofa/config.h>
-#include <sofa/config/sharedlibrary_defines.h>
+#include <sofa/core/visual/VisualModel.h>
+#include <sofa/core/visual/VisualState.h>
+#include <sofa/type/RGBAColor.h>
 
-#ifdef SOFA_BUILD_SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL
-#  define SOFA_TARGET @PROJECT_NAME@
-#  define SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL_API SOFA_EXPORT_DYNAMIC_LIBRARY
-#else
-#  define SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL_API SOFA_IMPORT_DYNAMIC_LIBRARY
-#endif
-
-namespace sofa::component::constraint::lagrangian::model
+namespace sofa::component::visual
 {
-	constexpr const char* MODULE_NAME = "@PROJECT_NAME@";
-	constexpr const char* MODULE_VERSION = "@PROJECT_VERSION@";
-} // namespace sofa::component::constraint::lagrangian::model
 
-#ifdef SOFA_BUILD_SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL
-#define SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_LAGRANGIAN_MODEL()
-#else
-#define SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_LAGRANGIAN_MODEL() \
-    SOFA_ATTRIBUTE_DEPRECATED( \
-        "v24.06", "v24.12", \
-        "Data renamed according to the guidelines")
-#endif
+class SOFA_COMPONENT_VISUAL_API CylinderVisualModel :
+    public core::visual::VisualModel, public sofa::core::visual::VisualState<defaulttype::Vec3Types>
+{
+public:
+    using Vec3State = sofa::core::visual::VisualState<defaulttype::Vec3Types>;
+    SOFA_CLASS2(CylinderVisualModel,core::visual::VisualModel, Vec3State);
 
+protected:
+    CylinderVisualModel();
+    ~CylinderVisualModel() override;
+public:
+    void init() override;
 
-#ifdef SOFA_BUILD_SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL
-#define SOFA_ATTRIBUTE_DEPRECATED__BILATERALREMOVEUNUSEDTOLERANCE()
-#else
-#define SOFA_ATTRIBUTE_DEPRECATED__BILATERALREMOVEUNUSEDTOLERANCE() \
-    SOFA_ATTRIBUTE_DEPRECATED( \
-        "v25.06", "v25.12", \
-        "Data \'d_numericalTolerance\' has been removed since it was actually not taken into account")
-#endif
+    void doDrawVisual(const core::visual::VisualParams* vparams) override;
+
+    void exportOBJ(std::string /*name*/, std::ostream* /*out*/, std::ostream* /*mtl*/, Index& /*vindex*/, Index& /*nindex*/, Index& /*tindex*/, int& /*count*/) override;
+
+private:
+    Data<float>		radius; ///< Radius of the cylinder.
+    Data<sofa::type::RGBAColor>	color; ///< Color of the cylinders.
+
+    typedef sofa::type::vector<core::topology::Edge>  SeqEdges;
+    Data<SeqEdges> d_edges; ///< List of edge indices
+
+public:
+    bool insertInNode( core::objectmodel::BaseNode* node ) override { Inherit1::insertInNode(node); Inherit2::insertInNode(node); return true; }
+    bool removeInNode( core::objectmodel::BaseNode* node ) override { Inherit1::removeInNode(node); Inherit2::removeInNode(node); return true; }
+};
+
+} // namespace sofa::component::visual

@@ -20,38 +20,32 @@
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
 #pragma once
+#include <sofa/core/fwd.h>
+#include <sofa/core/visual/VisualModel.h>
+#include <string>
+#include <iostream>
 
-#include <sofa/config.h>
-#include <sofa/config/sharedlibrary_defines.h>
 
-#ifdef SOFA_BUILD_SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL
-#  define SOFA_TARGET @PROJECT_NAME@
-#  define SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL_API SOFA_EXPORT_DYNAMIC_LIBRARY
-#else
-#  define SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL_API SOFA_IMPORT_DYNAMIC_LIBRARY
-#endif
-
-namespace sofa::component::constraint::lagrangian::model
+namespace sofa::core::visual
 {
-	constexpr const char* MODULE_NAME = "@PROJECT_NAME@";
-	constexpr const char* MODULE_VERSION = "@PROJECT_VERSION@";
-} // namespace sofa::component::constraint::lagrangian::model
 
-#ifdef SOFA_BUILD_SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL
-#define SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_LAGRANGIAN_MODEL()
-#else
-#define SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_LAGRANGIAN_MODEL() \
-    SOFA_ATTRIBUTE_DEPRECATED( \
-        "v24.06", "v24.12", \
-        "Data renamed according to the guidelines")
-#endif
+class SOFA_CORE_API BaseVisualStyle : public sofa::core::objectmodel::BaseObject
+{
+public:
+    SOFA_CLASS(BaseVisualStyle,sofa::core::objectmodel::BaseObject);
 
+    typedef sofa::core::visual::VisualParams VisualParams;
+    typedef sofa::core::visual::DisplayFlags DisplayFlags;
 
-#ifdef SOFA_BUILD_SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL
-#define SOFA_ATTRIBUTE_DEPRECATED__BILATERALREMOVEUNUSEDTOLERANCE()
-#else
-#define SOFA_ATTRIBUTE_DEPRECATED__BILATERALREMOVEUNUSEDTOLERANCE() \
-    SOFA_ATTRIBUTE_DEPRECATED( \
-        "v25.06", "v25.12", \
-        "Data \'d_numericalTolerance\' has been removed since it was actually not taken into account")
-#endif
+protected:
+    BaseVisualStyle() { }
+    ~BaseVisualStyle() override { }
+
+public:
+    virtual void updateVisualFlags(VisualParams* ) { };
+    virtual void applyBackupFlags(VisualParams* ) { };
+
+};
+
+} // namespace sofa::simulation::graph
+
