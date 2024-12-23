@@ -29,10 +29,11 @@
 namespace sofa::gl::component::shader
 {
 
-//Register OglShader in the Object Factory
-int OglShaderClass = core::RegisterObject("OglShader")
-        .add< OglShader >()
-        ;
+void registerOglShader(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Set custom shader for the current visual context.")
+        .add< OglShader >());
+}
 
 OglShader::OglShader():
     turnOn(initData(&turnOn, (bool) true, "turnOn", "Turn On the shader?")),
@@ -140,7 +141,7 @@ void OglShader::reinit()
 
 }
 
-void OglShader::initVisual()
+void OglShader::doInitVisual(const core::visual::VisualParams*)
 {
 
     if (!sofa::gl::GLSLShader::InitGLSL())
@@ -278,11 +279,6 @@ void OglShader::start()
 bool OglShader::isActive()
 {
     return !passive.getValue();
-}
-
-void OglShader::updateVisual()
-{
-
 }
 
 unsigned int OglShader::getNumberOfShaders()

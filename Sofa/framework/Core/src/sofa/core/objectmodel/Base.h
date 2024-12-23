@@ -50,7 +50,7 @@ namespace sofa::core::objectmodel
 /**
  *  \brief Base class for everything
  *
- *  This class contains all functionnality shared by every objects in SOFA.
+ *  This class contains all functionality shared by every objects in SOFA.
  *  Most importantly it defines how to retrieve information about an object (name, type, data fields).
  *  All classes deriving from Base should use the SOFA_CLASS macro within their declaration (see BaseClass.h).
  *
@@ -190,6 +190,7 @@ public:
     virtual void parseFields ( const std::map<std::string,std::string*>& str );
 
     /// Write the current field values to the given map of name -> value pairs
+    SOFA_ATTRIBUTE_DEPRECATED__BASEWRITEDATAS()
     void writeDatas (std::map<std::string,std::string*>& str);
 
     /// Write the current field values to the given output stream
@@ -390,11 +391,11 @@ public:
 
     Data<bool> f_printLog; ///< if true, emits extra messages at runtime.
 
-    Data< sofa::core::objectmodel::TagSet > f_tags; ///< list of the subsets the objet belongs to
+    Data< sofa::core::objectmodel::TagSet > f_tags; ///< list of the subsets the object belongs to
 
     Data< sofa::type::BoundingBox > f_bbox; ///< this object bounding box
 
-    Data< sofa::core::objectmodel::ComponentState >  d_componentState; ///< the object state
+    Data< sofa::core::objectmodel::ComponentState >  d_componentState; ///< The state of the component among (Dirty, Valid, Undefined, Loading, Invalid).
 
     std::string m_definitionSourceFileName        {""};
     int         m_definitionSourceFilePos         {-1};
@@ -420,7 +421,6 @@ public:
     SOFA_BASE_CAST_DEFINITION( core,        BehaviorModel                          )
     SOFA_BASE_CAST_DEFINITION( core,        CollisionModel                         )
     SOFA_BASE_CAST_DEFINITION( core,        DataEngine                             )
-    SOFA_BASE_CAST_DEFINITION( core,        DevBaseMonitor                         )
     SOFA_BASE_CAST_DEFINITION( objectmodel, BaseContext                            )
     SOFA_BASE_CAST_DEFINITION( objectmodel, BaseObject                             )
     SOFA_BASE_CAST_DEFINITION( objectmodel, BaseNode                               )
@@ -487,7 +487,7 @@ public:
 /// This construct a new ComponentInfo object from a Base object.
 inline ComponentInfo::SPtr getComponentInfo(const sofa::core::objectmodel::Base* t)
 {
-    return ComponentInfo::SPtr( new SofaComponentInfo(t) ) ;
+    return std::make_shared<SofaComponentInfo>(t);
 }
 
 } // namespace sofa::helper::logging

@@ -29,6 +29,8 @@
 #include <vector>
 #include <sofa/type/Mat.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::solidmechanics::spring
 {
 
@@ -153,15 +155,23 @@ public:
 
 
 protected:
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_SPRING()
+    sofa::core::objectmodel::RenamedData<sofa::type::vector<Spring> > springs;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_SPRING()
+    sofa::core::objectmodel::RenamedData<bool> showLawfulTorsion;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_SPRING()
+    sofa::core::objectmodel::RenamedData<bool> showExtraTorsion;
 
     SReal m_potentialEnergy;
     /// the list of the springs
-    Data<sofa::type::vector<Spring> > springs;
+    Data<sofa::type::vector<Spring> > d_springs;
     /// the list of the local referentials of the springs
     VecCoord springRef;
     /// bool to allow the display of the 2 parts of springs torsions
-    Data<bool> showLawfulTorsion;
-    Data<bool> showExtraTorsion; ///< dislpay the illicit part of the joint rotation
+    Data<bool> d_showLawfulTorsion;
+    Data<bool> d_showExtraTorsion; ///< display the illicit part of the joint rotation
 
     FrameSpringForceFieldInternalData<DataTypes> data;
 
@@ -191,7 +201,7 @@ public:
 
     SReal getPotentialEnergy(const core::MechanicalParams*, const DataVecCoord&, const DataVecCoord& ) const override { return m_potentialEnergy; }
 
-    sofa::type::vector<Spring> * getSprings() { return springs.beginEdit(); }
+    sofa::type::vector<Spring> * getSprings() { return d_springs.beginEdit(); }
 
     void draw(const core::visual::VisualParams* vparams) override;
 

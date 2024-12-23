@@ -289,7 +289,7 @@ template< class DataTypes>
 void TriangleSetGeometryAlgorithms< DataTypes >::computeTriangleAABB(const TriangleID i, Coord& minCoord, Coord& maxCoord) const
 {
     const Triangle &t = this->m_topology->getTriangle(i);
-    const typename DataTypes::VecCoord& p =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& p =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     for(PointID i=0; i<3; ++i)
     {
@@ -302,7 +302,7 @@ template<class DataTypes>
 typename DataTypes::Coord TriangleSetGeometryAlgorithms<DataTypes>::computeTriangleCenter(const TriangleID i) const
 {
     const Triangle &t = this->m_topology->getTriangle(i);
-    const typename DataTypes::VecCoord& p =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& p =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     return (p[t[0]] + p[t[1]] + p[t[2]]) / (Real) 3.0;
 }
@@ -311,7 +311,7 @@ template<class DataTypes>
 typename DataTypes::Coord TriangleSetGeometryAlgorithms<DataTypes>::computeRestTriangleCenter(const TriangleID i) const
 {
     const Triangle &t = this->m_topology->getTriangle(i);
-    const typename DataTypes::VecCoord& p = (this->object->read(core::ConstVecCoordId::restPosition())->getValue());
+    const typename DataTypes::VecCoord& p = (this->object->read(core::vec_id::read_access::restPosition)->getValue());
 
     return (p[t[0]] + p[t[1]] + p[t[2]]) / (Real) 3.0;
 }
@@ -321,7 +321,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::computeTriangleCircumcenterBaryCo
                                                                                     const TriangleID i) const
 {
     const Triangle &t = this->m_topology->getTriangle(i);
-    const typename DataTypes::VecCoord& p =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& p =(this->object->read(core::vec_id::read_access::position)->getValue());
     Real a2, b2, c2; // square lengths of the 3 edges
     a2 = (p[t[1]]-p[t[0]]).norm2();
     b2 = (p[t[2]]-p[t[1]]).norm2();
@@ -341,7 +341,7 @@ template<class DataTypes>
 typename DataTypes::Coord TriangleSetGeometryAlgorithms<DataTypes>::computeTriangleCircumcenter(const TriangleID i) const
 {
     const Triangle &t = this->m_topology->getTriangle(i);
-    const typename DataTypes::VecCoord& p =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& p =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     sofa::type::Vec<3,Real> barycentricCoords;
     computeTriangleCircumcenterBaryCoefs(barycentricCoords, i);
@@ -353,7 +353,7 @@ template< class DataTypes>
 void TriangleSetGeometryAlgorithms< DataTypes >::getTriangleVertexCoordinates(const TriangleID i, Coord pnt[3]) const
 {
     const Triangle &t = this->m_topology->getTriangle(i);
-    const typename DataTypes::VecCoord& p =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& p =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     for(PointID i=0; i<3; ++i)
     {
@@ -365,7 +365,7 @@ template< class DataTypes>
 void TriangleSetGeometryAlgorithms< DataTypes >::getRestTriangleVertexCoordinates(const TriangleID i, Coord pnt[3]) const
 {
     const Triangle &t = this->m_topology->getTriangle(i);
-    const typename DataTypes::VecCoord& p = (this->object->read(core::ConstVecCoordId::restPosition())->getValue());
+    const typename DataTypes::VecCoord& p = (this->object->read(core::vec_id::read_access::restPosition)->getValue());
 
     for(PointID i=0; i<3; ++i)
     {
@@ -377,7 +377,7 @@ template< class DataTypes>
 typename DataTypes::Real TriangleSetGeometryAlgorithms< DataTypes >::computeTriangleArea( const TriangleID i) const
 {
     const Triangle &t = this->m_topology->getTriangle(i);
-    const typename DataTypes::VecCoord& p =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& p =(this->object->read(core::vec_id::read_access::position)->getValue());
     Real area = (Real)(areaProduct(p[t[1]]-p[t[0]], p[t[2]]-p[t[0]]) * 0.5);
     return area;
 }
@@ -386,7 +386,7 @@ template< class DataTypes>
 typename DataTypes::Real TriangleSetGeometryAlgorithms< DataTypes >::computeRestTriangleArea( const TriangleID i) const
 {
     const Triangle &t = this->m_topology->getTriangle(i);
-    const typename DataTypes::VecCoord& p = (this->object->read(core::ConstVecCoordId::restPosition())->getValue());
+    const typename DataTypes::VecCoord& p = (this->object->read(core::vec_id::read_access::restPosition)->getValue());
     Real area = (Real) (areaProduct(p[t[1]]-p[t[0]],p[t[2]]-p[t[0]]) * 0.5);
     return area;
 }
@@ -396,7 +396,7 @@ template<class DataTypes>
 void TriangleSetGeometryAlgorithms<DataTypes>::computeTriangleArea( BasicArrayInterface<Real> &ai) const
 {
     const sofa::type::vector<Triangle> &ta = this->m_topology->getTriangles();
-    const typename DataTypes::VecCoord& p =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& p =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     for (size_t i=0; i<ta.size(); ++i)
     {
@@ -411,7 +411,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::computeTriangleArea( BasicArrayIn
 template<class DataTypes>
 auto TriangleSetGeometryAlgorithms< DataTypes >::computeBaryEdgePoint(PointID p0, PointID p1, Real coord_p) const -> sofa::type::Vec<3, Real>
 {
-    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     sofa::type::Vec<3,Real> c0; c0 = vect_c[p0];
     sofa::type::Vec<3,Real> c1; c1 = vect_c[p1];
@@ -421,7 +421,7 @@ auto TriangleSetGeometryAlgorithms< DataTypes >::computeBaryEdgePoint(PointID p0
 template<class DataTypes>
 auto TriangleSetGeometryAlgorithms< DataTypes >::computeBaryTrianglePoint(PointID p0, PointID p1, PointID p2, sofa::type::Vec<3,Real>& coord_p) const -> sofa::type::Vec<3, Real>
 {
-    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     sofa::type::Vec<3,Real> c0; c0 = vect_c[p0];
     sofa::type::Vec<3,Real> c1; c1 = vect_c[p1];
@@ -436,7 +436,7 @@ auto TriangleSetGeometryAlgorithms< DataTypes >::getOppositePoint(PointID ind_p,
         const Edge& indices,
         Real coord_p) const -> sofa::type::Vec<3, Real>
 {
-    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     const typename DataTypes::Coord& c1 = vect_c[indices[0]];
     const typename DataTypes::Coord& c2 = vect_c[indices[1]];
@@ -466,7 +466,7 @@ template<class DataTypes>
 auto TriangleSetGeometryAlgorithms< DataTypes >::computeTriangleNormal(const TriangleID ind_t) const -> sofa::type::Vec<3, Real>
 {
     const Triangle &t = this->m_topology->getTriangle(ind_t);
-    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     sofa::type::Vec<3, Real> p0; DataTypes::get(p0[0], p0[1], p0[2], vect_c[t[0]]);
     sofa::type::Vec<3, Real> p1; DataTypes::get(p1[0], p1[1], p1[2], vect_c[t[1]]);
@@ -507,7 +507,7 @@ auto TriangleSetGeometryAlgorithms< DataTypes >::compute3PointsBarycoefs(
     const Real ZERO = 1e-12;
     sofa::type::vector< SReal > baryCoefs;
 
-    const typename DataTypes::VecCoord& vect_c = (bRest ? (this->object->read(core::ConstVecCoordId::restPosition())->getValue()) : (this->object->read(core::ConstVecCoordId::position())->getValue()));
+    const typename DataTypes::VecCoord& vect_c = (bRest ? (this->object->read(core::vec_id::read_access::restPosition)->getValue()) : (this->object->read(core::vec_id::read_access::position)->getValue()));
 
     const typename DataTypes::Coord& c0 = vect_c[ind_p1];
     const typename DataTypes::Coord& c1 = vect_c[ind_p2];
@@ -560,7 +560,7 @@ template<class DataTypes>
 void TriangleSetGeometryAlgorithms< DataTypes >::computeClosestIndexPair(const TriangleID ind_ta, const TriangleID ind_tb,
         PointID &ind1, PointID &ind2) const
 {
-    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     const Triangle &ta=this->m_topology->getTriangle(ind_ta);
     const Triangle &tb=this->m_topology->getTriangle(ind_tb);
@@ -617,8 +617,8 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::isPointInsideTriangle(const Tri
 {
     const Real ZERO = -1e-12;
     const typename DataTypes::VecCoord& vect_c = bRest
-        ? (this->object->read(core::ConstVecCoordId::restPosition())->getValue())
-        :(this->object->read(core::ConstVecCoordId::position())->getValue());
+        ? (this->object->read(core::vec_id::read_access::restPosition)->getValue())
+        :(this->object->read(core::vec_id::read_access::position)->getValue());
     const Triangle &t=this->m_topology->getTriangle(ind_t);
 
     const typename DataTypes::Coord& c0=vect_c[t[0]];
@@ -755,7 +755,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::isPointInTriangle(const Triangl
         TriangleID &ind_t_test) const
 {
     const Real ZERO = 1e-12;
-    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::vec_id::read_access::position)->getValue());
     const Triangle &t=this->m_topology->getTriangle(ind_t);
 
     const typename DataTypes::Coord& c0=vect_c[t[0]];
@@ -900,7 +900,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::isQuadDeulaunayOriented(const t
 {
     sofa::type::vector< Real > baryCoefs;
 
-    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     const typename DataTypes::Coord& c3 = vect_c[ind_q3];
     const typename DataTypes::Coord& c4 = vect_c[ind_q4];
@@ -1024,7 +1024,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::isTriangleInPlane(const Triangl
 
     // HYP : ind_p==t[0] or ind_p==t[1] or ind_p==t[2]
 
-    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     PointID ind_1;
     PointID ind_2;
@@ -1082,7 +1082,7 @@ void TriangleSetGeometryAlgorithms< DataTypes >::prepareVertexDuplication(const 
 {
     //HYP : if coord_from or coord_to == 0.0 or 1.0, ind_p is distinct from ind_from and from ind_to
 
-    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     const typename DataTypes::Coord& c_p = vect_c[ind_p];
     sofa::type::Vec<3,Real> point_p;
@@ -1383,7 +1383,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
     bool is_intersected = false;
 
     const Triangle &t=this->m_topology->getTriangle(ind_t);
-    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::vec_id::read_access::position)->getValue());
 
     bool is_full_01=(is_entered && ((t[0] == ind_first && t[1] == ind_second) || (t[1] == ind_first && t[0] == ind_second)));
     bool is_full_12=(is_entered && ((t[1] == ind_first && t[2] == ind_second) || (t[2] == ind_first && t[1] == ind_second)));
@@ -1665,7 +1665,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeIntersectionsLineTriangl
     bool is_validated = false;
 
     const Triangle& t = this->m_topology->getTriangle(ind_t);
-    const typename DataTypes::VecCoord& vect_c = (this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& vect_c = (this->object->read(core::vec_id::read_access::position)->getValue());
 
     bool is_full_01 = (is_entered && ((t[0] == ind_first && t[1] == ind_second) || (t[1] == ind_first && t[0] == ind_second)));
     bool is_full_12 = (is_entered && ((t[1] == ind_first && t[2] == ind_second) || (t[2] == ind_first && t[1] == ind_second)));
@@ -2091,18 +2091,18 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeIntersectedPointsList(co
     }
 
 
-    msg_info() << "*********************************" << msgendl
-            << "* computeIntersectedPointsList * " << msgendl
-            << "ind_t_current: " << ind_t_current << msgendl
-            << "p_current: " << p_current << msgendl
-            << "coord_t: " << coord_t << msgendl
-            << "coord_k: " << coord_k << msgendl
-            << "indices: " << indices << msgendl
-            << "last_point: " << last_point << msgendl
-            << "a: " << a << msgendl
-            << "b: " << b << msgendl
-            << "is_intersected: "<< is_intersected << msgendl
-            << "*********************************" ;
+    dmsg_info() << "*********************************" << msgendl
+                << "* computeIntersectedPointsList * " << msgendl
+                << "ind_t_current: " << ind_t_current << msgendl
+                << "p_current: " << p_current << msgendl
+                << "coord_t: " << coord_t << msgendl
+                << "coord_k: " << coord_k << msgendl
+                << "indices: " << indices << msgendl
+                << "last_point: " << last_point << msgendl
+                << "a: " << a << msgendl
+                << "b: " << b << msgendl
+                << "is_intersected: "<< is_intersected << msgendl
+                << "*********************************" ;
     
     coord_k_test=coord_k;
     dist_min=(b-a)*(b-a);
@@ -2117,7 +2117,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeIntersectedPointsList(co
         else
             coords_list.push_back(1.0-coord_t);
 
-        const typename DataTypes::VecCoord& vect_c =(this->object->read(core::ConstVecCoordId::position())->getValue());
+        const typename DataTypes::VecCoord& vect_c =(this->object->read(core::vec_id::read_access::position)->getValue());
 
         sofa::type::Vec<3,Real> c_t_current; // WARNING : conversion from 'Real' to 'float', possible loss of data ! // typename DataTypes::Coord
         c_t_current[0]=(Real) ((1.0-coord_t)*((Real) (vect_c[indices[0]][0]))+coord_t*((Real) (vect_c[indices[1]][0])));
@@ -2327,17 +2327,17 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeIntersectedPointsList(co
 
     if(is_reached)
     {
-        msg_info() << "TriangleSetTopology.inl : Cut is reached" ;
+        dmsg_info() << "TriangleSetTopology.inl : Cut is reached" ;
     }
 
     if(is_on_boundary)
     {
-        msg_info() << "TriangleSetTopology.inl : Cut meets a mesh boundary" ;
+        dmsg_info() << "TriangleSetTopology.inl : Cut meets a mesh boundary" ;
     }
 
     if(!is_reached && !is_on_boundary)
     {
-        msg_info() << "INFO_print - TriangleSetTopology.inl : Cut is not reached" ;
+        dmsg_info() << "INFO_print - TriangleSetTopology.inl : Cut is not reached" ;
     }
 
     return (is_reached && is_validated && is_intersected); // b is in triangle indexed by ind_t_current
@@ -2360,12 +2360,10 @@ bool TriangleSetGeometryAlgorithms<DataTypes>::computeIntersectedObjectsList (co
     sofa::type::vector<TriangleID> triangles_list;
     sofa::type::vector<EdgeID> edges_list;
     sofa::type::vector< Real > edge_barycoefs_list;
-    
     bool is_on_boundary = false;
     // using old function:
     bool pathOK = this->computeIntersectedPointsList(last_point, pointA, pointB, ind_triA, ind_triB, triangles_list, edges_list, edge_barycoefs_list, is_on_boundary);
-
-    msg_info() << "*********************************" << msgendl
+    dmsg_info() << "*********************************" << msgendl
                 << "* computeIntersectedObjectsList *" << msgendl
                 << "last_point: " << last_point << msgendl
                 << "pointA: " << pointA << msgendl
@@ -2386,7 +2384,7 @@ bool TriangleSetGeometryAlgorithms<DataTypes>::computeIntersectedObjectsList (co
     {
         intersected_topoElements.push_back (sofa::geometry::ElementType::POINT);
         intersected_indices.push_back (last_point);
-        const typename DataTypes::VecCoord& realC =(this->object->read(core::ConstVecCoordId::position())->getValue());
+        const typename DataTypes::VecCoord& realC =(this->object->read(core::vec_id::read_access::position)->getValue());
         for (unsigned int i = 0; i<3; i++)
             baryCoords[i]=realC[last_point][i];
     }
@@ -2436,16 +2434,6 @@ bool TriangleSetGeometryAlgorithms<DataTypes>::computeIntersectedObjectsList (co
 
     intersected_barycoefs.push_back (baryCoords);
  
-
-    msg_info() << "*********************************" << msgendl
-        << "* computeIntersectedObjectsList end *";
-
-    for (unsigned int i = 0; i < intersected_topoElements.size(); ++i)
-    {
-        msg_info() << int(intersected_topoElements[i]) << " | id: " << intersected_indices[i] << " | coef: " << intersected_barycoefs[i];
-    }
-
-    msg_info() << "*********************************" << msgendl;
 
     return true;
 }
@@ -2614,7 +2602,7 @@ bool TriangleSetGeometryAlgorithms<DataTypes>::computeIntersectedObjectsList (co
 template <typename DataTypes>
 int TriangleSetGeometryAlgorithms<DataTypes>::getTriangleInDirection(PointID p, const sofa::type::Vec<3,Real>& dir) const
 {
-    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& vect_c =(this->object->read(core::vec_id::read_access::position)->getValue());
     const sofa::type::vector<TriangleID> &shell=this->m_topology->getTrianglesAroundVertex(p);
     sofa::type::Vec<3,Real> dtest = dir;
     for (size_t i=0; i<shell.size(); ++i)
@@ -2734,7 +2722,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::reorderTrianglesOrientationFromNo
         }
 
 
-        msg_info() << "_neighTri: "<< _neighTri << msgendl
+        dmsg_info() << "_neighTri: "<< _neighTri << msgendl
                     << "_neighTri2: "<< _neighTri2 <<msgendl
                     << "buffk: "<< buffK <<msgendl
                     << "buffkk: "<< buffKK <<msgendl ;
@@ -2906,8 +2894,8 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::Suture2Points(TriangleID ind_ta
 
     auto* state = this->getDOF();
 
-    sofa::helper::WriteAccessor< Data<VecCoord> > x_wA = *state->write(core::VecCoordId::position());
-    sofa::helper::WriteAccessor< Data<VecDeriv> > v_wA = *state->write(core::VecDerivId::velocity());
+    sofa::helper::WriteAccessor< Data<VecCoord> > x_wA = *state->write(core::vec_id::write_access::position);
+    sofa::helper::WriteAccessor< Data<VecDeriv> > v_wA = *state->write(core::vec_id::write_access::velocity);
 
     DataTypes::set(x_wA[ind1], x_created[0], x_created[1], x_created[2]);
     DataTypes::set(v_wA[ind1], (Real) 0.0, (Real) 0.0, (Real) 0.0);
@@ -3045,7 +3033,7 @@ void TriangleSetGeometryAlgorithms< DataTypes >::InciseAlongLinesList(
 
     Real is_snapping_b = is_snap_b0 || is_snap_b1 || is_snap_b2;
 
-    if (is_validated) // intersection successfull
+    if (is_validated) // intersection successful
     {
         /// force the creation of TrianglesAroundEdgeArray
         m_container->getTrianglesAroundEdgeArray();
@@ -3533,7 +3521,7 @@ int TriangleSetGeometryAlgorithms<DataTypes>::SplitAlongPath(PointID ind_A, Coor
 
     sofa::type::vector< sofa::type::vector<Real> > points2Snap;
 
-    //	Real epsilon = 0.25; // to change to an input for snaping
+    //	Real epsilon = 0.25; // to change to an input for snapping
 
     if (epsilonSnapPath != 0.0)
         SnapAlongPath(intersected_topoElements, intersected_indices, intersected_barycoefs, points2Snap, epsilonSnapPath);
@@ -3582,7 +3570,7 @@ int TriangleSetGeometryAlgorithms<DataTypes>::SplitAlongPath(PointID ind_A, Coor
             p_ancestors.resize(p_ancestors.size() - 1);
             p_baryCoefs.resize(p_baryCoefs.size() - 1);
 
-            // For snaping:
+            // For snapping:
             if ((epsilonSnapPath != 0.0) || (!points2Snap.empty()))
                 for (size_t j = 0; j < points2Snap.size(); j++)
                     if (points2Snap[j][0] == intersected_indices[i])
@@ -3607,7 +3595,7 @@ int TriangleSetGeometryAlgorithms<DataTypes>::SplitAlongPath(PointID ind_A, Coor
                             }
 
                             if (cptSnap != 3)
-                                msg_error() << "Error: In snaping border, missing elements to compute barycoefs!";
+                                msg_error() << "Error: In snapping border, missing elements to compute barycoefs!";
 
                             break;
                         }
@@ -3960,7 +3948,7 @@ int TriangleSetGeometryAlgorithms<DataTypes>::SplitAlongPath(PointID ind_A, Coor
                 new_triangles_id.push_back(next_triangle++);
 
 
-                // create two triangles linking p with the splitted edge
+                // create two triangles linking p with the split edge
                 new_triangles.emplace_back(p2, theTriangleSecond[(edgeInTriangle + 1) % 3], p1);
                 new_triangles_id.push_back(next_triangle++);
                 new_triangles.emplace_back(p2, p1, theTriangleSecond[(edgeInTriangle + 2) % 3]);
@@ -4037,7 +4025,7 @@ int TriangleSetGeometryAlgorithms<DataTypes>::SplitAlongPath(PointID ind_A, Coor
                 new_triangles_id.push_back(next_triangle++);
 
 
-                // create two triangles linking p with the splitted edge
+                // create two triangles linking p with the split edge
                 new_triangles.push_back(Triangle(p1, theTriangleFirst[(edgeInTriangle + 1) % 3], p2));
                 new_triangles_id.push_back(next_triangle++);
                 new_triangles.push_back(Triangle(p1, p2, theTriangleFirst[(edgeInTriangle + 2) % 3]));
@@ -4172,7 +4160,7 @@ int TriangleSetGeometryAlgorithms<DataTypes>::SplitAlongPath(PointID ind_A, Coor
                 new_triangles_id.push_back(next_triangle++);
 
                 // Triangularize the remaining quad according to the delaunay criteria
-                const typename DataTypes::VecCoord& coords = (this->getDOF()->read(core::ConstVecCoordId::position())->getValue());
+                const typename DataTypes::VecCoord& coords = (this->getDOF()->read(core::vec_id::read_access::position)->getValue());
                 for (unsigned int j = 0; j < 2; j++)
                 {
                     //Vec<3,Real> pos[4];
@@ -4396,7 +4384,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::SnapAlongPath(sofa::type::vector<
         {
             PointID Vertex2Snap;
 
-            if (intersected_barycoefs[i][0] < epsilon)  // This point has to be snaped
+            if (intersected_barycoefs[i][0] < epsilon)  // This point has to be snapped
             {
                 Vertex2Snap = m_container->getEdge(intersected_indices[i])[0];
                 it = map_point2snap.find(Vertex2Snap);
@@ -4427,7 +4415,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::SnapAlongPath(sofa::type::vector<
 
             for (unsigned int j = 0; j < 3; j++)
             {
-                if (barycoord[j] > (1.0 - epsilon))  // This point has to be snaped
+                if (barycoord[j] > (1.0 - epsilon))  // This point has to be snapped
                 {
                     Vertex2Snap = m_container->getTriangleArray()[intersected_indices[i]][j];
                     it = map_point2snap.find(Vertex2Snap);
@@ -4449,16 +4437,16 @@ void TriangleSetGeometryAlgorithms<DataTypes>::SnapAlongPath(sofa::type::vector<
         }
     }
 
-    //// STEP 2 - Test if snaping is needed
+    //// STEP 2 - Test if snapping is needed
     if (map_point2snap.empty())
     {
         return;
     }
 
-    const typename DataTypes::VecCoord& coords = (this->getDOF()->read(core::ConstVecCoordId::position())->getValue());
+    const typename DataTypes::VecCoord& coords = (this->getDOF()->read(core::vec_id::read_access::position)->getValue());
 
 
-    //// STEP 3 - Second loop necessary to find object on the neighborhood of a snaped point
+    //// STEP 3 - Second loop necessary to find object on the neighborhood of a snapped point
     for (size_t i = 0; i < intersected_indices.size(); i++)
     {
         switch (intersected_topoElements[i])
@@ -4530,7 +4518,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::SnapAlongPath(sofa::type::vector<
         }
     }
 
-    //Pre-treatment to avoid snaping near a border:
+    //Pre-treatment to avoid snapping near a border:
     sofa::type::vector<PointID> field2remove;
     for (it = map_point2snap.begin(); it != map_point2snap.end(); ++it)
     {
@@ -4551,7 +4539,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::SnapAlongPath(sofa::type::vector<
     }
 
 
-    //// STEP 4 - Compute new coordinates of point to be snaped, and inform path that point has to be snaped
+    //// STEP 4 - Compute new coordinates of point to be snapped, and inform path that point has to be snapped
     field2remove.clear();
     points2Snap.resize(map_point2snap.size());
     unsigned int cpt = 0;
@@ -4573,7 +4561,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::SnapAlongPath(sofa::type::vector<
         }
         cpt++;
 
-        // Change enum of the first object to snap to POINT, change id and label it as snaped
+        // Change enum of the first object to snap to POINT, change id and label it as snapped
         intersected_topoElements[((*it).second)[0]] = sofa::geometry::ElementType::POINT;
         intersected_indices[((*it).second)[0]] = (*it).first;
         intersected_barycoefs[((*it).second)[0]][0] = -1.0;
@@ -4584,7 +4572,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::SnapAlongPath(sofa::type::vector<
     }
 
     //// STEP 5 - Modify incision path
-    //TODO: verify that one object can't be snaped and considered at staying at the same time
+    //TODO: verify that one object can't be snapped and considered at staying at the same time
     sort(field2remove.begin(), field2remove.end());
 
     for (size_t i = 1; i <= field2remove.size(); i++) //Delete in reverse order
@@ -5057,11 +5045,12 @@ void TriangleSetGeometryAlgorithms<DataTypes>::draw(const core::visual::VisualPa
     EdgeSetGeometryAlgorithms<DataTypes>::draw(vparams);
 
     const auto stateLifeCycle = vparams->drawTool()->makeStateLifeCycle();
+    vparams->drawTool()->disableLighting();
 
     // Draw Triangles indices
     if (showTriangleIndices.getValue() && this->m_topology->getNbTriangles() != 0)
     {
-        const VecCoord& coords =(this->object->read(core::ConstVecCoordId::position())->getValue());
+        const VecCoord& coords =(this->object->read(core::vec_id::read_access::position)->getValue());
         float scale = this->getIndicesScale();
 
         //for triangles:
@@ -5095,7 +5084,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::draw(const core::visual::VisualPa
         const sofa::type::vector<Triangle> &triangleArray = this->m_topology->getTriangles();
 
         // Draw triangle surfaces
-        const VecCoord& coords =(this->object->read(core::ConstVecCoordId::position())->getValue());
+        const VecCoord& coords =(this->object->read(core::vec_id::read_access::position)->getValue());
 
         {//   Draw Triangles
             std::vector<type::Vec3> pos;
@@ -5159,7 +5148,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::draw(const core::visual::VisualPa
 
     if (_drawNormals.getValue() && this->m_topology->getNbTriangles() != 0)
     {
-        const VecCoord& coords =(this->object->read(core::ConstVecCoordId::position())->getValue());
+        const VecCoord& coords =(this->object->read(core::vec_id::read_access::position)->getValue());
         const sofa::type::vector<Triangle> &triangleArray = this->m_topology->getTriangles();
         const size_t nbrTtri = triangleArray.size();
 

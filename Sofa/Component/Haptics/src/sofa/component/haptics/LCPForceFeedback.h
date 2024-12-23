@@ -29,6 +29,8 @@
 
 #include <sofa/component/constraint/lagrangian/solver/ConstraintSolverImpl.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::haptics
 {
 
@@ -60,11 +62,18 @@ public:
         dmsg_info() << "haptic_freq = " << std::fixed << haptic_freq << " Hz   " << '\xd';
     }
 
-    Data< double > forceCoef; ///< multiply haptic force by this coef.
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_HAPTICS()
+    sofa::core::objectmodel::RenamedData<double> forceCoef;
 
-    Data< double > solverTimeout; ///< max time to spend solving constraints.
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_HAPTICS()
+    sofa::core::objectmodel::RenamedData<double> solverTimeout;
 
-    Data< int > d_solverMaxIt; ///< max iteration to spend solving constraints.
+
+    Data< double > d_forceCoef; ///< multiply haptic force by this coef.
+
+    Data< double > d_solverTimeout; ///< max time to spend solving constraints.
+
+    Data< int > d_solverMaxIt; ///< max iteration to spend solving constraints
 
     // deriv (or not) the rotations when updating the violations
     Data <bool> d_derivRotations; ///< if true, deriv the rotations when updating the violations
@@ -109,7 +118,7 @@ public:
         return core::objectmodel::BaseObject::canCreate(obj, context, arg);
     }
 
-    /// Overide method to lock or unlock the force feedback computation. According to parameter, value == true (resp. false) will lock (resp. unlock) mutex @sa lockForce
+    /// Override method to lock or unlock the force feedback computation. According to parameter, value == true (resp. false) will lock (resp. unlock) mutex @sa lockForce
     void setLock(bool value) override;
 
 protected:

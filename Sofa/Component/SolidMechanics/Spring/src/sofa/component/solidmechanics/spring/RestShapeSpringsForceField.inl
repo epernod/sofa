@@ -55,7 +55,7 @@ RestShapeSpringsForceField<DataTypes>::RestShapeSpringsForceField()
     , d_stiffness(initData(&d_stiffness, "stiffness", "stiffness values between the actual position and the rest shape position"))
     , d_angularStiffness(initData(&d_angularStiffness, "angularStiffness", "angularStiffness assigned when controlling the rotation of the points"))
     , d_pivotPoints(initData(&d_pivotPoints, "pivot_points", "global pivot points used when translations instead of the rigid mass centers"))
-    , d_external_points(initData(&d_external_points, "external_points", "points from the external Mechancial State that define the rest shape springs"))
+    , d_external_points(initData(&d_external_points, "external_points", "points from the external Mechanical State that define the rest shape springs"))
     , d_recompute_indices(initData(&d_recompute_indices, true, "recompute_indices", "Recompute indices (should be false for BBOX)"))
     , d_drawSpring(initData(&d_drawSpring,false,"drawSpring","draw Spring"))
     , d_springColor(initData(&d_springColor, sofa::type::RGBAColor::green(), "springColor","spring color. (default=[0.0,1.0,0.0,1.0])"))
@@ -273,7 +273,7 @@ bool RestShapeSpringsForceField<DataTypes>::checkOutOfBoundsIndices()
 {
     if (!checkOutOfBoundsIndices(m_indices, this->mstate->getSize()))
     {
-        msg_error() << "Out of Bounds m_indices detected. ForceField is not activated.";
+        msg_error() << "Out of Bounds d_indices detected. ForceField is not activated.";
         return false;
     }
     if (const DataVecCoord* extPosition = getExtPosition())
@@ -316,14 +316,14 @@ const typename RestShapeSpringsForceField<DataTypes>::DataVecCoord* RestShapeSpr
     {
         if (l_restMState)
         {
-            return l_restMState->read(VecCoordId::position());
+            return l_restMState->read(core::vec_id::write_access::position);
         }
     }
     else
     {
         if (this->mstate)
         {
-            return this->mstate->read(VecCoordId::restPosition());
+            return this->mstate->read(core::vec_id::write_access::restPosition);
         }
     }
     return nullptr;
@@ -513,7 +513,7 @@ void RestShapeSpringsForceField<DataTypes>::draw(const VisualParams *vparams)
     }
 
     ReadAccessor< DataVecCoord > p0 = *extPosition;
-    ReadAccessor< DataVecCoord > p  = this->mstate->read(VecCoordId::position());
+    ReadAccessor< DataVecCoord > p  = this->mstate->read(sofa::core::vec_id::write_access::position);
 
     const VecIndex& indices = m_indices;
     const VecIndex& ext_indices = (useRestMState ? m_ext_indices : m_indices);

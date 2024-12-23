@@ -39,9 +39,6 @@ using sofa::core::objectmodel::ComponentState ;
 namespace sofa::component::_stlexporter_
 {
 
-int STLExporterClass = core::RegisterObject("Save a topology in file")
-        .add< STLExporter >();
-
 STLExporter::STLExporter()
     : d_binaryFormat( initData(&d_binaryFormat, (bool)true, "binaryformat", "if true, save in binary format, otherwise in ascii"))
     , d_position( initData(&d_position, "position", "points coordinates"))
@@ -164,7 +161,7 @@ bool STLExporter::writeSTL(bool autonumbering)
         return false;
     }
 
-    /* Get number of facets */
+    /* Get number of d_facets */
     const int nbt = vecTri.size();
 
     // Sets the floatfield format flag for the str stream to fixed
@@ -266,11 +263,11 @@ bool STLExporter::writeSTLBinary(bool autonumbering)
     strcpy(buffer, "Exported from Sofa");
     outfile.write(buffer,80);
 
-    /* Number of facets */
+    /* Number of d_facets */
     const unsigned int nbt = vecTri.size();
     outfile.write((char*)&nbt,4);
 
-    // Parsing facets
+    // Parsing d_facets
     for(unsigned long i=0;i<nbt;i++)
     {
         /* normal */
@@ -323,3 +320,14 @@ void STLExporter::handleEvent(Event *event)
 }
 
 } // namespace sofa::component::_stlexporter_
+
+namespace sofa::component::io::mesh
+{
+
+void registerSTLExporter(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Save a topology in file.")
+        .add< STLExporter >());
+}
+
+} // namespace sofa::component::io::mesh

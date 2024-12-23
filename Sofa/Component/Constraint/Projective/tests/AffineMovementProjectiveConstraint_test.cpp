@@ -110,7 +110,7 @@ struct AffineMovementProjectiveConstraint_test : public BaseSimulationTest, Nume
         quat.normalize();
         quat.toMatrix(testedRotation);
 
-        patchStruct.affineConstraint->m_rotation.setValue(testedRotation);
+        patchStruct.affineConstraint->d_rotation.setValue(testedRotation);
 
         // Random Translation
         for(size_t i=0;i<Coord::total_size;++i)
@@ -120,8 +120,8 @@ struct AffineMovementProjectiveConstraint_test : public BaseSimulationTest, Nume
                 testedTranslation[i]=0;
         }
 
-        patchStruct.affineConstraint->m_translation.setValue(testedTranslation);
-        patchStruct.affineConstraint->m_endConstraintTime.setValue(0.1);
+        patchStruct.affineConstraint->d_translation.setValue(testedTranslation);
+        patchStruct.affineConstraint->d_endConstraintTime.setValue(0.1);
     }
 
      // After simulation compare the positions of points to the theoretical positions.
@@ -132,7 +132,7 @@ struct AffineMovementProjectiveConstraint_test : public BaseSimulationTest, Nume
 
         // Compute the theoretical final positions
         VecCoord finalPos;
-        patchStruct.affineConstraint->getFinalPositions( finalPos,*patchStruct.dofs->write(core::VecCoordId::position()) );
+        patchStruct.affineConstraint->getFinalPositions( finalPos,*patchStruct.dofs->write(core::vec_id::write_access::position) );
 
 
         // Initialize
@@ -190,13 +190,13 @@ struct AffineMovementProjectiveConstraint_test : public BaseSimulationTest, Nume
 
 };
 
-// Define the list of DataTypes to instanciate
+// Define the list of DataTypes to instantiate
 using ::testing::Types;
 typedef Types<
     defaulttype::Vec3Types
-> DataTypes; // the types to instanciate.
+> DataTypes; // the types to instantiate.
 
-// Test suite for all the instanciations
+// Test suite for all the instantiations
 TYPED_TEST_SUITE(AffineMovementProjectiveConstraint_test, DataTypes);
 // first test case
 TYPED_TEST( AffineMovementProjectiveConstraint_test , testValue )

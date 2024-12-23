@@ -29,10 +29,12 @@
 
 #include <sofa/type/RGBAColor.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::mechanicalload
 {
 
-/// This class can be overridden if needed for additionnal storage within template specializations.
+/// This class can be overridden if needed for additional storage within template specializations.
 template<class DataTypes>
 class SphereForceFieldInternalData
 {
@@ -81,23 +83,48 @@ protected:
         }
 
     };
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MECHANICALLOAD()
+    sofa::core::objectmodel::RenamedData<sofa::type::vector<Contact> > contacts;
 
-    Data<sofa::type::vector<Contact> > contacts; ///< Contacts
+    Data<sofa::type::vector<Contact> > d_contacts; ///< Contacts
 
     SphereForceFieldInternalData<DataTypes> data;
 
 public:
 
-    Data<Coord> sphereCenter; ///< sphere center
-    Data<Real> sphereRadius; ///< sphere radius
-    Data<Real> stiffness; ///< force stiffness
-    Data<Real> damping; ///< force damping
-    Data<sofa::type::RGBAColor> color; ///< sphere color. (default=[0,0,1,1])
 
-    /// optional range of local DOF indices. Any computation involving only indices outside of this range are discarded (useful for parallelization using mesh partitionning)
-    Data< type::Vec<2,int> > localRange;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MECHANICALLOAD()
+    sofa::core::objectmodel::RenamedData<Coord> sphereCenter;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MECHANICALLOAD()
+    sofa::core::objectmodel::RenamedData<Real> sphereRadius;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MECHANICALLOAD()
+    sofa::core::objectmodel::RenamedData<Real> stiffness;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MECHANICALLOAD()
+    sofa::core::objectmodel::RenamedData<Real> damping;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MECHANICALLOAD()
+    sofa::core::objectmodel::RenamedData<sofa::type::RGBAColor> color;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MECHANICALLOAD()
+    sofa::core::objectmodel::RenamedData<type::Vec<2,int>> localRange;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MECHANICALLOAD()
+    sofa::core::objectmodel::RenamedData<bool> bilateral;
+
+
+    Data<Coord> d_sphereCenter; ///< sphere center
+    Data<Real> d_sphereRadius; ///< sphere radius
+    Data<Real> d_stiffness; ///< force stiffness
+    Data<Real> d_damping; ///< force damping
+    Data<sofa::type::RGBAColor> d_color; ///< sphere color. (default=[0,0,1,1])
+
+    /// optional range of local DOF indices. Any computation involving only indices outside of this range are discarded (useful for parallelization using mesh partitioning)
+    Data< type::Vec<2,int> > d_localRange;
     /// option bilateral : if true, the force field is applied on both side of the plane
-    Data<bool> bilateral;
+    Data<bool> d_bilateral;
 protected:
     SphereForceField();
 

@@ -73,15 +73,15 @@ public:
     // -- Mass interface
      void addMDx(const core::MechanicalParams* mparams, DataVecDeriv& f, const DataVecDeriv& dx, SReal factor) override;
 
-    void addMToMatrix(const core::MechanicalParams* mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix) override;
+    void addMToMatrix(sofa::linearalgebra::BaseMatrix * mat, SReal mFact, unsigned int &offset) override;
 
     bool isDiagonal() const override { return d_lumpedMass.getValue(); }
 
     using HexahedronFEMForceFieldT::addKToMatrix;
     using core::behavior::Mass<DataTypes>::addKToMatrix;
-    void addKToMatrix(const core::MechanicalParams* mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix) override
+    void addKToMatrix(sofa::linearalgebra::BaseMatrix * matrix, SReal kFact, unsigned int &offset) override
     {
-        HexahedronFEMForceFieldT::addKToMatrix(mparams, matrix);
+        HexahedronFEMForceFieldT::addKToMatrix(matrix, kFact, offset);
     }
 
     void buildStiffnessMatrix(core::behavior::StiffnessMatrix*) override;
@@ -131,7 +131,7 @@ public:
 
 protected :
 
-    Data<VecElementMass> d_elementMasses; ///< mass matrices per element
+    Data<VecElementMass> d_elementMasses; ///< Mass matrices per element (M_i)
     Data<Real> d_density; ///< density == volumetric mass in english (kg.m-3)
     Data<bool> d_lumpedMass; ///< Does it use lumped masses?
 

@@ -64,9 +64,9 @@ public:
     virtual bool isLinear() const { return false; }
 
     /// Apply the transformation from the input model to the output model (like apply displacement from BehaviorModel to VisualModel)
-    virtual void apply (const MechanicalParams* mparams = mechanicalparams::defaultInstance(), MultiVecCoordId outPos = VecCoordId::position(), ConstMultiVecCoordId inPos = ConstVecCoordId::position() ) = 0;
+    virtual void apply (const MechanicalParams* mparams = mechanicalparams::defaultInstance(), MultiVecCoordId outPos = vec_id::write_access::position, ConstMultiVecCoordId inPos = vec_id::read_access::position ) = 0;
     /// Compute output velocity based on input velocity, using the linearized transformation (tangent operator). Also used to propagate small displacements.
-    virtual void applyJ(const MechanicalParams* mparams = mechanicalparams::defaultInstance(), MultiVecDerivId outVel = VecDerivId::velocity(), ConstMultiVecDerivId inVel = ConstVecDerivId::velocity() ) = 0;
+    virtual void applyJ(const MechanicalParams* mparams = mechanicalparams::defaultInstance(), MultiVecDerivId outVel = vec_id::write_access::velocity, ConstMultiVecDerivId inVel = vec_id::read_access::velocity ) = 0;
 
     /// Accessor to the input model of this mapping
     virtual type::vector<BaseState*> getFrom() = 0;
@@ -108,7 +108,7 @@ public:
 
     /// Return true if the destination model has the same topology as the source model.
     ///
-    /// This is the case for mapping keeping a one-to-one correspondance between
+    /// This is the case for mapping keeping a one-to-one correspondence between
     /// input and output DOFs (mostly identity or data-conversion mappings).
     virtual bool sameTopology() const { return false; }
 

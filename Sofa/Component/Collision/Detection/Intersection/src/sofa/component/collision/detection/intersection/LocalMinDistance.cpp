@@ -45,24 +45,23 @@ using namespace sofa::defaulttype;
 using namespace sofa::component::collision::geometry;
 using core::topology::BaseMeshTopology;
 
-
-int LocalMinDistanceClass = core::RegisterObject("A set of methods to compute (for constraint methods) if two primitives are close enough to consider they collide")
-        .add< LocalMinDistance >()
-        ;
+void registerLocalMinDistance(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("A set of methods to compute (for constraint methods) if two primitives are close enough to consider they collide")
+        .add< LocalMinDistance >());
+}
 
 LocalMinDistance::LocalMinDistance()
     : BaseProximityIntersection()
     , d_filterIntersection(initData(&d_filterIntersection, true, "filterIntersection", "Activate LMD filter"))
     , d_angleCone(initData(&d_angleCone, 0.0, "angleCone", "Filtering cone extension angle"))
     , d_coneFactor(initData(&d_coneFactor, 0.5, "coneFactor", "Factor for filtering cone angle computation"))
-    , d_useLMDFilters(initData(&d_useLMDFilters, false, "useLMDFilters", "Use external cone computation (Work in Progress)"))
+    , d_useLMDFilters(initData(&d_useLMDFilters, false, "useLMDFilters", "Use external cone computation"))
 {
-    filterIntersection.setParent(&d_filterIntersection);
-    angleCone.setParent(&d_angleCone);
-    coneFactor.setParent(&d_coneFactor);
-    useLMDFilters.setParent(&d_useLMDFilters);
-
-
+    filterIntersection.setOriginalData(&d_filterIntersection);
+    angleCone.setOriginalData(&d_angleCone);
+    coneFactor.setOriginalData(&d_coneFactor);
+    useLMDFilters.setOriginalData(&d_useLMDFilters);
 }
 
 void LocalMinDistance::init()
@@ -1205,7 +1204,7 @@ bool LocalMinDistance::testValidity(Point &p, const Vec3 &PQ) const
         return true;
 
     BaseMeshTopology* topology = p.getCollisionModel()->getCollisionTopology();
-    const auto& x =(p.getCollisionModel()->getMechanicalState()->read(core::ConstVecCoordId::position())->getValue());
+    const auto& x =(p.getCollisionModel()->getMechanicalState()->read(core::vec_id::read_access::position)->getValue());
 
     const auto& trianglesAroundVertex = topology->getTrianglesAroundVertex(p.getIndex());
     const auto& edgesAroundVertex = topology->getEdgesAroundVertex(p.getIndex());
@@ -1279,7 +1278,7 @@ bool LocalMinDistance::testValidity(Line &l, const Vec3 &PQ) const
     AB.normalize();
 
     BaseMeshTopology* topology = l.getCollisionModel()->getCollisionTopology();
-    const auto& x =(l.getCollisionModel()->getMechanicalState()->read(core::ConstVecCoordId::position())->getValue());
+    const auto& x =(l.getCollisionModel()->getMechanicalState()->read(core::vec_id::read_access::position)->getValue());
     const auto& trianglesAroundEdge = topology->getTrianglesAroundEdge(l.getIndex());
 
     if ( trianglesAroundEdge.size() == 2)
@@ -1377,120 +1376,6 @@ bool LocalMinDistance::testValidity(Triangle &t, const Vec3 &PQ) const
     const Vec3 n = cross(pt2-pt1,pt3-pt1);
 
     return n * PQ >= 0.0;
-}
-
-bool LocalMinDistance::testIntersection(Cube &cube1, Cube &cube2)
-{
-    return testIntersection(cube1, cube2, this);
-}
-
-int LocalMinDistance::computeIntersection(Cube& c1, Cube& c2, OutputVector* contacts)
-{
-    return computeIntersection(c1, c2, contacts, this);
-}
-
-bool LocalMinDistance::testIntersection(Line& e1, Line& e2)
-{
-    return testIntersection(e1, e2, this);
-}
-
-int LocalMinDistance::computeIntersection(Line& e1, Line& e2, OutputVector* contacts)
-{
-    return computeIntersection(e1, e2, contacts, this);
-}
-
-bool LocalMinDistance::testIntersection(Triangle& e2, Point& e1)
-{
-    return testIntersection(e2, e1, this);
-}
-
-int LocalMinDistance::computeIntersection(Triangle& e2, Point& e1, OutputVector* contacts)
-{
-    return computeIntersection(e2, e1, contacts, this);
-}
-
-
-bool LocalMinDistance::testIntersection(Triangle& e2, Sphere& e1)
-{
-    return testIntersection(e2, e1, this);
-}
-
-int LocalMinDistance::computeIntersection(Triangle& e2, Sphere& e1, OutputVector* contacts)
-{
-    return computeIntersection(e2, e1, contacts, this);
-}
-
-bool LocalMinDistance::testIntersection(Line& e2, Point& e1)
-{
-    return testIntersection(e2, e1, this);
-}
-
-int LocalMinDistance::computeIntersection(Line& e2, Point& e1, OutputVector* contacts)
-{
-    return computeIntersection(e2, e1, contacts, this);
-}
-
-
-bool LocalMinDistance::testIntersection(Line& e2, Sphere& e1)
-{
-    return testIntersection(e2, e1, this);
-}
-
-int LocalMinDistance::computeIntersection(Line& e2, Sphere& e1, OutputVector* contacts)
-{
-    return computeIntersection(e2, e1, contacts, this);
-}
-
-bool LocalMinDistance::testIntersection(Point& e1, Point& e2)
-{
-    return testIntersection(e1, e2, this);
-}
-
-int LocalMinDistance::computeIntersection(Point& e1, Point& e2, OutputVector* contacts)
-{
-    return computeIntersection(e1, e2, contacts, this);
-}
-
-bool LocalMinDistance::testIntersection(Sphere& e1, Point& e2)
-{
-    return testIntersection(e1, e2, this);
-}
-
-int LocalMinDistance::computeIntersection(Sphere& e1, Point& e2, OutputVector* contacts)
-{
-    return computeIntersection(e1, e2, contacts, this);
-}
-
-bool LocalMinDistance::testIntersection(Sphere& e1, Sphere& e2)
-{
-    return testIntersection(e2, e1, this);
-}
-
-int LocalMinDistance::computeIntersection(Sphere& e1, Sphere& e2, OutputVector* contacts)
-{
-    return computeIntersection(e1, e2, contacts, this);
-}
-
-
-bool LocalMinDistance::testIntersection(Ray &t1,Triangle &t2)
-{
-    return testIntersection(t1, t2, this);
-}
-
-int LocalMinDistance::computeIntersection(Ray &t1, Triangle &t2, OutputVector* contacts)
-{
-    return computeIntersection(t1, t2, contacts, this);
-}
-
-
-bool LocalMinDistance::testIntersection(Ray &ray1,Sphere &sph2)
-{
-    return testIntersection(ray1, sph2, this);
-}
-
-int LocalMinDistance::computeIntersection(Ray &ray1, Sphere &sph2, OutputVector* contacts)
-{
-    return computeIntersection(ray1, sph2, contacts, this);
 }
 
 } //namespace sofa::component::collision::detection::intersection

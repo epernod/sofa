@@ -41,17 +41,20 @@ using sofa::type::Vec;
 template<class DataTypes>
 BilateralLagrangianConstraint<DataTypes>::BilateralLagrangianConstraint(MechanicalState* object1, MechanicalState* object2)
     : Inherit(object1, object2)
-    , m1(initData(&m1, "first_point","index of the constraint on the first model"))
-    , m2(initData(&m2, "second_point","index of the constraint on the second model"))
-    , restVector(initData(&restVector, "rest_vector","Relative position to maintain between attached points (optional)"))
-    , d_numericalTolerance(initData(&d_numericalTolerance, 0.0001, "numericalTolerance",
-                                    "a real value specifying the tolerance during the constraint solving. (optional, default=0.0001)") )
+    , d_m1(initData(&d_m1, "first_point","index of the constraint on the first model (object1)"))
+    , d_m2(initData(&d_m2, "second_point","index of the constraint on the second model (object2)"))
+    , d_restVector(initData(&d_restVector, "rest_vector","Relative position to maintain between attached points (optional)"))
     , d_activate( initData(&d_activate, true, "activate", "control constraint activation (true by default)"))
-    , keepOrientDiff(initData(&keepOrientDiff,false, "keepOrientationDifference", "keep the initial difference in orientation (only for rigids)"))
+    , d_keepOrientDiff(initData(&d_keepOrientDiff, false, "keepOrientationDifference", "keep the initial difference in orientation (only for rigids)"))
     , l_topology1(initLink("topology1", "link to the first topology container"))
     , l_topology2(initLink("topology2", "link to the second topology container"))
 {
     this->f_listening.setValue(true);
+
+    m1.setOriginalData(&d_m1);
+    m2.setOriginalData(&d_m2);
+    restVector.setOriginalData(&d_restVector);
+    keepOrientDiff.setOriginalData(&d_keepOrientDiff);
 }
 
 template<class DataTypes>
@@ -76,6 +79,11 @@ void BilateralLagrangianConstraint<DataTypes>::unspecializedInit()
     assert(this->mstate1);
     assert(this->mstate2);
 
+    if (!this->mstate1 || !this->mstate2)
+    {
+        this->d_componentState.setValue(core::objectmodel::ComponentState::Invalid);
+    }
+
     prevForces.clear();
 }
 
@@ -86,9 +94,9 @@ void BilateralLagrangianConstraint<DataTypes>::init()
 
     if (sofa::core::topology::BaseMeshTopology* _topology1 = l_topology1.get())
     {
-        m1.createTopologyHandler(_topology1);
-        m1.addTopologyEventCallBack(core::topology::TopologyChangeType::POINTSREMOVED,
-            [this](const core::topology::TopologyChange* change)
+        d_m1.createTopologyHandler(_topology1);
+        d_m1.addTopologyEventCallBack(core::topology::TopologyChangeType::POINTSREMOVED,
+                                      [this](const core::topology::TopologyChange* change)
         {
             const auto* pointsRemoved = static_cast<const core::topology::PointsRemoved*>(change);
             removeContact(0, pointsRemoved->getArray());
@@ -97,9 +105,9 @@ void BilateralLagrangianConstraint<DataTypes>::init()
 
     if (sofa::core::topology::BaseMeshTopology* _topology2 = l_topology2.get())
     {
-        m2.createTopologyHandler(_topology2);
-        m2.addTopologyEventCallBack(core::topology::TopologyChangeType::POINTSREMOVED,
-            [this](const core::topology::TopologyChange* change)
+        d_m2.createTopologyHandler(_topology2);
+        d_m2.addTopologyEventCallBack(core::topology::TopologyChangeType::POINTSREMOVED,
+                                      [this](const core::topology::TopologyChange* change)
         {
             const auto* pointsRemoved = static_cast<const core::topology::PointsRemoved*>(change);
             removeContact(1, pointsRemoved->getArray());
@@ -115,25 +123,27 @@ void BilateralLagrangianConstraint<DataTypes>::reinit()
 
 
 template<class DataTypes>
-void BilateralLagrangianConstraint<DataTypes>::buildConstraintMatrix(const ConstraintParams*, DataMatrixDeriv &c1_d, DataMatrixDeriv &c2_d, unsigned int &constraintId
-                                                                      , const DataVecCoord &/*x1*/, const DataVecCoord &/*x2*/)
+void BilateralLagrangianConstraint<DataTypes>::buildConstraintMatrix(
+    const ConstraintParams*, DataMatrixDeriv& c1_d, DataMatrixDeriv& c2_d,
+    unsigned int& constraintId,
+    const DataVecCoord&/*x1*/, const DataVecCoord&/*x2*/)
 {
     if (!d_activate.getValue())
         return;
 
-    const unsigned minp = std::min(m1.getValue().size(), m2.getValue().size());
+    const unsigned minp = std::min(d_m1.getValue().size(), d_m2.getValue().size());
     if (minp == 0)
         return;
 
-    const SubsetIndices& m1Indices = m1.getValue();
-    const SubsetIndices& m2Indices = m2.getValue();
+    const SubsetIndices& m1Indices = d_m1.getValue();
+    const SubsetIndices& m2Indices = d_m2.getValue();
 
-    MatrixDeriv &c1 = *c1_d.beginEdit();
-    MatrixDeriv &c2 = *c2_d.beginEdit();
+    auto c1 = sofa::helper::getWriteAccessor(c1_d);
+    auto c2 = sofa::helper::getWriteAccessor(c2_d);
 
     cid.resize(minp);
 
-    for (unsigned pid=0; pid<minp; pid++)
+    for (unsigned pid = 0; pid < minp; ++pid)
     {
         int tm1 = m1Indices[pid];
         int tm2 = m2Indices[pid];
@@ -143,44 +153,41 @@ void BilateralLagrangianConstraint<DataTypes>::buildConstraintMatrix(const Const
         cid[pid] = constraintId;
         constraintId += 3;
 
-        MatrixDerivRowIterator c1_it = c1.writeLine(cid[pid]);
+        MatrixDerivRowIterator c1_it = c1->writeLine(cid[pid]);
         c1_it.addCol(tm1, -cx);
 
-        MatrixDerivRowIterator c2_it = c2.writeLine(cid[pid]);
+        MatrixDerivRowIterator c2_it = c2->writeLine(cid[pid]);
         c2_it.addCol(tm2, cx);
 
-        c1_it = c1.writeLine(cid[pid] + 1);
+        c1_it = c1->writeLine(cid[pid] + 1);
         c1_it.setCol(tm1, -cy);
 
-        c2_it = c2.writeLine(cid[pid] + 1);
+        c2_it = c2->writeLine(cid[pid] + 1);
         c2_it.setCol(tm2, cy);
 
-        c1_it = c1.writeLine(cid[pid] + 2);
+        c1_it = c1->writeLine(cid[pid] + 2);
         c1_it.setCol(tm1, -cz);
 
-        c2_it = c2.writeLine(cid[pid] + 2);
+        c2_it = c2->writeLine(cid[pid] + 2);
         c2_it.setCol(tm2, cz);
     }
-
-    c1_d.endEdit();
-    c2_d.endEdit();
 }
 
 
 template<class DataTypes>
 void BilateralLagrangianConstraint<DataTypes>::getConstraintViolation(const ConstraintParams* cParams,
-                                                                       BaseVector *v,
-                                                                       const DataVecCoord &d_x1, const DataVecCoord &d_x2
-                                                                       , const DataVecDeriv & d_v1, const DataVecDeriv & d_v2)
+    BaseVector* v,
+    const DataVecCoord& d_x1, const DataVecCoord& d_x2,
+    const DataVecDeriv& d_v1, const DataVecDeriv& d_v2)
 {
     if (!d_activate.getValue()) return;
 
-    const SubsetIndices& m1Indices = m1.getValue();
-    const SubsetIndices& m2Indices = m2.getValue();
+    const SubsetIndices& m1Indices = d_m1.getValue();
+    const SubsetIndices& m2Indices = d_m2.getValue();
 
     unsigned minp = std::min(m1Indices.size(), m2Indices.size());
 
-    const VecDeriv& restVector = this->restVector.getValue();
+    const VecDeriv& restVector = this->d_restVector.getValue();
 
     if (cParams->constOrder() == sofa::core::ConstraintOrder::VEL)
     {
@@ -191,18 +198,20 @@ void BilateralLagrangianConstraint<DataTypes>::getConstraintViolation(const Cons
     const VecCoord &x1 = d_x1.getValue();
     const VecCoord &x2 = d_x2.getValue();
 
-    dfree.resize(minp);
+    m_violation.resize(minp);
 
-    for (unsigned pid=0; pid<minp; pid++)
+    for (unsigned pid = 0; pid < minp; pid++)
     {
-        dfree[pid] = x2[m2Indices[pid]] - x1[m1Indices[pid]];
+        m_violation[pid] = x2[m2Indices[pid]] - x1[m1Indices[pid]];
 
         if (pid < restVector.size())
-            dfree[pid] -= restVector[pid];
+        {
+            m_violation[pid] -= restVector[pid];
+        }
 
-        v->set(cid[pid]  , dfree[pid][0]);
-        v->set(cid[pid]+1, dfree[pid][1]);
-        v->set(cid[pid]+2, dfree[pid][2]);
+        v->set(cid[pid]  , m_violation[pid][0]);
+        v->set(cid[pid]+1, m_violation[pid][1]);
+        v->set(cid[pid]+2, m_violation[pid][2]);
     }
 }
 
@@ -214,8 +223,8 @@ void BilateralLagrangianConstraint<DataTypes>::getVelocityViolation(BaseVector *
                                                                      const DataVecDeriv &d_v1,
                                                                      const DataVecDeriv &d_v2)
 {
-    const SubsetIndices& m1Indices = m1.getValue();
-    const SubsetIndices& m2Indices = m2.getValue();
+    const SubsetIndices& m1Indices = d_m1.getValue();
+    const SubsetIndices& m2Indices = d_m2.getValue();
 
     SOFA_UNUSED(d_x1);
     SOFA_UNUSED(d_x2);
@@ -224,13 +233,13 @@ void BilateralLagrangianConstraint<DataTypes>::getVelocityViolation(BaseVector *
     const VecCoord &v2 = d_v2.getValue();
 
     const unsigned minp = std::min(m1Indices.size(), m2Indices.size());
-    const VecDeriv& restVector = this->restVector.getValue();
+    const VecDeriv& restVector = this->d_restVector.getValue();
 
     auto pos1 = this->getMState1()->readPositions();
     auto pos2 = this->getMState2()->readPositions();
 
     const SReal dt = this->getContext()->getDt();
-    const SReal invDt = SReal(1.0) / dt;
+    const SReal invDt = 1_sreal / dt;
 
     for (unsigned pid=0; pid<minp; ++pid)
     {
@@ -256,7 +265,7 @@ void BilateralLagrangianConstraint<DataTypes>::getConstraintResolution(const Con
                                                                         unsigned int& offset)
 {
     SOFA_UNUSED(cParams);
-    const unsigned minp=std::min(m1.getValue().size(),m2.getValue().size());
+    const unsigned minp=std::min(d_m1.getValue().size(), d_m2.getValue().size());
 
     prevForces.resize(minp);
     for (unsigned pid=0; pid<minp; pid++)
@@ -272,9 +281,9 @@ void BilateralLagrangianConstraint<DataTypes>::addContact(Deriv /*norm*/, Coord 
                                                            Coord /*Pfree*/, Coord /*Qfree*/,
                                                            long /*id*/, PersistentID /*localid*/)
 {
-    WriteAccessor<Data<SubsetIndices> > wm1 = this->m1;
-    WriteAccessor<Data<SubsetIndices> > wm2 = this->m2;
-    WriteAccessor<Data<VecDeriv > > wrest = this->restVector;
+    WriteAccessor<Data<SubsetIndices> > wm1 = this->d_m1;
+    WriteAccessor<Data<SubsetIndices> > wm2 = this->d_m2;
+    WriteAccessor<Data<VecDeriv > > wrest = this->d_restVector;
     wm1.push_back(m1);
     wm2.push_back(m2);
     wrest.push_back(Q-P);
@@ -287,8 +296,8 @@ void BilateralLagrangianConstraint<DataTypes>::addContact(Deriv norm, Coord P, C
                                                            long id, PersistentID localid)
 {
    addContact(norm, P, Q, contactDistance, m1, m2,
-               this->getMState2()->read(ConstVecCoordId::freePosition())->getValue()[m2],
-               this->getMState1()->read(ConstVecCoordId::freePosition())->getValue()[m1],
+               this->getMState2()->read(core::vec_id::read_access::freePosition)->getValue()[m2],
+               this->getMState1()->read(core::vec_id::read_access::freePosition)->getValue()[m1],
                id, localid);
 }
 
@@ -297,11 +306,11 @@ void BilateralLagrangianConstraint<DataTypes>::addContact(Deriv norm, Real conta
                                                            int m1, int m2, long id, PersistentID localid)
 {
     addContact(norm,
-               this->getMState2()->read(ConstVecCoordId::position())->getValue()[m2],
-               this->getMState1()->read(ConstVecCoordId::position())->getValue()[m1],
+               this->getMState2()->read(core::vec_id::read_access::position)->getValue()[m2],
+               this->getMState1()->read(core::vec_id::read_access::position)->getValue()[m1],
                contactDistance, m1, m2,
-               this->getMState2()->read(ConstVecCoordId::freePosition())->getValue()[m2],
-               this->getMState1()->read(ConstVecCoordId::freePosition())->getValue()[m1],
+               this->getMState2()->read(core::vec_id::read_access::freePosition)->getValue()[m2],
+               this->getMState1()->read(core::vec_id::read_access::freePosition)->getValue()[m1],
                id, localid);
 }
 
@@ -309,12 +318,12 @@ void BilateralLagrangianConstraint<DataTypes>::addContact(Deriv norm, Real conta
 template<class DataTypes>
 void BilateralLagrangianConstraint<DataTypes>::removeContact(int objectId, SubsetIndices indices)
 {
-    WriteAccessor<Data <SubsetIndices > > m1Indices = this->m1;
-    WriteAccessor<Data <SubsetIndices > > m2Indices = this->m2;
-    WriteAccessor<Data<VecDeriv > > wrest = this->restVector;
+    WriteAccessor<Data <SubsetIndices > > m1Indices = this->d_m1;
+    WriteAccessor<Data <SubsetIndices > > m2Indices = this->d_m2;
+    WriteAccessor<Data<VecDeriv > > wrest = this->d_restVector;
 
-    const SubsetIndices& cIndices1 = m1.getValue();
-    const SubsetIndices& cIndices2 = m2.getValue();
+    const SubsetIndices& cIndices1 = d_m1.getValue();
+    const SubsetIndices& cIndices2 = d_m2.getValue();
 
     for (sofa::Size i = 0; i < indices.size(); ++i)
     {
@@ -342,9 +351,9 @@ void BilateralLagrangianConstraint<DataTypes>::removeContact(int objectId, Subse
 template<class DataTypes>
 void BilateralLagrangianConstraint<DataTypes>::clear(int reserve)
 {
-    WriteAccessor<Data <SubsetIndices > > wm1 = this->m1;
-    WriteAccessor<Data <SubsetIndices > > wm2 = this->m2;
-    WriteAccessor<Data<VecDeriv > > wrest = this->restVector;
+    WriteAccessor<Data <SubsetIndices > > wm1 = this->d_m1;
+    WriteAccessor<Data <SubsetIndices > > wm2 = this->d_m2;
+    WriteAccessor<Data<VecDeriv > > wrest = this->d_restVector;
     wm1.clear();
     wm2.clear();
     wrest.clear();
@@ -381,11 +390,11 @@ void BilateralLagrangianConstraint<DataTypes>::draw(const core::visual::VisualPa
     constexpr sofa::type::RGBAColor colorNotActive = sofa::type::RGBAColor::green();
     std::vector< sofa::type::Vec3 > vertices;
 
-    const unsigned minp = std::min(m1.getValue().size(),m2.getValue().size());
-    auto positionsM1 = sofa::helper::getReadAccessor(*this->mstate1->read(ConstVecCoordId::position()));
-    auto positionsM2 = sofa::helper::getReadAccessor(*this->mstate2->read(ConstVecCoordId::position()));
-    const auto indicesM1 = sofa::helper::getReadAccessor(m1);
-    const auto indicesM2 = sofa::helper::getReadAccessor(m2);
+    const unsigned minp = std::min(d_m1.getValue().size(), d_m2.getValue().size());
+    auto positionsM1 = sofa::helper::getReadAccessor(*this->mstate1->read(core::vec_id::read_access::position));
+    auto positionsM2 = sofa::helper::getReadAccessor(*this->mstate2->read(core::vec_id::read_access::position));
+    const auto indicesM1 = sofa::helper::getReadAccessor(d_m1);
+    const auto indicesM2 = sofa::helper::getReadAccessor(d_m2);
 
     for (unsigned i=0; i<minp; i++)
     {
@@ -399,7 +408,7 @@ void BilateralLagrangianConstraint<DataTypes>::draw(const core::visual::VisualPa
 }
 
 //TODO(dmarchal): implementing keyboard interaction behavior directly in a component is not a valid
-//design for a component. Interaction should be defered to an independent Component implemented in the SofaInteraction
+//design for a component. Interaction should be deferred to an independent Component implemented in the SofaInteraction
 //a second possibility is to implement this behavir using script.
 template<class DataTypes>
 void BilateralLagrangianConstraint<DataTypes>::handleEvent(Event *event)

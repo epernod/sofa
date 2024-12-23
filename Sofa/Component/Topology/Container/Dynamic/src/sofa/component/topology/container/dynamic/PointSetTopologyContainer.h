@@ -26,6 +26,8 @@
 #include <sofa/defaulttype/VecTypes.h>
 #include <sofa/core/topology/BaseTopology.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::topology::container::dynamic
 {
 class PointSetTopologyModifier;
@@ -60,7 +62,7 @@ public:
     /// @{
 
     /** \brief Returns the number of vertices in this topology. */
-    Size getNbPoints() const override { return nbPoints.getValue(); }
+    Size getNbPoints() const override { return d_nbPoints.getValue(); }
 
     /** \brief Returns the number of topological element of the current topology.
      * This function avoids to know which topological container is in used.
@@ -148,16 +150,19 @@ protected:
     const bool& isPointTopologyDirty() const {return m_pointTopologyDirty;}
 
 public:
-    Data<InitTypes::VecCoord> d_initPoints; ///< Initial position of points    
+    Data<InitTypes::VecCoord> d_initPoints; ///< Initial position of points
 
-    Data<bool> d_checkTopology; ///< Bool parameter to activate internal topology checks in several methods 
+    Data<bool> d_checkTopology; ///< Parameter to activate internal topology checks (might slow down the simulation)
 
 protected:
     /// Boolean used to know if the topology Data of this container is dirty
     bool m_pointTopologyDirty = false;
 
 private:
-    Data<Size> nbPoints; ///< Number of points
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_TOPOLOGY_CONTAINER_DYNAMIC()
+    sofa::core::objectmodel::RenamedData<Size> nbPoints;
+
+    Data<Size> d_nbPoints; ///< Number of points
 };
 
 } //namespace sofa::component::topology::container::dynamic

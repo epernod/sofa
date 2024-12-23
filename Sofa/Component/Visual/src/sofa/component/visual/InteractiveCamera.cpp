@@ -29,18 +29,22 @@
 namespace sofa::component::visual
 {
 
-int InteractiveCameraClass = core::RegisterObject("InteractiveCamera")
-        .add< InteractiveCamera >()
-        ;
-
+void registerInteractiveCamera(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Camera with mouse and keyboard controls.")
+        .add< InteractiveCamera >());
+}
 
 InteractiveCamera::InteractiveCamera()
-    :p_zoomSpeed(initData(&p_zoomSpeed, (double) 250.0 , "zoomSpeed", "Zoom Speed"))
-    ,p_panSpeed(initData(&p_panSpeed, (double) 0.1 , "panSpeed", "Pan Speed"))
-    ,p_pivot(initData(&p_pivot, 2 , "pivot", "Pivot (0 => Camera lookAt, 1 => Camera position, 2 => Scene center, 3 => World center"))
-    ,currentMode(InteractiveCamera::NONE_MODE)
-    ,isMoving(false)
+    : d_zoomSpeed(initData(&d_zoomSpeed, (double) 250.0 , "zoomSpeed", "Zoom Speed"))
+    , d_panSpeed(initData(&d_panSpeed, (double) 0.1 , "panSpeed", "Pan Speed"))
+    , d_pivot(initData(&d_pivot, 2 , "pivot", "Pivot (0 => Camera lookAt, 1 => Camera position, 2 => Scene center, 3 => World center"))
+    , currentMode(InteractiveCamera::NONE_MODE)
+    , isMoving(false)
     {
+        p_zoomSpeed.setOriginalData(&d_zoomSpeed);
+        p_panSpeed.setOriginalData(&d_panSpeed);
+        p_pivot.setOriginalData(&d_pivot);
     }
 
 InteractiveCamera::~InteractiveCamera()
@@ -54,8 +58,8 @@ void InteractiveCamera::internalUpdate()
 void InteractiveCamera::moveCamera(int x, int y)
 {
     Quat newQuat;
-    const unsigned int widthViewport = p_widthViewport.getValue();
-    const unsigned int heightViewport = p_heightViewport.getValue();
+    const unsigned int widthViewport = d_widthViewport.getValue();
+    const unsigned int heightViewport = d_heightViewport.getValue();
 
     if (isMoving)
     {
@@ -70,7 +74,7 @@ void InteractiveCamera::moveCamera(int x, int y)
             //fetch rotation
             newQuat = currentTrackball.GetQuaternion();
             type::Vec3 pivot;
-            switch (p_pivot.getValue())
+            switch (d_pivot.getValue())
             {
             case CAMERA_LOOKAT_PIVOT:
                 pivot = getLookAt();
@@ -90,7 +94,7 @@ void InteractiveCamera::moveCamera(int x, int y)
         }
         else if (currentMode == ZOOM_MODE)
         {
-            const double zoomStep = p_zoomSpeed.getValue() *( 0.01*sceneRadius )/heightViewport;
+            const double zoomStep = d_zoomSpeed.getValue() * (0.01 * sceneRadius ) / heightViewport;
             double zoomDistance = zoomStep * -(y - lastMousePosY);
 
             type::Vec3 trans(0.0, 0.0, zoomDistance);
@@ -98,7 +102,7 @@ void InteractiveCamera::moveCamera(int x, int y)
             translate(trans);
             const type::Vec3 newLookAt = cameraToWorldCoordinates(type::Vec3(0,0,-zoomStep));
             if (dot(getLookAt() - getPosition(), newLookAt - getPosition()) < 0
-                && !p_fixedLookAtPoint.getValue() )
+                && !d_fixedLookAtPoint.getValue() )
             {
                 translateLookAt(newLookAt - getLookAt());
             }
@@ -107,9 +111,9 @@ void InteractiveCamera::moveCamera(int x, int y)
         else if (currentMode == PAN_MODE)
         {
             type::Vec3 trans(lastMousePosX - x,  y-lastMousePosY, 0.0);
-            trans = cameraToWorldTransform(trans)*p_panSpeed.getValue()*( 0.01*sceneRadius ) ;
+            trans = cameraToWorldTransform(trans) * d_panSpeed.getValue() * (0.01 * sceneRadius ) ;
             translate(trans);
-            if ( !p_fixedLookAtPoint.getValue() )
+            if ( !d_fixedLookAtPoint.getValue() )
             {
                 translateLookAt(trans);
             }
@@ -121,7 +125,7 @@ void InteractiveCamera::moveCamera(int x, int y)
     }
     else if (currentMode == WHEEL_ZOOM_MODE)
     {
-        const double zoomStep = p_zoomSpeed.getValue() *( 0.01*sceneRadius )/heightViewport;
+        const double zoomStep = d_zoomSpeed.getValue() * (0.01 * sceneRadius ) / heightViewport;
         double zoomDistance = zoomStep * -(y*0.5);
 
         type::Vec3 trans(0.0, 0.0, zoomDistance);
@@ -129,7 +133,7 @@ void InteractiveCamera::moveCamera(int x, int y)
         translate(trans);
         const type::Vec3 newLookAt = cameraToWorldCoordinates(type::Vec3(0,0,-zoomStep));
         if (dot(getLookAt() - getPosition(), newLookAt - getPosition()) < 0
-            && !p_fixedLookAtPoint.getValue() )
+            && !d_fixedLookAtPoint.getValue() )
         {
             translateLookAt(newLookAt - getLookAt());
         }
@@ -146,7 +150,7 @@ void InteractiveCamera::manageEvent(core::objectmodel::Event* e)
 {
 
 
-    if(p_activated.getValue())
+    if(d_activated.getValue())
     {
         //Dispatch event
         if (sofa::core::objectmodel::MouseEvent::checkEventType(e))
@@ -236,7 +240,7 @@ void InteractiveCamera::processMouseEvent(core::objectmodel::MouseEvent* me)
 
     moveCamera(posX, posY);
 
-    p_position.endEdit();
+    d_position.endEdit();
 
 }
 
@@ -251,7 +255,7 @@ void InteractiveCamera::processKeyPressedEvent(core::objectmodel::KeypressedEven
     {
         //glPushMatrix();
         //glLoadIdentity();
-        //sofa::gl::Axis(p_position.getValue(), p_orientation.getValue(), 10.0);
+        //sofa::gl::Axis(d_position.getValue(), d_orientation.getValue(), 10.0);
         //glPopMatrix();
         break;
     }

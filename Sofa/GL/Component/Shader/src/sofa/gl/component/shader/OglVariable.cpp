@@ -25,137 +25,43 @@
 namespace sofa::gl::component::shader
 {
 
-/** SINGLE INT VARIABLE **/
-//Register OglIntVariable in the Object Factory
-int OglIntVariableClass = core::RegisterObject("OglIntVariable")
-        .add< OglIntVariable >()
-        ;
-//Register OglInt2Variable in the Object Factory
-int OglInt2VariableClass = core::RegisterObject("OglInt2Variable")
-        .add< OglInt2Variable >()
-        ;
-//Register OglInt3Variable in the Object Factory
-int OglInt3VariableClass = core::RegisterObject("OglInt3Variable")
-        .add< OglInt3Variable >()
-        ;
-//Register OglInt4Variable in the Object Factory
-int OglInt4VariableClass = core::RegisterObject("OglInt4Variable")
-        .add< OglInt4Variable >()
-        ;
+void registerOglVariable(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("OglIntVariable").add< OglIntVariable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglInt2Variable").add< OglInt2Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglInt3Variable").add< OglInt3Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglInt4Variable").add< OglInt4Variable >());
 
-/** SINGLE FLOAT VARIABLE **/
+    factory->registerObjects(core::ObjectRegistrationData("OglFloatVariable").add< OglFloatVariable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglFloat2Variable").add< OglFloat2Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglFloat3Variable").add< OglFloat3Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglFloat4Variable").add< OglFloat4Variable >());
 
-//Register OglFloatVariable in the Object Factory
-int OglFloatVariableClass = core::RegisterObject("OglFloatVariable")
-        .add< OglFloatVariable >()
-        ;
-//Register OglFloat2Variable in the Object Factory
-int OglFloat2VariableClass = core::RegisterObject("OglFloat2Variable")
-        .add< OglFloat2Variable >()
-        ;
-//Register OglFloat3Variable in the Object Factory
-int OglFloat3VariableClass = core::RegisterObject("OglFloat3Variable")
-        .add< OglFloat3Variable >()
-        ;
-//Register OglFloat4Variable in the Object Factory
-int OglFloat4VariableClass = core::RegisterObject("OglFloat4Variable")
-        .add< OglFloat4Variable >()
-        ;
-
-/** INT VECTOR VARIABLE **/
-//Register OglIntVectorVariable in the Object Factory
-int OglIntVectorVariableClass = core::RegisterObject("OglIntVectorVariable")
-        .add< OglIntVectorVariable >()
-        ;
-
-//Register OglIntVector2Variable in the Object Factory
-int OglIntVector2VariableClass = core::RegisterObject("OglIntVector2Variable")
-        .add< OglIntVector2Variable >()
-        ;
-
-//Register OglIntVector3Variable in the Object Factory
-int OglIntVector3VariableClass = core::RegisterObject("OglIntVector3Variable")
-        .add< OglIntVector3Variable >()
-        ;
-
-//Register OglIntVector4Variable in the Object Factory
-int OglIntVector4VariableClass = core::RegisterObject("OglIntVector4Variable")
-        .add< OglIntVector4Variable >()
-        ;
+    factory->registerObjects(core::ObjectRegistrationData("OglIntVectorVariable").add< OglIntVectorVariable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglIntVector2Variable").add< OglIntVector2Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglIntVector3Variable").add< OglIntVector3Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglIntVector4Variable").add< OglIntVector4Variable >());
 
 
-/** FLOAT VECTOR VARIABLE **/
-//Register OglFloatVectorVariable in the Object Factory
-int OglFloatVectorVariableClass = core::RegisterObject("OglFloatVectorVariable")
-        .add< OglFloatVectorVariable >()
-        ;
+    factory->registerObjects(core::ObjectRegistrationData("OglFloatVectorVariable").add< OglFloatVectorVariable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglFloatVector2Variable").add< OglFloatVector2Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglFloatVector3Variable").add< OglFloatVector3Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglFloatVector4Variable").add< OglFloatVector4Variable >());
 
-//Register OglFloatVector2Variable in the Object Factory
-int OglFloatVector2VariableClass = core::RegisterObject("OglFloatVector2Variable")
-        .add< OglFloatVector2Variable >()
-        ;
 
-//Register OglFloatVector3Variable in the Object Factory
-int OglFloatVector3VariableClass = core::RegisterObject("OglFloatVector3Variable")
-        .add< OglFloatVector3Variable >()
-        ;
-//Register OglFloatVector4Variable in the Object Factory
-int OglFloatVector4VariableClass = core::RegisterObject("OglFloatVector4Variable")
-        .add< OglFloatVector4Variable >()
-        ;
+    factory->registerObjects(core::ObjectRegistrationData("OglMatrix2Variable").add< OglMatrix2Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglMatrix3Variable").add< OglMatrix3Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglMatrix4Variable").add< OglMatrix4Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglMatrix2x3Variable").add< OglMatrix2x3Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglMatrix3x2Variable").add< OglMatrix3x2Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglMatrix2x4Variable").add< OglMatrix2x4Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglMatrix4x2Variable").add< OglMatrix4x2Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglMatrix3x4Variable").add< OglMatrix3x4Variable >());
+    factory->registerObjects(core::ObjectRegistrationData("OglMatrix4x3Variable").add< OglMatrix4x3Variable >());
 
-/** Matrix VARIABLE **/
-//Register OglMatrix2Variable in the Object Factory
-int OglMatrix2VariableClass = core::RegisterObject("OglMatrix2Variable")
-        .add< OglMatrix2Variable >()
-        ;
+    factory->registerObjects(core::ObjectRegistrationData("OglMatrix4VectorVariable").add< OglMatrix4VectorVariable >());
 
-//Register OglMatrix3Variable in the Object Factory
-int OglMatrix3VariableClass = core::RegisterObject("OglMatrix3Variable")
-        .add< OglMatrix3Variable >()
-        ;
-
-//Register OglMatrix4Variable in the Object Factory
-int OglMatrix4VariableClass = core::RegisterObject("OglMatrix4Variable")
-        .add< OglMatrix4Variable >()
-        ;
-
-//Register OglMatrix2x3Variable in the Object Factory
-int OglMatrix2x3VariableClass = core::RegisterObject("OglMatrix2x3Variable")
-        .add< OglMatrix2x3Variable >()
-        ;
-
-//Register OglMatrix3x2Variable in the Object Factory
-int OglMatrix3x2VariableClass = core::RegisterObject("OglMatrix3x2Variable")
-        .add< OglMatrix3x2Variable >()
-        ;
-
-//Register OglMatrix2x4Variable in the Object Factory
-int OglMatrix2x4VariableClass = core::RegisterObject("OglMatrix2x4Variable")
-        .add< OglMatrix2x4Variable >()
-        ;
-
-//Register OglMatrix4x2Variable in the Object Factory
-int OglMatrix4x2VariableClass = core::RegisterObject("OglMatrix4x2Variable")
-        .add< OglMatrix4x2Variable >()
-        ;
-
-//Register OglMatrix2x4Variable in the Object Factory
-int OglMatrix3x4VariableClass = core::RegisterObject("OglMatrix3x4Variable")
-        .add< OglMatrix3x4Variable >()
-        ;
-
-//Register OglMatrix4x3Variable in the Object Factory
-int OglMatrix4x3VariableClass = core::RegisterObject("OglMatrix4x3Variable")
-        .add< OglMatrix4x3Variable >()
-        ;
-
-/** Matrix vector VARIABLE **/
-//Register OglMatrix4VectorVariable in the Object Factory
-int OglMatrix4VectorVariableClass = core::RegisterObject("OglMatrix4VectorVariable")
-        .add< OglMatrix4VectorVariable >()
-        ;
-
+}
 
 OglIntVariable::OglIntVariable()
 {
@@ -177,7 +83,7 @@ OglInt4Variable::OglInt4Variable()
 
 }
 
-void OglIntVariable::initVisual()
+void OglIntVariable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -187,7 +93,7 @@ void OglIntVariable::initVisual()
 }
 
 
-void OglInt2Variable::initVisual()
+void OglInt2Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -196,7 +102,7 @@ void OglInt2Variable::initVisual()
         (*it)->setInt2(idShader, idstr.c_str(), v[0], v[1]);
 }
 
-void OglInt3Variable::initVisual()
+void OglInt3Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -205,7 +111,7 @@ void OglInt3Variable::initVisual()
         (*it)->setInt3(idShader, idstr.c_str(), v[0], v[1], v[2]);
 }
 
-void OglInt4Variable::initVisual()
+void OglInt4Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -235,7 +141,7 @@ OglFloat4Variable::OglFloat4Variable()
 
 }
 
-void OglFloatVariable::initVisual()
+void OglFloatVariable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -245,7 +151,7 @@ void OglFloatVariable::initVisual()
 }
 
 
-void OglFloat2Variable::initVisual()
+void OglFloat2Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -254,7 +160,7 @@ void OglFloat2Variable::initVisual()
         (*it)->setFloat2(idShader, idstr.c_str(), v[0], v[1]);
 }
 
-void OglFloat3Variable::initVisual()
+void OglFloat3Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -263,7 +169,7 @@ void OglFloat3Variable::initVisual()
         (*it)->setFloat3(idShader, idstr.c_str(), v[0], v[1], v[2]);
 }
 
-void OglFloat4Variable::initVisual()
+void OglFloat4Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -340,7 +246,7 @@ void OglIntVector4Variable::init()
     }
 }
 
-void OglIntVectorVariable::initVisual()
+void OglIntVectorVariable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -351,7 +257,7 @@ void OglIntVectorVariable::initVisual()
         (*it)->setIntVector(idShader, idstr.c_str(), count, vptr);
 }
 
-void OglIntVector2Variable::initVisual()
+void OglIntVector2Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -362,7 +268,7 @@ void OglIntVector2Variable::initVisual()
         (*it)->setIntVector2(idShader, idstr.c_str(), count, vptr);
 }
 
-void OglIntVector3Variable::initVisual()
+void OglIntVector3Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -373,7 +279,7 @@ void OglIntVector3Variable::initVisual()
         (*it)->setIntVector3(idShader, idstr.c_str(), count, vptr);
 }
 
-void OglIntVector4Variable::initVisual()
+void OglIntVector4Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -426,7 +332,7 @@ void OglFloatVector4Variable::init()
     OglVariable<type::vector<type::Vec4f> >::init();
 }
 
-void OglFloatVectorVariable::initVisual()
+void OglFloatVectorVariable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -437,7 +343,7 @@ void OglFloatVectorVariable::initVisual()
         (*it)->setFloatVector(idShader, idstr.c_str(), count, vptr);
 }
 
-void OglFloatVector2Variable::initVisual()
+void OglFloatVector2Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -448,7 +354,7 @@ void OglFloatVector2Variable::initVisual()
         (*it)->setFloatVector2(idShader, idstr.c_str(), count, vptr);
 }
 
-void OglFloatVector3Variable::initVisual()
+void OglFloatVector3Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -459,7 +365,7 @@ void OglFloatVector3Variable::initVisual()
         (*it)->setFloatVector3(idShader, idstr.c_str(), count, vptr);
 }
 
-void OglFloatVector4Variable::initVisual()
+void OglFloatVector4Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -493,7 +399,7 @@ void OglMatrix2Variable::init()
     }
 }
 
-void OglMatrix2Variable::initVisual()
+void OglMatrix2Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -526,7 +432,7 @@ void OglMatrix3Variable::init()
     }
 }
 
-void OglMatrix3Variable::initVisual()
+void OglMatrix3Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -559,7 +465,7 @@ void OglMatrix4Variable::init()
     }
 }
 
-void OglMatrix4Variable::initVisual()
+void OglMatrix4Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -592,7 +498,7 @@ void OglMatrix2x3Variable::init()
     }
 }
 
-void OglMatrix2x3Variable::initVisual()
+void OglMatrix2x3Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -626,7 +532,7 @@ void OglMatrix3x2Variable::init()
     }
 }
 
-void OglMatrix3x2Variable::initVisual()
+void OglMatrix3x2Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -659,7 +565,7 @@ void OglMatrix2x4Variable::init()
     }
 }
 
-void OglMatrix2x4Variable::initVisual()
+void OglMatrix2x4Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -692,7 +598,7 @@ void OglMatrix4x2Variable::init()
     }
 }
 
-void OglMatrix4x2Variable::initVisual()
+void OglMatrix4x2Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -725,7 +631,7 @@ void OglMatrix3x4Variable::init()
     }
 }
 
-void OglMatrix3x4Variable::initVisual()
+void OglMatrix3x4Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -758,7 +664,7 @@ void OglMatrix4x3Variable::init()
     }
 }
 
-void OglMatrix4x3Variable::initVisual()
+void OglMatrix4x3Variable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();
@@ -779,7 +685,7 @@ void OglMatrix4VectorVariable::init()
 {
     OglVariable<type::vector<type::Mat4x4f> >::init();
 }
-void OglMatrix4VectorVariable::initVisual()
+void OglMatrix4VectorVariable::pushValue()
 {
     const unsigned int idShader = indexShader.getValue();
     const std::string& idstr = id.getValue();

@@ -93,7 +93,7 @@ struct PointProjectiveConstraint_test : public BaseSimulationTest, NumericTest<t
 
 
         targetPoint = CPos(1,0,2);
-        projection->f_point.setValue(targetPoint);
+        projection->d_point.setValue(targetPoint);
 
     }
 
@@ -108,7 +108,7 @@ struct PointProjectiveConstraint_test : public BaseSimulationTest, NumericTest<t
         indices.clear();
         indices.push_back(1);
         std::sort(indices.begin(),indices.end()); // checking vectors in linear time requires sorted indices
-        projection->f_indices.setValue(indices);
+        projection->d_indices.setValue(indices);
 
         /// Init
         sofa::simulation::node::initRoot(root.get());
@@ -121,7 +121,7 @@ struct PointProjectiveConstraint_test : public BaseSimulationTest, NumericTest<t
         indices.clear();
         for(unsigned i = 0; i<numNodes; i++)
             indices.push_back(i);
-         projection->f_indices.setValue(indices);
+         projection->d_indices.setValue(indices);
 
          /// Init
          sofa::simulation::node::initRoot(root.get());
@@ -138,7 +138,7 @@ struct PointProjectiveConstraint_test : public BaseSimulationTest, NumericTest<t
            xprev[i] = x[i] = CPos(i,0,0);
        }
 
-       projection->projectPosition(core::mechanicalparams::defaultInstance(), *dofs->write(core::VecCoordId::position()) );
+       projection->projectPosition(core::mechanicalparams::defaultInstance(), *dofs->write(core::vec_id::write_access::position) );
 
        bool succeed=true;
        typename Indices::const_iterator it = indices.begin(); // must be sorted
@@ -177,7 +177,7 @@ struct PointProjectiveConstraint_test : public BaseSimulationTest, NumericTest<t
            vprev[i] = v[i] = CPos(i,0,0);
        }
 
-       projection->projectVelocity(core::mechanicalparams::defaultInstance(), *dofs->write(core::VecDerivId::velocity()) );
+       projection->projectVelocity(core::mechanicalparams::defaultInstance(), *dofs->write(core::vec_id::write_access::velocity) );
 
        bool succeed=true;
        typename Indices::const_iterator it = indices.begin(); // must be sorted
@@ -217,13 +217,13 @@ struct PointProjectiveConstraint_test : public BaseSimulationTest, NumericTest<t
  };
 
 
-// Define the list of DataTypes to instanciate
+// Define the list of DataTypes to instantiate
 using ::testing::Types;
 typedef Types<
     Vec3Types
-> DataTypes; // the types to instanciate.
+> DataTypes; // the types to instantiate.
 
-// Test suite for all the instanciations
+// Test suite for all the instantiations
 TYPED_TEST_SUITE(PointProjectiveConstraint_test, DataTypes);
 // first test case
 TYPED_TEST( PointProjectiveConstraint_test , oneConstrainedParticle )

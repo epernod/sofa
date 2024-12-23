@@ -62,9 +62,9 @@ template <class DataTypes> TetrahedronHyperelasticityFEMForceField<DataTypes>::T
     , m_initialPoints(0)
     , m_updateMatrix(true)
     , d_stiffnessMatrixRegularizationWeight(initData(&d_stiffnessMatrixRegularizationWeight, (bool)false,"matrixRegularization","Regularization of the Stiffness Matrix (between true or false)"))
-    , d_materialName(initData(&d_materialName, materialOptions<DataTypes>, "materialName","the name of the material to be used"))
+    , d_materialName(initData(&d_materialName, materialOptions<DataTypes>, "materialName","the name of the material to be used. Possible options are: 'ArrudaBoyce', 'Costa', 'MooneyRivlin', 'NeoHookean', 'Ogden', 'StVenantKirchhoff', 'VerondaWestman', 'StableNeoHookean'"))
     , d_parameterSet(initData(&d_parameterSet,"ParameterSet","The global parameters specifying the material"))
-    , d_anisotropySet(initData(&d_anisotropySet,"AnisotropyDirections","The global directions of anisotropy of the material"))
+    , d_anisotropySet(initData(&d_anisotropySet,"AnisotropyDirections","The global directions of anisotropy of the material: vector containing anisotropic directions. The vector size is 0 if the material is isotropic, 1 if it is transversely isotropic and 2 for orthotropic materials"))
     , m_tetrahedronInfo(initData(&m_tetrahedronInfo, "tetrahedronInfo", "Internal tetrahedron data"))
     , m_edgeInfo(initData(&m_edgeInfo, "edgeInfo", "Internal edge data"))
     , l_topology(initLink("topology", "link to the topology container"))
@@ -183,7 +183,7 @@ template <class DataTypes> void TetrahedronHyperelasticityFEMForceField<DataType
     // get restPosition
     if (m_initialPoints.empty())
     {
-        m_initialPoints = this->mstate->read(core::ConstVecCoordId::restPosition())->getValue();
+        m_initialPoints = this->mstate->read(core::vec_id::read_access::restPosition)->getValue();
     }
 
     /// initialize the data structure associated with each tetrahedron
@@ -243,7 +243,7 @@ void TetrahedronHyperelasticityFEMForceField<DataTypes>::createTetrahedronRestIn
 
     typename DataTypes::Real volume;
     typename DataTypes::Coord point[4];
-    const VecCoord& restPosition = this->mstate->read(core::ConstVecCoordId::restPosition())->getValue();
+    const VecCoord& restPosition = this->mstate->read(core::vec_id::read_access::restPosition)->getValue();
 
     ///describe the indices of the 4 tetrahedron vertices
     const Tetrahedron& t = tetrahedronArray[tetrahedronIndex];
@@ -599,9 +599,9 @@ void TetrahedronHyperelasticityFEMForceField<DataTypes>::testDerivatives()
 {
     DataVecCoord d_pos;
     VecCoord &pos = *d_pos.beginEdit();
-    pos =  this->mstate->read(core::ConstVecCoordId::position())->getValue();
+    pos =  this->mstate->read(core::vec_id::read_access::position)->getValue();
 
-    // perturbate original state:
+    // perturb original state:
     srand( 0 );
     for (unsigned int idx=0; idx<pos.size(); idx++) {
             for (unsigned int d=0; d<3; d++) pos[idx][d] += (Real)0.01 * ((Real)rand()/(Real)(RAND_MAX - 0.5));
@@ -752,7 +752,7 @@ void TetrahedronHyperelasticityFEMForceField<DataTypes>::draw(const core::visual
 
     const auto stateLifeCycle = vparams->drawTool()->makeStateLifeCycle();
 
-    const VecCoord& x = this->mstate->read(core::ConstVecCoordId::position())->getValue();
+    const VecCoord& x = this->mstate->read(core::vec_id::read_access::position)->getValue();
 
     if (vparams->displayFlags().getShowWireFrame())
           vparams->drawTool()->setPolygonMode(0,true);

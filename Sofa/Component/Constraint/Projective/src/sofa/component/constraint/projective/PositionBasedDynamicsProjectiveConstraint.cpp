@@ -32,26 +32,23 @@ namespace sofa::component::constraint::projective
 
 using namespace sofa::type;
 using namespace sofa::defaulttype;
-using namespace sofa::helper;
 
-
-int PositionBasedDynamicsProjectiveConstraintClass = core::RegisterObject("Position-based dynamics")
+void registerPositionBasedDynamicsProjectiveConstraint(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Position-based dynamics")
 
         .add< PositionBasedDynamicsProjectiveConstraint<Vec3Types> >(true)
         .add< PositionBasedDynamicsProjectiveConstraint<Vec2Types> >()
         .add< PositionBasedDynamicsProjectiveConstraint<Vec1Types> >()
         .add< PositionBasedDynamicsProjectiveConstraint<Vec6Types> >()
-        .add< PositionBasedDynamicsProjectiveConstraint<Rigid3Types> >()
-        ;
+        .add< PositionBasedDynamicsProjectiveConstraint<Rigid3Types> >());
+}
 
 template class SOFA_COMPONENT_CONSTRAINT_PROJECTIVE_API PositionBasedDynamicsProjectiveConstraint<Vec3Types>;
 template class SOFA_COMPONENT_CONSTRAINT_PROJECTIVE_API PositionBasedDynamicsProjectiveConstraint<Vec2Types>;
 template class SOFA_COMPONENT_CONSTRAINT_PROJECTIVE_API PositionBasedDynamicsProjectiveConstraint<Vec1Types>;
 template class SOFA_COMPONENT_CONSTRAINT_PROJECTIVE_API PositionBasedDynamicsProjectiveConstraint<Vec6Types>;
 template class SOFA_COMPONENT_CONSTRAINT_PROJECTIVE_API PositionBasedDynamicsProjectiveConstraint<Rigid3Types>;
-//template class SOFA_COMPONENT_CONSTRAINT_PROJECTIVE_API PositionBasedDynamicsProjectiveConstraint<Rigid2Types>;
-
-
 
 // specialization for rigids
 
@@ -61,9 +58,9 @@ void PositionBasedDynamicsProjectiveConstraint<Rigid3Types>::projectPosition(con
     SOFA_UNUSED(mparams);
 
     helper::WriteAccessor<DataVecCoord> res ( xData );
-    const helper::ReadAccessor<DataVecCoord> tpos = position ;
-    helper::WriteAccessor<DataVecDeriv> vel ( velocity );
-    helper::WriteAccessor<DataVecCoord> old_pos ( old_position );
+    const helper::ReadAccessor<DataVecCoord> tpos = d_position ;
+    helper::WriteAccessor<DataVecDeriv> vel (d_velocity );
+    helper::WriteAccessor<DataVecCoord> old_pos (d_old_position );
     if (tpos.size() != res.size()) { msg_error() << "Invalid target position vector size."; return; }
 
     const Real dt =  (Real)this->getContext()->getDt();
@@ -78,7 +75,7 @@ void PositionBasedDynamicsProjectiveConstraint<Rigid3Types>::projectPosition(con
 
     Vec<3,Real> a; Real phi;
 
-    const Real s = stiffness.getValue();
+    const Real s = d_stiffness.getValue();
     for( size_t i=0; i<res.size(); i++ )
     {
         res[i].getCenter() += ( tpos[i].getCenter() - res[i].getCenter()) * s;

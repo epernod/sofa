@@ -30,6 +30,8 @@
 #include <sofa/type/Mat.h>
 #include <sofa/type/vector.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::mechanicalload
 {
 
@@ -82,10 +84,23 @@ public:
     SReal getPotentialEnergy(const core::MechanicalParams* /*mparams*/, const DataVecCoord&  /* x */) const override;
 
 public :
-	Data<VecId> m_indices;		///< indices of the selected nodes.
-	Data<Real> m_torque;		///< torque to be applied.
-	Data<Pos> m_axis;			///< direction of the axis.
-	Data<Pos> m_origin;			///< origin of the axis.
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MECHANICALLOAD()
+    sofa::core::objectmodel::RenamedData<VecId> m_indices;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MECHANICALLOAD()
+    sofa::core::objectmodel::RenamedData<Real> m_torque;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MECHANICALLOAD()
+    sofa::core::objectmodel::RenamedData<Pos> m_axis;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MECHANICALLOAD()
+    sofa::core::objectmodel::RenamedData<Pos> m_origin;
+
+    Data<VecId> d_indices; ///< indices of the selected points
+	Data<Real> d_torque; ///< torque to apply
+	Data<Pos> d_axis; ///< direction of the axis (will be normalized)
+	Data<Pos> d_origin; ///< origin of the axis
 
 protected :
 	Pos m_u;					///< normalized axis

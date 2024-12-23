@@ -214,7 +214,6 @@ void testApplyElasticityTensor(
     HyperelasticMaterial<defaulttype::Vec3Types>& material,
     const MaterialParameters<defaulttype::Vec3Types>& materialParameters)
 {
-    using Real = defaulttype::Vec3Types::Coord::value_type;
     using MatrixSym = StrainInformation<defaulttype::Vec3Types>::MatrixSym;
     using Matrix6 = HyperelasticMaterial<defaulttype::Vec3Types>::Matrix6;
 
@@ -224,7 +223,7 @@ void testApplyElasticityTensor(
     sofa::testing::LinearCongruentialRandomGenerator lcg(96547);
     strain.deformationTensor = generatePositiveDefiniteMatrix(lcg);
 
-    //another random-generated symetric second-order tensor
+    //another random-generated symmetric second-order tensor
     const StrainInformation<defaulttype::Vec3Types>::MatrixSym e =
             generatePositiveDefiniteMatrix(lcg);
     sofa::type::Vec<6, SReal> eVec;

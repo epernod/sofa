@@ -25,6 +25,8 @@
 #include <sofa/core/objectmodel/DataFileName.h>
 #include <sofa/core/behavior/PairInteractionForceField.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::solidmechanics::spring
 {
 
@@ -132,10 +134,22 @@ public:
 
     //////////////////////////   Data fields    //////////////////////////////////
     /// the list of the springs
-    sofa::core::objectmodel::DataFileName f_outfilename; ///< output file name
-    sofa::core::objectmodel::DataFileName f_infilename; ///< input file containing constant joint force
-    Data <Real > f_period; ///< period between outputs
-    Data<bool> f_reinit; ///< flag enabling reinitialization of the output file at each timestep
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_SPRING()
+    sofa::core::objectmodel::DataFileName f_outfilename;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_SPRING()
+    sofa::core::objectmodel::DataFileName f_infilename;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_SPRING()
+    sofa::core::objectmodel::RenamedData<Real> f_period;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_SPRING()
+    sofa::core::objectmodel::RenamedData<bool> f_reinit;
+
+    sofa::core::objectmodel::DataFileName d_outfilename; ///< output file name
+    sofa::core::objectmodel::DataFileName d_infilename; ///< input file containing constant joint force
+    Data <Real > d_period; ///< period between outputs
+    Data<bool> d_reinit; ///< flag enabling reinitialization of the output file at each timestep
     Data<sofa::type::vector<Spring> > d_springs; ///< pairs of indices, stiffness, damping, rest length
 
     /// bool to allow the display of the 2 parts of springs torsions

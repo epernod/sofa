@@ -44,7 +44,6 @@ using sofa::core::MultiVecDerivId;
 using sofa::core::MultiVecCoordId;
 using sofa::core::ExecParams;
 using sofa::linearalgebra::BaseVector;
-using sofa::core::RegisterObject;
 using sofa::core::ConstMultiVecDerivId;
 using sofa::core::VecDerivId;
 using sofa::core::VecCoordId;
@@ -235,7 +234,7 @@ void GenericConstraintCorrection::applyContactForce(const BaseVector *f)
 
 
     computeMotionCorrectionFromLambda(&cparams, cparams.dx(), f);
-    applyMotionCorrection(&cparams, VecCoordId::position(), VecDerivId::velocity(), cparams.dx(), cparams.lambda());
+    applyMotionCorrection(&cparams, core::vec_id::write_access::position, core::vec_id::write_access::velocity, cparams.dx(), cparams.lambda());
 }
 
 void GenericConstraintCorrection::computeResidual(const ExecParams* params, linearalgebra::BaseVector *lambda)
@@ -264,7 +263,10 @@ void GenericConstraintCorrection::applyPredictiveConstraintForce(const Constrain
 
 void GenericConstraintCorrection::resetContactForce(){}
 
-int GenericConstraintCorrectionClass = RegisterObject("")
-    .add< GenericConstraintCorrection >();
+void registerGenericConstraintCorrection(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Generic Constraint Correction.")
+        .add< GenericConstraintCorrection >());
+}
 
 } //namespace sofa::component::constraint::lagrangian::correction

@@ -24,6 +24,8 @@
 
 #include <sofa/core/loader/VoxelLoader.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::io::mesh
 {
 
@@ -71,32 +73,32 @@ public:
 
     // fill the texture by 'image' only where there is the 'segmentation' of 'd_activeValue' and give the 3D texture sizes
     void createSegmentation3DTexture( unsigned char **textureData, int& width, int& height, int& depth) override;
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< type::Vec3 > voxelSize;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< type::Vec3 > voxelSize;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< Vec3i > dataResolution;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< Vec3i > dataResolution;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< Vec6i > roi;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< Vec6i > roi;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< int > headerSize;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< int > headerSize;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< int > segmentationHeaderSize;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< int > segmentationHeaderSize;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< type::vector<unsigned int> > idxInRegularGrid;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< type::vector<unsigned int> > idxInRegularGrid;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< type::vector<int> > backgroundValue;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< type::vector<int> > backgroundValue;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< type::vector<int> > activeValue;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< type::vector<int> > activeValue;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data<bool> generateHexa;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData<bool> generateHexa;
 
 
 

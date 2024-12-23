@@ -22,7 +22,6 @@
 #include <sofa/component/odesolver/backward/VariationalSymplecticSolver.h>
 
 #include <sofa/simulation/MechanicalOperations.h>
-#include <sofa/core/behavior/MultiMatrix.h>
 #include <sofa/simulation/VectorOperations.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/helper/AdvancedTimer.h>
@@ -50,16 +49,16 @@ VariationalSymplecticSolver::VariationalSymplecticSolver()
     , d_threadSafeVisitor(initData(&d_threadSafeVisitor, false, "threadSafeVisitor", "If true, do not use realloc and free visitors in fwdInteractionForceField."))
 {
     cpt=0;
-    f_newtonError.setParent(&d_newtonError);
-    f_newtonSteps.setParent(&d_newtonSteps);
-    f_rayleighStiffness.setParent(&d_rayleighStiffness);
-    f_rayleighMass.setParent(&d_rayleighMass);
-    f_saveEnergyInFile.setParent(&d_saveEnergyInFile);
-    f_explicit.setParent(&d_explicit);
-    f_fileName.setParent(&d_fileName);
-    f_computeHamiltonian.setParent(&d_computeHamiltonian);
-    f_hamiltonianEnergy.setParent(&d_hamiltonianEnergy);
-    f_useIncrementalPotentialEnergy.setParent(&d_useIncrementalPotentialEnergy);
+    f_newtonError.setOriginalData(&d_newtonError);
+    f_newtonSteps.setOriginalData(&d_newtonSteps);
+    f_rayleighStiffness.setOriginalData(&d_rayleighStiffness);
+    f_rayleighMass.setOriginalData(&d_rayleighMass);
+    f_saveEnergyInFile.setOriginalData(&d_saveEnergyInFile);
+    f_explicit.setOriginalData(&d_explicit);
+    f_fileName.setOriginalData(&d_fileName);
+    f_computeHamiltonian.setOriginalData(&d_computeHamiltonian);
+    f_hamiltonianEnergy.setOriginalData(&d_hamiltonianEnergy);
+    f_useIncrementalPotentialEnergy.setOriginalData(&d_useIncrementalPotentialEnergy);
 }
 
 void VariationalSymplecticSolver::init()
@@ -75,6 +74,7 @@ void VariationalSymplecticSolver::init()
         msg_info() << "Responsible for the following objects with tags " << this->getTags() << " :" << tmp.str();
     }
     sofa::core::behavior::OdeSolver::init();
+    sofa::core::behavior::LinearSolverAccessor::init();
     energies.open((d_fileName.getValue()).c_str(), std::ios::out);
 }
 
@@ -83,17 +83,17 @@ void VariationalSymplecticSolver::solve(const core::ExecParams* params, SReal dt
 
     sofa::simulation::common::VectorOperations vop( params, this->getContext() );
     sofa::simulation::common::MechanicalOperations mop( params, this->getContext() );
-    MultiVecCoord pos(&vop, core::VecCoordId::position() );
-    MultiVecDeriv f(&vop, core::VecDerivId::force() );
+    MultiVecCoord pos(&vop, core::vec_id::write_access::position );
+    MultiVecDeriv f(&vop, core::vec_id::write_access::force );
     MultiVecCoord oldpos(&vop);
 
     MultiVecCoord x_1(&vop, xResult); // vector of final  position
 
     MultiVecDeriv newp(&vop);
     MultiVecDeriv vel_1(&vop, vResult); // vector of final  velocity
-    MultiVecDeriv p(&vop); // vector of momemtum
+    MultiVecDeriv p(&vop); // vector of momentum
     // dx is no longer allocated by default (but it will be deleted automatically by the mechanical objects)
-    MultiVecDeriv dx(&vop, core::VecDerivId::dx()); dx.realloc(&vop, !d_threadSafeVisitor.getValue(), true);
+    MultiVecDeriv dx(&vop, core::vec_id::write_access::dx); dx.realloc(&vop, !d_threadSafeVisitor.getValue(), true);
 
     const SReal& h = dt;
     const SReal rM = d_rayleighMass.getValue();
@@ -101,10 +101,10 @@ void VariationalSymplecticSolver::solve(const core::ExecParams* params, SReal dt
 
     if (cpt == 0 || this->getContext()->getTime()==0.0)
     {
-		vop.v_alloc(pID); // allocate a new vector in Mechanical Object to store the momemtum
-		MultiVecDeriv pInit(&vop, pID); // initialize the first value of the momemtum to M*v
+		vop.v_alloc(pID); // allocate a new vector in Mechanical Object to store the momentum
+		MultiVecDeriv pInit(&vop, pID); // initialize the first value of the momentum to M*v
 		pInit.clear();
-		mop.addMdx(pInit,vel_1,1.0); // momemtum is initialized to M*vinit (assume 0 acceleration)
+		mop.addMdx(pInit,vel_1,1.0); // momentum is initialized to M*vinit (assume 0 acceleration)
 
         // Compute potential energy at time t=0
         SReal KineticEnergy;
@@ -122,15 +122,15 @@ void VariationalSymplecticSolver::solve(const core::ExecParams* params, SReal dt
     }
 
 	cpt++;
-    MultiVecDeriv pPrevious(&vop, pID); // get previous momemtum value
-    p.eq(pPrevious); // set p to previous momemtum
+    MultiVecDeriv pPrevious(&vop, pID); // get previous momentum value
+    p.eq(pPrevious); // set p to previous momentum
 
     typedef core::behavior::BaseMechanicalState::VMultiOp VMultiOp;
  
 	if (d_explicit.getValue()) {
 		mop->setImplicit(false); // this solver is explicit only
 
-        MultiVecDeriv acc(&vop, core::VecDerivId::dx()); acc.realloc(&vop, !d_threadSafeVisitor.getValue(), true); // dx is no longer allocated by default (but it will be deleted automatically by the mechanical objects)
+        MultiVecDeriv acc(&vop, core::vec_id::write_access::dx); acc.realloc(&vop, !d_threadSafeVisitor.getValue(), true); // dx is no longer allocated by default (but it will be deleted automatically by the mechanical objects)
 
 		{
 		    SCOPED_TIMER("ComputeForce");
@@ -144,7 +144,7 @@ void VariationalSymplecticSolver::solve(const core::ExecParams* params, SReal dt
 
 		    mop.accFromF(acc, f); // acc= 1/m (f(q(k)+p(k)/h))
 		    if (rM>0) {
-		        MultiVecDeriv oldVel(&vop, core::VecDerivId::velocity() );
+		        MultiVecDeriv oldVel(&vop, core::vec_id::write_access::velocity );
 		        // add rayleigh Mass damping if necessary
 		        acc.peq(oldVel,-rM); // equivalent to adding damping force -rM* M*v(k)
 		    }
@@ -215,24 +215,28 @@ void VariationalSymplecticSolver::solve(const core::ExecParams* params, SReal dt
 
 			// corresponds to do b+=-K*res, where res=res(i-1)=q(k,i-1)-q(k,0)
 			mop.propagateDx(res);
-			mop.addMBKdx(b,0,0,-1.0);
+			mop.addMBKdx(b,core::MatricesFactors::M(0),
+			    core::MatricesFactors::B(0),
+			    core::MatricesFactors::K(-1.0));
 
 
 			mop.projectResponse(b);
 		    sofa::helper::AdvancedTimer::stepEnd("ComputeRHTerm");
 
-		    core::behavior::MultiMatrix<simulation::common::MechanicalOperations> matrix(&mop);
-
 			// add left term : matrix=-K+4/h^(2)M, but with dampings rK and rM
 		    {
 			    SCOPED_TIMER("MBKBuild");
-			    matrix.setSystemMBKMatrix(MechanicalMatrix::K * (-1.0-4*rK/h) +  MechanicalMatrix::M * (4.0/(h*h)+4*rM/h));
+                const core::MatricesFactors::M mFact ( 4.0 / (h * h) + 4 * rM / h );
+			    const core::MatricesFactors::K kFact ( -1.0 - 4 * rK / h );
+                mop.setSystemMBKMatrix(mFact, core::MatricesFactors::B(0), kFact, l_linearSolver.get());
 		    }
 
             {
 			    SCOPED_TIMER("MBKSolve");
                 // resolution of matrix*res=b
-                matrix.solve(res, b); //Call to ODE resolution.
+			    l_linearSolver->setSystemLHVector(res);
+			    l_linearSolver->setSystemRHVector(b);
+			    l_linearSolver->solveSystem();
             }
 
 			/// Updates of q(k,i) ///
@@ -309,14 +313,15 @@ void VariationalSymplecticSolver::solve(const core::ExecParams* params, SReal dt
             // Compute hamiltonian kinetic energy = 0.5*(newp.dot(Minv*newp))
             MultiVecDeriv b(&vop);
             b.clear();
-            core::behavior::MultiMatrix<simulation::common::MechanicalOperations> matrix(&mop);
             // Mass matrix
-            matrix.setSystemMBKMatrix(MechanicalMatrix::M);
+            mop.setSystemMBKMatrix(core::MatricesFactors::M(1), core::MatricesFactors::B(0), core::MatricesFactors::K(0), l_linearSolver.get());
 
             // resolution of matrix*b=newp
-            matrix.solve(b,newp); // b = inv(matrix)*newp = Minv*newp
+            l_linearSolver->setSystemLHVector(b);
+            l_linearSolver->setSystemRHVector(newp);
+            l_linearSolver->solveSystem(); // b = inv(matrix)*newp = Minv*newp
 
-            double hamiltonianKineticEnergy = 0.5*(newp.dot(b));
+            const auto hamiltonianKineticEnergy = 0.5*(newp.dot(b));
 
             // Hamiltonian energy with incremental potential energy
             if (d_useIncrementalPotentialEnergy.getValue())
@@ -354,7 +359,7 @@ void VariationalSymplecticSolver::solve(const core::ExecParams* params, SReal dt
         mop.solveConstraint(x_1,core::ConstraintOrder::POS);
     }
 
-	// update the previous momemtum as the current one for next step
+	// update the previous momentum as the current one for next step
     pPrevious.eq(newp);
 }
 
@@ -369,9 +374,10 @@ void VariationalSymplecticSolver::parse(core::objectmodel::BaseObjectDescription
     OdeSolver::parse(arg);
 }
 
-int VariationalSymplecticSolverClass = core::RegisterObject("Implicit time integrator which conserves linear momentum and mechanical energy")
-        .add< VariationalSymplecticSolver >()
-        .addAlias("VariationalSolver")
-        ;
+void registerVariationalSymplecticSolver(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Implicit time integrator which conserves linear momentum and mechanical energy.")
+        .add< VariationalSymplecticSolver >());
+}
 
 } // namespace sofa::component::odesolver::backward

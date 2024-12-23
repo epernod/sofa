@@ -41,25 +41,23 @@
 namespace sofa::component::topology::mapping
 {
 
-using namespace sofa::defaulttype;
-
 using namespace sofa::component::topology::mapping;
 using namespace sofa::core::topology;
 
-// Register in the Factory
-int Hexa2TetraTopologicalMappingClass = core::RegisterObject("Special case of mapping where HexahedronSetTopology is converted to TetrahedronSetTopology")
-        .add< Hexa2TetraTopologicalMapping >()
-
-        ;
-
-// Implementation
+void registerHexa2TetraTopologicalMapping(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Topological mapping where HexahedronSetTopology is converted to TetrahedronSetTopology")
+        .add< Hexa2TetraTopologicalMapping >());
+}
 
 Hexa2TetraTopologicalMapping::Hexa2TetraTopologicalMapping()
     : sofa::core::topology::TopologicalMapping()
-    , swapping(initData(&swapping, false, "swapping","Boolean enabling to swapp hexa-edges\n in order to avoid bias effect"))
+    , d_swapping(initData(&d_swapping, false, "swapping", "Boolean enabling to swapp hexa-edges\n in order to avoid bias effect"))
 {
     m_inputType = geometry::ElementType::HEXAHEDRON;
     m_outputType = geometry::ElementType::TETRAHEDRON;
+
+    swapping.setOriginalData(&d_swapping);
 }
 
 Hexa2TetraTopologicalMapping::~Hexa2TetraTopologicalMapping()
@@ -115,7 +113,7 @@ void Hexa2TetraTopologicalMapping::init()
         }
     }
 
-    // Tesselation of each cube into 6 tetrahedra
+    // Tessellation of each cube into 6 tetrahedra
     for (size_t i=0; i<nbcubes; i++)
     {
         core::topology::BaseMeshTopology::Hexa c = fromModel->getHexahedron(i);
@@ -123,7 +121,7 @@ void Hexa2TetraTopologicalMapping::init()
         // TODO : swap indexes where needed (currently crash in TriangleSetContainer)
         bool swapped = false;
 
-        if(swapping.getValue())
+        if(d_swapping.getValue())
         {
             if (!((i%nx)&1))
             {

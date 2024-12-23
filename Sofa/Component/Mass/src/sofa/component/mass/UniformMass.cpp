@@ -186,8 +186,8 @@ void UniformMass<RigidTypes>::loadFromFileRigidImpl(const string& filename)
                         }
                         else		// it's an unknown keyword
                         {
-                            msg_warning(this) << "error reading file '" << filename << "'. \n"
-                                              << "Unable to decode an unknow command '"<< cmd << "'. \n" ;
+                            msg_error(this) << "error reading file '" << filename << "'. \n"
+                                              << "Unable to decode an unknown command '"<< cmd << "'. \n" ;
                             skipToEOL(file);
                         }
                     }
@@ -208,7 +208,7 @@ void UniformMass<RigidTypes>::drawRigid2DImpl(const VisualParams* vparams)
     if (!vparams->displayFlags().getShowBehaviorModels())
         return;
 
-    const VecCoord& x =mstate->read(core::ConstVecCoordId::position())->getValue();
+    const VecCoord& x =mstate->read(core::vec_id::read_access::position)->getValue();
     const ReadAccessor<Data<SetIndexArray > > indices = d_indices;
     type::Vec3d len;
 
@@ -231,7 +231,7 @@ void UniformMass<RigidTypes>::drawRigid3DImpl(const VisualParams* vparams)
     if (!vparams->displayFlags().getShowBehaviorModels())
         return;
 
-    const VecCoord& x =mstate->read(core::ConstVecCoordId::position())->getValue();
+    const VecCoord& x =mstate->read(core::vec_id::read_access::position)->getValue();
     const ReadAccessor<Data<SetIndexArray > > indices = d_indices;
     typename RigidTypes::Vec3 gravityCenter;
     type::Vec3d len;
@@ -261,7 +261,7 @@ void UniformMass<RigidTypes>::drawRigid3DImpl(const VisualParams* vparams)
 
     if (d_showInitialCenterOfGravity.getValue())
     {
-        const VecCoord& x0 = mstate->read(core::ConstVecCoordId::restPosition())->getValue();
+        const VecCoord& x0 = mstate->read(core::vec_id::read_access::restPosition)->getValue();
 
         for (const unsigned int index : indices)
             vparams->drawTool()->drawFrame(x0[index].getCenter(), x0[index].getOrientation(), len*d_showAxisSize.getValue());
@@ -281,8 +281,8 @@ void UniformMass<Vec6Types>::drawVec6Impl(const core::visual::VisualParams* vpar
 {
     if (!vparams->displayFlags().getShowBehaviorModels())
         return;
-    const VecCoord& x =mstate->read(core::ConstVecCoordId::position())->getValue();
-    const VecCoord& x0 = mstate->read(core::ConstVecCoordId::restPosition())->getValue();
+    const VecCoord& x =mstate->read(core::vec_id::read_access::position)->getValue();
+    const VecCoord& x0 = mstate->read(core::vec_id::read_access::restPosition)->getValue();
     const ReadAccessor<Data<SetIndexArray > > indices = d_indices;
 
     Mat3x3d R; R.identity();
@@ -503,30 +503,16 @@ Vec6 UniformMass<Rigid3Types>::getMomentum ( const MechanicalParams* params,
     return getMomentumRigid3DImpl<Rigid3Types>(params, d_x, d_v);
 }
 
-
-
-
-//////////////////////////////////////////// REGISTERING TO FACTORY /////////////////////////////////////////
-/// Registering the component
-/// see: https://www.sofa-framework.org/community/doc/programming-with-sofa/components-api/the-objectfactory/
-/// 1-SOFA_DECL_CLASS(componentName) : Set the class name of the component
-/// 2-RegisterObject("description") + .add<> : Register the component
-/// 3-.add<>(true) : Set default template
-// Register in the Factory
-int UniformMassClass = core::RegisterObject("Define the same mass for all the particles")
-
+void registerUniformMass(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Compute a mass equally spread over the number of nodes.")
         .add< UniformMass<Vec3Types> >()
         .add< UniformMass<Vec2Types> >()
         .add< UniformMass<Vec1Types> >()
         .add< UniformMass<Vec6Types> >()
         .add< UniformMass<Rigid3Types> >()
-        .add< UniformMass<Rigid2Types> >()
-
-        ;
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
+        .add< UniformMass<Rigid2Types> >());
+}
 
 ////////////////////////////// TEMPLATE INITIALIZATION /////////////////////////////////////////////////
 /// Force template specialization for the most common sofa type.

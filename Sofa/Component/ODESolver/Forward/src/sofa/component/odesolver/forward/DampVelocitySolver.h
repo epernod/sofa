@@ -25,6 +25,8 @@
 
 #include <sofa/core/behavior/OdeSolver.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::odesolver::forward
 {
 
@@ -34,11 +36,11 @@ This is not an ODE solver, but it can be used as a post-process after a real ODE
 class SOFA_COMPONENT_ODESOLVER_FORWARD_API DampVelocitySolver : public sofa::core::behavior::OdeSolver
 {
 public:
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data<SReal> rate;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ODESOLVER_FORWARD()
+    sofa::core::objectmodel::RenamedData<SReal> rate;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data<SReal> threshold;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ODESOLVER_FORWARD()
+    sofa::core::objectmodel::RenamedData<SReal> threshold;
 
     SOFA_CLASS(DampVelocitySolver, sofa::core::behavior::OdeSolver);
 

@@ -35,6 +35,8 @@
 #include <type_traits>
 #include <set>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::constraint::projective
 {
 
@@ -70,29 +72,42 @@ public:
     typedef sofa::core::topology::TopologySubsetIndices SetIndex;
 
 protected:
-    LinearMovementProjectiveConstraintInternalData<DataTypes> *data;
+    std::unique_ptr<LinearMovementProjectiveConstraintInternalData<DataTypes>> data { nullptr };
     friend class LinearMovementProjectiveConstraintInternalData<DataTypes>;
 
 public :
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData< sofa::type::vector< sofa::Index> > m_indices;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<type::vector<Real> >  m_keyTimes;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<VecDeriv > m_keyMovements;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<bool> showMovement;
+
     /// indices of the DOFs the constraint is applied to
-    SetIndex m_indices;
+    SetIndex d_indices;
     /// the key frames when the motion is defined by the user
-    Data<type::vector<Real> > m_keyTimes;
+    Data<type::vector<Real> > d_keyTimes;
     /// the motions corresponding to the key frames
-    Data<VecDeriv > m_keyMovements;
+    Data<VecDeriv > d_keyMovements;
 
     /// indicates whether movements are relative to the dof or absolute
     Data< bool > d_relativeMovements;
 
     /// attributes to precise display
-    /// if showMovement is true we display the expected movement
+    /// if d_showMovement is true we display the expected movement
     /// otherwise we show which are the fixed dofs
-    Data< bool > showMovement;
+    Data< bool > d_showMovement;
 
 
     /// the key times surrounding the current simulation time (for interpolation)
     Real prevT, nextT;
-    ///the motions corresponding to the surrouding key times
+    ///the motions corresponding to the surrounding key times
     Deriv prevM, nextM;
     ///initial constrained DOFs position
     VecCoord x0;

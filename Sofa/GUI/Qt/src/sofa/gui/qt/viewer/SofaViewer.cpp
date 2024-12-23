@@ -502,11 +502,11 @@ void SofaViewer::configure(sofa::component::setting::ViewerSetting* viewerConf)
 {
     BaseViewer::configure(viewerConf);
 
-    m_backend->setPickingMethod(pick, viewerConf);
+    m_backend->setPickingMethod(pick.get(), viewerConf);
 
 }
 
-//Fonctions needed to take a screenshot
+//Functions needed to take a screenshot
 const std::string SofaViewer::screenshotName()
 {
     return m_backend->screenshotName();

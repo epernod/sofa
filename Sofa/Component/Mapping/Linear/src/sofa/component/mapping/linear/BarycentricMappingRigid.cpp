@@ -44,13 +44,11 @@ namespace sofa::component::mapping::linear
 
 using namespace sofa::defaulttype;
 
-// Register in the Factory
-int BarycentricMappingRigidClass = core::RegisterObject("")
-        .add< BarycentricMapping< Vec3Types, Rigid3Types > >()
-
-
-        ;
-
+void registerBarycentricMappingRigid(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Mapping using barycentric coordinates of the child with respect to cells of its parent.")
+        .add< BarycentricMapping< Vec3Types, Rigid3Types > >());
+}
 
 template <>
 void BarycentricMapperHexahedronSetTopology<defaulttype::Vec3Types, defaulttype::Rigid3Types>::handleTopologyChange(core::topology::Topology* t)
@@ -65,7 +63,7 @@ void BarycentricMapperHexahedronSetTopology<defaulttype::Vec3Types, defaulttype:
     typedef sofa::core::behavior::MechanicalState<defaulttype::Vec3Types> InMechanicalStateT;
     InMechanicalStateT* inState;
     this->m_fromTopology->getContext()->get(inState);
-    const auto& inRestPos = (inState->read(core::ConstVecCoordId::restPosition())->getValue());
+    const auto& inRestPos = (inState->read(core::vec_id::read_access::restPosition)->getValue());
 
     for ( std::list<const core::topology::TopologyChange *>::const_iterator changeIt = itBegin;
             changeIt != itEnd; ++changeIt )

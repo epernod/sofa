@@ -30,23 +30,26 @@
 namespace sofa::gl::component::shader
 {
 
-//Register DirectionalLight in the Object Factory
-int DirectionalLightClass = core::RegisterObject("A directional light illuminating the scene with parallel rays of light (can cast shadows).")
-        .add< DirectionalLight >()
-        ;
+void registerDirectionalLight(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("A directional light illuminating the scene with parallel rays of light (can cast shadows).")
+        .add< DirectionalLight >());
+}
 
-//Register PositionalLight in the Object Factory
-int PositionalLightClass = core::RegisterObject("A positional light illuminating the scene."
-                                                "The light has a location from which the ray are starting in all direction  (cannot cast shadows for now)")
-        .add< PositionalLight >()
-        ;
+void registerPositionalLight(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("A positional light illuminating the scene."
+        "The light has a location from which the ray are starting in all direction  (cannot cast shadows for now)")
+        .add< PositionalLight >());
+}
 
-//Register SpotLight in the Object Factory
-int SpotLightClass = core::RegisterObject("A spot light illuminating the scene."
-                                          "The light has a location and a illumination cone restricting the directions"
-                                          "taken by the rays of light  (can cast shadows).")
-        .add< SpotLight >()
-        ;
+void registerSpotlLight(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("A spot light illuminating the scene."
+        "The light has a location and a illumination cone restricting the directions"
+        "taken by the rays of light  (can cast shadows).")
+        .add< SpotLight >());
+}
 
 using sofa::type::Vec3;
 
@@ -66,9 +69,9 @@ Light::Light()
     , d_shadowsEnabled(initData(&d_shadowsEnabled, (bool) true, "shadowsEnabled", "[Shadowing] Enable Shadow from this light"))
     , d_softShadows(initData(&d_softShadows, (bool) false, "softShadows", "[Shadowing] Turn on Soft Shadow from this light"))
     , d_shadowFactor(initData(&d_shadowFactor, (float) 1.0, "shadowFactor", "[Shadowing] Shadow Factor (decrease/increase darkness)"))
-    , d_VSMLightBleeding(initData(&d_VSMLightBleeding, (float) 0.05, "VSMLightBleeding", "[Shadowing] (VSM only) Light bleeding paramter"))
+    , d_VSMLightBleeding(initData(&d_VSMLightBleeding, (float) 0.05, "VSMLightBleeding", "[Shadowing] (VSM only) Light bleeding parameter"))
     , d_VSMMinVariance(initData(&d_VSMMinVariance, (float) 0.001, "VSMMinVariance", "[Shadowing] (VSM only) Minimum variance parameter"))
-    , d_textureUnit(initData(&d_textureUnit, (unsigned short) 1, "textureUnit", "[Shadowing] Texture unit for the genereated shadow texture"))
+    , d_textureUnit(initData(&d_textureUnit, (unsigned short) 1, "textureUnit", "[Shadowing] Texture unit for the generated shadow texture"))
     , d_modelViewMatrix(initData(&d_modelViewMatrix, "modelViewMatrix", "[Shadowing] ModelView Matrix"))
     , d_projectionMatrix(initData(&d_projectionMatrix, "projectionMatrix", "[Shadowing] Projection Matrix"))
     , b_needUpdate(false)
@@ -183,7 +186,7 @@ void Light::init()
     }
 }
 
-void Light::initVisual()
+void Light::doInitVisual(const core::visual::VisualParams* vparams)
 {
     //init Shadow part
     computeShadowMapSize();
@@ -204,14 +207,14 @@ void Light::initVisual()
     m_depthShader->vertFilename.addPath(PATH_TO_GENERATE_DEPTH_TEXTURE_VERTEX_SHADER,true);
     m_depthShader->fragFilename.addPath(PATH_TO_GENERATE_DEPTH_TEXTURE_FRAGMENT_SHADER,true);
     m_depthShader->init();
-    m_depthShader->initVisual();
+    m_depthShader->initVisual(vparams);
     m_blurShader->vertFilename.addPath(PATH_TO_BLUR_TEXTURE_VERTEX_SHADER,true);
     m_blurShader->fragFilename.addPath(PATH_TO_BLUR_TEXTURE_FRAGMENT_SHADER,true);
     m_blurShader->init();
-    m_blurShader->initVisual();
+    m_blurShader->initVisual(vparams);
 }
 
-void Light::updateVisual()
+void Light::doUpdateVisual(const core::visual::VisualParams*)
 {
     if (!b_needUpdate) return;
     computeShadowMapSize();
@@ -223,10 +226,10 @@ void Light::reinit()
     b_needUpdate = true;
 }
 
-void Light::drawLight()
+void Light::drawLight(const core::visual::VisualParams* vparams)
 {
     if (b_needUpdate)
-        updateVisual();
+        updateVisual(vparams);
     glLightf(GL_LIGHT0+m_lightID, GL_SPOT_CUTOFF, 180.0);
     const GLfloat c[4] = { (GLfloat)d_color.getValue()[0], (GLfloat)d_color.getValue()[1], (GLfloat)d_color.getValue()[2], 1.0 };
     glLightfv(GL_LIGHT0+m_lightID, GL_AMBIENT, c);
@@ -236,10 +239,10 @@ void Light::drawLight()
 
 }
 
-void Light::preDrawShadow(core::visual::VisualParams* /* vp */)
+void Light::preDrawShadow(core::visual::VisualParams* vp)
 {
     if (b_needUpdate)
-        updateVisual();
+        updateVisual(vp);
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glMatrixMode(GL_MODELVIEW);
@@ -407,9 +410,9 @@ DirectionalLight::~DirectionalLight()
 
 }
 
-void DirectionalLight::drawLight()
+void DirectionalLight::drawLight(const core::visual::VisualParams* vparams)
 {
-    Light::drawLight();
+    Light::drawLight(vparams);
     GLfloat dir[4];
 
     dir[0]=(GLfloat)(d_direction.getValue()[0]);
@@ -443,7 +446,7 @@ void DirectionalLight::computeOpenGLModelViewMatrix(GLfloat mat[16], const sofa:
 
 
     //2-compute orientation to fit the bbox from light's pov
-    // bounding box in light space = frustrum
+    // bounding box in light space = frustum
     const double epsilon = 0.0000001;
     Vec3 zAxis = -direction;
     zAxis.normalize();
@@ -612,9 +615,9 @@ PositionalLight::~PositionalLight()
 
 }
 
-void PositionalLight::drawLight()
+void PositionalLight::drawLight(const core::visual::VisualParams* vparams)
 {
-    Light::drawLight();
+    Light::drawLight(vparams);
 
     GLfloat pos[4];
     pos[0]=(GLfloat)(d_position.getValue()[0]);
@@ -682,9 +685,9 @@ SpotLight::~SpotLight()
 
 }
 
-void SpotLight::drawLight()
+void SpotLight::drawLight(const core::visual::VisualParams* vparams)
 {
-    PositionalLight::drawLight();
+    PositionalLight::drawLight(vparams);
     type::Vec3 d = d_direction.getValue();
     if (d_lookat.getValue()) d -= d_position.getValue();
     d.normalize();

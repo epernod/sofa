@@ -231,11 +231,12 @@ void updateVisual(Node* root)
 {
     SCOPED_TIMER("Simulation::updateVisual");
 
-    sofa::core::ExecParams* params = sofa::core::execparams::defaultInstance();
+
+    sofa::core::visual::VisualParams* vparams = sofa::core::visual::visualparams::defaultInstance();
 
     if (sofa::core::visual::VisualLoop* vloop = root->getVisualLoop())
     {
-        vloop->updateStep(params);
+        vloop->updateStep(vparams);
     }
     else
     {
@@ -271,18 +272,17 @@ void reset(Node* root)
     root->execute<MechanicalProjectPositionAndVelocityVisitor>(&mparams);
     root->execute<MechanicalPropagateOnlyPositionAndVelocityVisitor>(&mparams);
     root->execute<UpdateMappingVisitor>(params);
-    root->execute<VisualUpdateVisitor>(params);
 }
 
 void initTextures(Node* root)
 {
     if (!root)
         return;
-    sofa::core::ExecParams* params = sofa::core::execparams::defaultInstance();
+    sofa::core::visual::VisualParams* vparams = sofa::core::visual::visualparams::defaultInstance();
 
     if (sofa::core::visual::VisualLoop* vloop = root->getVisualLoop())
     {
-        vloop->initStep(params);
+        vloop->initStep(vparams);
     }
     else
     {
@@ -291,7 +291,7 @@ void initTextures(Node* root)
     }
 
     SimulationInitTexturesDoneEvent endInit;
-    PropagateEventVisitor pe{params, &endInit};
+    PropagateEventVisitor pe{vparams, &endInit};
     root->execute(pe);
 }
 

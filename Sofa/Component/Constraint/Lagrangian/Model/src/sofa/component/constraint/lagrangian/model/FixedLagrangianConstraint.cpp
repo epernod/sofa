@@ -78,6 +78,7 @@ void FixedLagrangianConstraint<Vec6Types>::doGetSingleConstraintViolation(linear
 template<>
 void FixedLagrangianConstraint<Vec6Types>::doGetSingleConstraintResolution(std::vector<core::behavior::ConstraintResolution*>& resTab, unsigned int& offset, unsigned int lineNumber)
 {
+    SOFA_UNUSED(lineNumber);
     resTab[offset] = new BilateralConstraintResolutionNDof(6);
     offset += 6;
 }
@@ -148,6 +149,7 @@ void FixedLagrangianConstraint<Vec2Types>::doGetSingleConstraintViolation(linear
 template<>
 void FixedLagrangianConstraint<Vec2Types>::doGetSingleConstraintResolution(std::vector<core::behavior::ConstraintResolution*>& resTab, unsigned int& offset, unsigned int lineNumber)
 {
+    SOFA_UNUSED(lineNumber);
     resTab[offset] = new BilateralConstraintResolutionNDof(2);
     offset += 2;
 }
@@ -175,6 +177,7 @@ void FixedLagrangianConstraint<Vec1Types>::doGetSingleConstraintViolation(linear
 template<>
 void FixedLagrangianConstraint<Vec1Types>::doGetSingleConstraintResolution(std::vector<core::behavior::ConstraintResolution*>& resTab, unsigned int& offset, unsigned int lineNumber)
 {
+    SOFA_UNUSED(lineNumber);
     resTab[offset] = new BilateralConstraintResolutionNDof(1);
     offset += 1;
 }
@@ -234,14 +237,15 @@ void FixedLagrangianConstraint<Rigid3Types>::doGetSingleConstraintResolution(std
     offset += 3;
 }
 
-
-
-int FixedLagrangianConstraintClass = core::RegisterObject("Lagrangian-based fixation of DOFs of the model")
+void registerFixedLagrangianConstraint(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Lagrangian-based fixation of DOFs of the model.")
         .add< FixedLagrangianConstraint<Vec6Types> >()
         .add< FixedLagrangianConstraint<Vec3Types> >()
         .add< FixedLagrangianConstraint<Vec2Types> >()
         .add< FixedLagrangianConstraint<Vec1Types> >()
-        .add< FixedLagrangianConstraint<Rigid3Types> >();
+        .add< FixedLagrangianConstraint<Rigid3Types> >());
+}
 
 template class SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL_API FixedLagrangianConstraint<Vec6Types>;
 template class SOFA_COMPONENT_CONSTRAINT_LAGRANGIAN_MODEL_API FixedLagrangianConstraint<Vec3Types>;

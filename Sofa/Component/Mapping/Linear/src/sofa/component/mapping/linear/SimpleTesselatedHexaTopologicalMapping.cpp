@@ -40,10 +40,11 @@ using namespace sofa::defaulttype;
 using namespace sofa::component::mapping::linear;
 using namespace sofa::core::topology;
 
-// Register in the Factory
-int SimpleTesselatedHexaTopologicalMappingClass = core::RegisterObject ( "Special case of mapping where HexahedronSetTopology is converted into a finer HexahedronSetTopology" )
-        .add< SimpleTesselatedHexaTopologicalMapping >()
-        ;
+void registerSimpleTesselatedHexaTopologicalMapping(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Special case of mapping where HexahedronSetTopology is converted into a finer HexahedronSetTopology.")
+        .add< SimpleTesselatedHexaTopologicalMapping >());
+}
 
 // Implementation
 SimpleTesselatedHexaTopologicalMapping::SimpleTesselatedHexaTopologicalMapping()
@@ -184,7 +185,7 @@ void SimpleTesselatedHexaTopologicalMapping::init()
             pointIndex++;
         }
 
-        // points mapped from facets
+        // points mapped from d_facets
         bool insertFacetsResultSuccessful = pointMappedFromFacet.insert({ {h[0], h[1], h[2], h[3]}, pointIndex }).second;
         if (insertFacetsResultSuccessful)
         {

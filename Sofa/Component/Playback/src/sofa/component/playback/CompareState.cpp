@@ -55,7 +55,7 @@ look for potential CompareStateFile formatted likewise
 with
 - %0 the current scene name
 - %1 the current comparestate counter value
-- %2 the name of the mstate which will undergo comparizons.
+- %2 the name of the mstate which will undergo comparisons.
 */
 std::string lookForValidCompareStateFile( const std::string& sceneName,
         const std::string& mstateName,
@@ -98,10 +98,11 @@ std::string lookForValidCompareStateFile( const std::string& sceneName,
 
 }
 
-
-
-int CompareStateClass = core::RegisterObject("Compare State vectors from a reference frame to the associated Mechanical State")
-        .add< CompareState >();
+void registerCompareState(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Compare State vectors from a reference frame to the associated Mechanical State.")
+        .add< CompareState >());
+}
 
 CompareState::CompareState(): ReadState()
 {
@@ -176,6 +177,8 @@ void CompareState::processCompareState()
 //-------------------------------- processCompareState------------------------------------
 void CompareState::draw(const core::visual::VisualParams* vparams)
 {
+    const auto stateLifeCycle = vparams->drawTool()->makeStateLifeCycle();
+
     SReal time = getContext()->getTime() + d_shift.getValue();
     time += getContext()->getDt() * 0.001;
     //lastTime = time+0.00001;
@@ -213,7 +216,7 @@ void CompareState::draw(const core::visual::VisualParams* vparams)
         str >> cmd;
         mmodel->readVec(refX, str);
 
-        const core::objectmodel::BaseData* dataX = mmodel->baseRead(core::VecCoordId::position());
+        const core::objectmodel::BaseData* dataX = mmodel->baseRead(core::vec_id::write_access::position);
         const core::objectmodel::BaseData* dataRefX = mmodel->baseRead(refX);
         if (dataX && dataRefX)
         {

@@ -27,11 +27,13 @@
 #include <sofa/core/topology/BaseMeshTopology.h>
 #include <sofa/linearalgebra/EigenSparseMatrix.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::mapping::nonlinear
 {
 
 
-/** Maps point positions from serveral mstates to distances (in distance unit).
+/** Maps point positions from several mstates to distances (in distance unit).
  * @tparam TIn parent point positions
  * @tparam TOut corresponds to a scalar value: distance between point pairs, minus a rest distance.
  * The pairs are given in a topology with edges in the same node.
@@ -41,7 +43,7 @@ namespace sofa::component::mapping::nonlinear
  * @author Matthieu Nesme
  */
 template <class TIn, class TOut>
-class DistanceMultiMapping : public core::MultiMapping<TIn, TOut>, public NonLinearMappingData<true>
+class DistanceMultiMapping : public core::MultiMapping<TIn, TOut>, public StabilizedNonLinearMappingData
 {
 public:
     SOFA_CLASS(SOFA_TEMPLATE2(DistanceMultiMapping,TIn,TOut), SOFA_TEMPLATE2(core::MultiMapping,TIn,TOut));
@@ -74,12 +76,17 @@ public:
     typedef sofa::core::topology::BaseMeshTopology::SeqEdges SeqEdges;
     typedef type::Vec<In::spatial_dimensions,Real> Direction;
 
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MAPPING_NONLINEAR()
+    sofa::core::objectmodel::RenamedData<bool> f_computeDistance;
 
-    Data<bool> f_computeDistance;                    ///< if 'computeDistance = true', then rest length of each element equal 0, otherwise rest length is the initial lenght of each of them
-    Data<type::vector<Real>> f_restLengths;          ///< Rest lengths of the connections
-    Data<Real> d_showObjectScale;                    ///< Scale for object display
-    Data<sofa::type::RGBAColor> d_color;             ///< Color for object display. (default=[1.0,1.0,0.0,1.0])
-    Data<type::vector<type::Vec2i>> d_indexPairs;    ///< list of couples (parent index + index in the parent)
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MAPPING_NONLINEAR()
+    sofa::core::objectmodel::RenamedData<type::vector<Real>>  f_restLengths;
+
+    Data<bool> d_computeDistance; ///< if 'computeDistance = true', then rest length of each element equal 0, otherwise rest length is the initial length of each of them
+    Data<type::vector<Real>> d_restLengths; ///< Rest lengths of the connections
+    Data<Real> d_showObjectScale; ///< Scale for object display
+    Data<sofa::type::RGBAColor> d_color; ///< Color for object display. (default=[1.0,1.0,0.0,1.0])
+    Data<type::vector<type::Vec2i>> d_indexPairs; ///< list of couples (parent index + index in the parent)
 
     /// Link to be set to the topology container in the component graph.
     SingleLink<DistanceMultiMapping<TIn, TOut>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology;

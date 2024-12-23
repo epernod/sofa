@@ -28,6 +28,8 @@
 #include <sofa/type/RGBAColor.h>
 #include <sofa/linearalgebra/EigenSparseMatrix.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 
 namespace sofa::core::behavior
 {
@@ -64,11 +66,26 @@ public:
     typedef core::objectmodel::Data<VecCoord> DataVecCoord;
     typedef core::objectmodel::Data<VecDeriv> DataVecDeriv;
 
-    Data< type::vector< sofa::Index > > indices; ///< index of nodes controlled by the angular springs
-    Data< VecReal > angularStiffness; ///< angular stiffness for the controlled nodes
-    Data<VecReal> angularLimit; ///< angular limit (max; min) values where the force applies
-    Data< bool > drawSpring; ///< draw Spring
-    Data< type::RGBAColor > springColor; ///< spring color
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_SPRING()
+    sofa::core::objectmodel::RenamedData< type::vector< sofa::Index > > indices;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_SPRING()
+    sofa::core::objectmodel::RenamedData<VecReal> angularStiffness;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_SPRING()
+    sofa::core::objectmodel::RenamedData<VecReal> angularLimit;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_SPRING()
+    sofa::core::objectmodel::RenamedData<bool> drawSpring;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_SPRING()
+    sofa::core::objectmodel::RenamedData<type::RGBAColor> springColor;
+
+    Data< type::vector< sofa::Index > > d_indices; ///< index of nodes controlled by the angular springs
+    Data< VecReal > d_angularStiffness; ///< angular stiffness for the controlled nodes
+    Data<VecReal> d_angularLimit; ///< angular limit (max; min) values where the force applies
+    Data< bool > d_drawSpring; ///< draw Spring
+    Data< type::RGBAColor > d_springColor; ///< spring color
 
     linearalgebra::EigenBaseSparseMatrix<typename DataTypes::Real> matS;
 

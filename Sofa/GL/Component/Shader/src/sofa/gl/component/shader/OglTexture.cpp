@@ -27,9 +27,11 @@
 namespace sofa::gl::component::shader
 {
 
-// Register the OglTexture* objects in the Object Factory
-int OglTextureClass = core::RegisterObject("OglTexture").add< OglTexture >();
-int OglTexture2DClass = core::RegisterObject("OglTexture2D").add< OglTexture2D >();
+void registerOglTexture(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Load a texture to be used in a shader.").add< OglTexture >());
+    factory->registerObjects(core::ObjectRegistrationData("Load a 2d texture to be used in a shader.").add< OglTexture2D >());
+}
 
 GLint OglTexture::MAX_NUMBER_OF_TEXTURE_UNIT = 1;
 
@@ -198,7 +200,7 @@ void OglTexture::init()
     OglShaderElement::init();
 }
 
-void OglTexture::initVisual()
+void OglTexture::doInitVisual(const core::visual::VisualParams*)
 {
     if (img == nullptr)
     {
@@ -265,7 +267,11 @@ void OglTexture::bwdDraw(core::visual::VisualParams*)
 
 void OglTexture::bind()
 {
-    if (!texture) initVisual();
+    if (!texture) 
+    {
+        initVisual(sofa::core::visual::visualparams::defaultInstance());
+    }
+    
     texture->bind();
     glEnable(texture->getTarget());
 }

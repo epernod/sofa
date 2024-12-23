@@ -169,7 +169,7 @@ template <class DataTypes> void StandardTetrahedralFEMForceField<DataTypes>::ini
 
     if (_initialPoints.size() == 0)
     {
-        const VecCoord& p = this->mstate->read(core::ConstVecCoordId::restPosition())->getValue();
+        const VecCoord& p = this->mstate->read(core::vec_id::read_access::restPosition)->getValue();
         _initialPoints=p;
     }
 
@@ -209,7 +209,7 @@ void StandardTetrahedralFEMForceField<DataTypes>::createTetrahedronRestInformati
     unsigned int j;
     typename DataTypes::Real volume;
     typename DataTypes::Coord point[4];
-    const typename DataTypes::VecCoord restPosition = this->mstate->read(core::ConstVecCoordId::restPosition())->getValue();
+    const typename DataTypes::VecCoord restPosition = this->mstate->read(core::vec_id::read_access::restPosition)->getValue();
 
     ///describe the indices of the 4 tetrahedron vertices
     const core::topology::BaseMeshTopology::Tetrahedron& t = tetrahedronArray[tetrahedronIndex];
@@ -291,7 +291,7 @@ void StandardTetrahedralFEMForceField<DataTypes>::addForce(const core::Mechanica
 
     if (mparams->implicit()) {
         // if implicit solver recompute the stiffness matrix stored at each edge
-        // starts by reseting each matrix to 0
+        // starts by resetting each matrix to 0
         for(l=0; l<nbEdges; l++ )edgeInf[l].DfDx.clear();
     }
     Matrix3 deformationGradient;
@@ -460,7 +460,7 @@ void StandardTetrahedralFEMForceField<DataTypes>::addDForce(const core::Mechanic
     const type::vector< core::topology::BaseMeshTopology::Edge> &edgeArray=m_topology->getEdges() ;
 
     type::vector<EdgeInformation>& edgeInf = *(edgeInfo.beginEdit());
-//	tetrahedronRestInfoVector& tetrahedronInf = *(tetrahedronInfo.beginEdit());
+//	tetrahedronRestInfoVector& tetrahedronInf = *(d_tetrahedronInfo.beginEdit());
 
     EdgeInformation *einfo;
 
@@ -533,7 +533,7 @@ void StandardTetrahedralFEMForceField<DataTypes>::addDForce(const core::Mechanic
 
     }
     edgeInfo.endEdit();
-//	tetrahedronInfo.endEdit();
+//	d_tetrahedronInfo.endEdit();
     d_df.beginEdit();
 }
 
@@ -607,7 +607,7 @@ void StandardTetrahedralFEMForceField<DataTypes>::draw(const core::visual::Visua
 
     const auto stateLifeCycle = vparams->drawTool()->makeStateLifeCycle();
 
-    const VecCoord& x = this->mstate->read(core::ConstVecCoordId::position())->getValue();
+    const VecCoord& x = this->mstate->read(core::vec_id::read_access::position)->getValue();
 
     if (vparams->displayFlags().getShowWireFrame())
         vparams->drawTool()->setPolygonMode(0,true);
@@ -625,9 +625,9 @@ void StandardTetrahedralFEMForceField<DataTypes>::testDerivatives()
 {
     DataVecCoord d_pos;
     VecCoord &pos = *d_pos.beginEdit();
-    pos =  this->mstate->read(core::ConstVecCoordId::position())->getValue();
+    pos =  this->mstate->read(core::vec_id::read_access::position)->getValue();
 
-    // perturbate original state:
+    // perturb original state:
     srand( 0 );
     for (unsigned int idx=0; idx<pos.size(); idx++) {
         for (unsigned int d=0; d<3; d++) pos[idx][d] += (Real)0.01 * ((Real)rand()/(Real)(RAND_MAX - 0.5));
@@ -748,7 +748,7 @@ void StandardTetrahedralFEMForceField<DataTypes>::testDerivatives()
 template<class DataTypes>
 void StandardTetrahedralFEMForceField<DataTypes>::saveMesh( const char *filename )
 {
-    VecCoord pos( this->mstate->read(core::ConstVecCoordId::position())->getValue() );
+    VecCoord pos( this->mstate->read(core::vec_id::read_access::position)->getValue() );
     const core::topology::BaseMeshTopology::SeqTriangles triangles = m_topology->getTriangles();
     FILE *file = fopen( filename, "wb" );
     if (!file) return;

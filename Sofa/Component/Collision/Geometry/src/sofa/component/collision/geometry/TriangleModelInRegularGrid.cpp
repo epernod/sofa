@@ -38,9 +38,11 @@ using namespace sofa::type;
 using namespace sofa::core::topology;
 using namespace sofa::defaulttype;
 
-int TriangleModelInRegularGridClass = core::RegisterObject ( "collision model using a triangular mesh in a regular grid, as described in BaseMeshTopology" )
-        .add< TriangleModelInRegularGrid >()
-        ;
+void registerTriangleModelInRegularGrid(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Collision model using a triangular mesh in a regular grid, as described in BaseMeshTopology.")
+        .add< TriangleModelInRegularGrid >());
+}
 
 TriangleModelInRegularGrid::TriangleModelInRegularGrid() : TriangleCollisionModel<sofa::defaulttype::Vec3Types>()
 {
@@ -108,8 +110,8 @@ void TriangleModelInRegularGrid::computeBoundingTree ( int )
 
     m_needsUpdate=false;
     Vec3 minElem, maxElem;
-    const VecCoord& xHigh =_higher_mstate->read(core::ConstVecCoordId::position())->getValue();
-    const VecCoord& x =m_mstate->read(core::ConstVecCoordId::position())->getValue();
+    const VecCoord& xHigh =_higher_mstate->read(core::vec_id::read_access::position)->getValue();
+    const VecCoord& x =m_mstate->read(core::vec_id::read_access::position)->getValue();
 
     // no hierarchy
     if ( empty() )

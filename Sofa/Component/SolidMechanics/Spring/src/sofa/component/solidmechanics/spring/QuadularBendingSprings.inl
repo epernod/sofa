@@ -60,7 +60,7 @@ void QuadularBendingSprings<DataTypes>::applyQuadCreation(const sofa::type::vect
     SReal m_ks=getKs();
     SReal m_kd=getKd();
 
-    const typename DataTypes::VecCoord& restPosition=this->mstate->read(core::ConstVecCoordId::restPosition())->getValue();
+    const typename DataTypes::VecCoord& restPosition=this->mstate->read(core::vec_id::read_access::restPosition)->getValue();
 
     helper::WriteOnlyAccessor< Data< type::vector<EdgeInformation> > > edgeData = edgeInfo;
 
@@ -75,7 +75,7 @@ void QuadularBendingSprings<DataTypes>::applyQuadCreation(const sofa::type::vect
         for(unsigned int j=0; j<4; ++j)
         {
 
-            EdgeInformation &ei = edgeData[te2[j]]; // ff->edgeInfo
+            EdgeInformation &ei = edgeData[te2[j]]; // ff->d_edgeInfo
             if(!(ei.is_initialized))
             {
                 unsigned int edgeIndex = te2[j];
@@ -143,7 +143,7 @@ void QuadularBendingSprings<DataTypes>::applyQuadDestruction(const sofa::type::v
     SReal m_ks=getKs();
     SReal m_kd=getKd();
 
-    const typename DataTypes::VecCoord& restPosition= this->mstate->read(core::ConstVecCoordId::restPosition())->getValue();
+    const typename DataTypes::VecCoord& restPosition= this->mstate->read(core::vec_id::read_access::restPosition)->getValue();
     helper::WriteOnlyAccessor< Data< type::vector<EdgeInformation> > > edgeData = edgeInfo;
 
     for (unsigned int i=0; i<quadRemoved.size(); ++i)
@@ -158,7 +158,7 @@ void QuadularBendingSprings<DataTypes>::applyQuadDestruction(const sofa::type::v
         for(unsigned int j=0; j<4; ++j)
         {
 
-            EdgeInformation &ei = edgeData[te[j]]; // ff->edgeInfo
+            EdgeInformation &ei = edgeData[te[j]]; // ff->d_edgeInfo
             if(ei.is_initialized)
             {
 
@@ -602,7 +602,7 @@ void QuadularBendingSprings<DataTypes>::draw(const core::visual::VisualParams* v
     if (vparams->displayFlags().getShowWireFrame())
         vparams->drawTool()->setPolygonMode(0, true);
 
-    const VecCoord& x = this->mstate->read(core::ConstVecCoordId::position())->getValue();
+    const VecCoord& x = this->mstate->read(core::vec_id::read_access::position)->getValue();
 
     vparams->drawTool()->disableLighting();
 

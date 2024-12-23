@@ -114,8 +114,8 @@ public:
         typename BeamFEM::SPtr bFEM = m_root->getTreeObject<BeamFEM>();
         ASSERT_TRUE(bFEM.get() != nullptr);
         ASSERT_FLOATINGPOINT_EQ(bFEM->d_radius.getValue(), static_cast<Real>(0.05));
-        ASSERT_FLOATINGPOINT_EQ(bFEM->d_youngModulus.getValue(), static_cast<Real>(20000000));
-        ASSERT_FLOATINGPOINT_EQ(bFEM->d_poissonRatio.getValue(), static_cast<Real>(0.49));
+        ASSERT_FLOATINGPOINT_EQ(bFEM->getYoungModulusInElement(0), static_cast<Real>(20000000));
+        ASSERT_FLOATINGPOINT_EQ(bFEM->getPoissonRatioInElement(0), static_cast<Real>(0.49));
     }
 
 
@@ -172,8 +172,8 @@ public:
         typename BeamFEM::SPtr bFEM = m_root->getTreeObject<BeamFEM>();
         ASSERT_TRUE(bFEM.get() != nullptr);
         ASSERT_FLOATINGPOINT_EQ(bFEM->d_radius.getValue(), static_cast<Real>(0.1));
-        ASSERT_FLOATINGPOINT_EQ(bFEM->d_youngModulus.getValue(), static_cast<Real>(5000));
-        ASSERT_FLOATINGPOINT_EQ(bFEM->d_poissonRatio.getValue(), static_cast<Real>(0.49));
+        ASSERT_FLOATINGPOINT_EQ(bFEM->getYoungModulusInElement(0), static_cast<Real>(5000));
+        ASSERT_FLOATINGPOINT_EQ(bFEM->getPoissonRatioInElement(0), static_cast<Real>(0.45));
     }
 
 
@@ -187,10 +187,10 @@ public:
         typename BeamFEM::SPtr bFEM = m_root->getTreeObject<BeamFEM>();
         ASSERT_TRUE(bFEM.get() != nullptr);
 
-        const VecBeamInfo& EdgeInfos = bFEM->m_beamsData.getValue();
+        const VecBeamInfo& EdgeInfos = bFEM->d_beamsData.getValue();
         ASSERT_EQ(EdgeInfos.size(), 3);
 
-        // check edgeInfo
+        // check d_edgeInfo
         const BeamInfo& bI = EdgeInfos[0];
         ASSERT_EQ(bI._E, young);
         ASSERT_EQ(bI._nu, poisson);
@@ -225,7 +225,7 @@ public:
 
         // access beam info
         typename BeamFEM::SPtr bFEM = m_root->getTreeObject<BeamFEM>();
-        const VecBeamInfo& EdgeInfos = bFEM->m_beamsData.getValue();
+        const VecBeamInfo& EdgeInfos = bFEM->d_beamsData.getValue();
         const BeamInfo& bI = EdgeInfos[2];
 
         // simulate
@@ -239,7 +239,7 @@ public:
         EXPECT_NEAR(positions[3][1], -0.004936, 1e-4);
         EXPECT_NEAR(positions[3][2], 1, 1e-4);
 
-        // check edgeInfo
+        // check d_edgeInfo
         ASSERT_EQ(bI._E, young);
         ASSERT_EQ(bI._nu, poisson);
         ASSERT_EQ(bI._r, radius);
@@ -255,7 +255,7 @@ public:
         ASSERT_TRUE(edgeModif.get() != nullptr);
 
         typename BeamFEM::SPtr bFEM = m_root->getTreeObject<BeamFEM>();
-        const VecBeamInfo& EdgeInfos = bFEM->m_beamsData.getValue();
+        const VecBeamInfo& EdgeInfos = bFEM->d_beamsData.getValue();
 
         ASSERT_EQ(EdgeInfos.size(), 3);
 

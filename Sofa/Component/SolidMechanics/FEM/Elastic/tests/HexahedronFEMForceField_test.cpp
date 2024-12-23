@@ -89,10 +89,9 @@ struct HexahedronFEMForceField_test : public ForceField_test<_HexahedronFEMForce
         DataTypes::set( f[7],  fup[0], fup[1], fup[2]);
 
         // Set force parameters
-        Inherited::force->f_poissonRatio.setValue(0);
-        Inherited::force->f_youngModulus.setValue(10);
+        Inherited::force->setPoissonRatio(0);
+        Inherited::force->setYoungModulus(10);
         Inherited::force->setMethod(2); // small method
-        Inherited::force->isCompliance.setValue(0);
 
         // Init simulation
         sofa::simulation::node::initRoot(Inherited::node.get());
@@ -123,15 +122,15 @@ struct HexahedronFEMForceField_test : public ForceField_test<_HexahedronFEMForce
     }
 };
 
-// ========= Define the list of types to instanciate.
+// ========= Define the list of types to instantiate.
 //using ::testing::Types;
 typedef ::testing::Types<
 sofa::component::solidmechanics::fem::elastic::HexahedronFEMForceField<defaulttype::Vec3Types>
-> TestTypes; // the types to instanciate.
+> TestTypes; // the types to instantiate.
 
 
 
-// ========= Tests to run for each instanciated type
+// ========= Tests to run for each instantiated type
 TYPED_TEST_SUITE(HexahedronFEMForceField_test, TestTypes);
 
 // test case

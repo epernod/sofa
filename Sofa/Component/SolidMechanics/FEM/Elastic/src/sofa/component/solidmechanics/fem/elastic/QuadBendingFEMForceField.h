@@ -36,6 +36,8 @@
 #include <map>
 #include <sofa/helper/map.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::solidmechanics::fem::elastic
 {
 
@@ -167,13 +169,21 @@ public:
         }
     };
 
-/// Topology Data
-    core::topology::QuadData<sofa::type::vector<QuadInformation> > quadInfo;
-    core::topology::PointData<sofa::type::vector<VertexInformation> > vertexInfo; ///< Internal point data
-    core::topology::EdgeData<sofa::type::vector<EdgeInformation> > edgeInfo; ///< Internal edge data
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
+    sofa::core::objectmodel::RenamedData <sofa::type::vector<QuadInformation> > quadInfo;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
+    sofa::core::objectmodel::RenamedData <sofa::type::vector<VertexInformation> > vertexInfo;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
+    sofa::core::objectmodel::RenamedData <sofa::type::vector<EdgeInformation> > edgeInfo;
+    /// Topology Data
+    core::topology::QuadData<sofa::type::vector<QuadInformation> > d_quadInfo;
+    core::topology::PointData<sofa::type::vector<VertexInformation> > d_vertexInfo; ///< Internal point data
+    core::topology::EdgeData<sofa::type::vector<EdgeInformation> > d_edgeInfo; ///< Internal edge data
 
     /** Method to initialize @sa QuadInformation when a new Quad is created.
-    * Will be set as creation callback in the QuadData @sa quadInfo
+    * Will be set as creation callback in the QuadData @sa d_quadInfo
     */
     void createQuadInformation(unsigned int quadIndex, QuadInformation&,
         const core::topology::BaseMeshTopology::Quad& t,
@@ -183,17 +193,17 @@ public:
     sofa::core::topology::BaseMeshTopology* m_topology;
     
     /// Get/Set methods
-    Real getPoisson() { return (f_poisson.getValue())[0]; }
+    Real getPoisson() { return (d_poisson.getValue())[0]; }
     void setPoisson(Real val)
     {
         type::vector<Real> newP(1, val);
-        f_poisson.setValue(newP);
+        d_poisson.setValue(newP);
     }
-    Real getYoung() { return (f_young.getValue())[0]; }
+    Real getYoung() { return (d_young.getValue())[0]; }
     void setYoung(Real val)
     {
         type::vector<Real> newY(1, val);
-        f_young.setValue(newY);
+        d_young.setValue(newY);
     }
     int  getMethod() { return method; }
     void setMethod(int val) { method = val; }
@@ -219,12 +229,25 @@ protected :
 
 public:
 
-    /// Forcefield intern paramaters
+    /// Forcefield intern parameters
     int method;
-    Data<std::string> f_method; ///< large: large displacements, small: small displacements
-    Data<type::vector<Real> > f_poisson; ///< Poisson ratio in Hooke's law (vector)
-    Data<type::vector<Real> > f_young; ///< Young modulus in Hooke's law (vector)
-    Data<Real> f_thickness; ///< Thickness of the elements
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
+    sofa::core::objectmodel::RenamedData<std::string> f_method;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
+    sofa::core::objectmodel::RenamedData<type::vector<Real>> f_poisson;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
+    sofa::core::objectmodel::RenamedData<type::vector<Real>> f_young;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_SOLIDMECHANICS_FEM_ELASTIC()
+    sofa::core::objectmodel::RenamedData<Real> f_thickness;
+
+    Data<std::string> d_method; ///< large: large displacements, small: small displacements
+    Data<type::vector<Real> > d_poisson; ///< Poisson ratio in Hooke's law (vector)
+    Data<type::vector<Real> > d_young; ///< Young modulus in Hooke's law (vector)
+    Data<Real> d_thickness; ///< Thickness of the elements
 
     /// Link to be set to the topology container in the component graph.
     SingleLink<QuadBendingFEMForceField<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology;

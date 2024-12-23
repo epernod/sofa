@@ -8,6 +8,7 @@ set(SOURCE_FILES
     KdTree_test.cpp
     NameDecoder_test.cpp
     OptionsGroup_test.cpp
+    SelectableItem_test.cpp
     StringUtils_test.cpp
     TagFactory_test.cpp
     Utils_test.cpp
@@ -27,6 +28,8 @@ set(SOURCE_FILES
 
 add_subdirectory(system/TestPluginA)
 add_subdirectory(system/TestPluginB)
+add_subdirectory(system/TestPluginC)
+add_subdirectory(system/FailingPlugin)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} Sofa.Testing Sofa.Helper)

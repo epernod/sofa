@@ -32,6 +32,22 @@
 namespace sofa::helper
 {
 
+/// @brief Convert a string to a wstring.
+///
+/// @return The converted string on success, or an empty string on failure.
+SOFA_HELPER_API std::wstring widenString(const std::string& s);
+
+/// @brief Convert a wstring to a string.
+///
+/// @return The converted string on success, or an empty string on failure.
+SOFA_HELPER_API std::string narrowString(const std::wstring& ws);
+
+/// @brief Convert a string to lower case.
+SOFA_HELPER_API std::string downcaseString(const std::string& s);
+
+/// @brief Convert a string to upper case.
+SOFA_HELPER_API std::string upcaseString(const std::string& s);
+
 ///@brief Split one string by a given delimiter and returns that into a std::vector
 std::vector<std::string> SOFA_HELPER_API split(const std::string& s, char delimiter);
 
@@ -73,7 +89,7 @@ std::string join(const Container& elems, const S& delim)
 ///@brief returns a copy of the string given in argument.
 SOFA_HELPER_API char* getAStringCopy(const char *c);
 
-///@brief replace all occurence of "search" by the "replace" string.
+///@brief replace all occurrence of "search" by the "replace" string.
 SOFA_HELPER_API void replaceAll(std::string& str,
                                 const std::string& search,
                                 const std::string& replace);

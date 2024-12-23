@@ -26,6 +26,8 @@
 
 #include <sofa/core/Multi2Mapping.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::mapping::linear
 {
 
@@ -92,13 +94,33 @@ class DeformableOnRigidFrameMapping : public LinearMulti2Mapping<TIn, TInRoot, T
 
     OutVecCoord rotatedPoints;
     DeformableOnRigidFrameMappingInternalData<In, Out> data;
-    Data<unsigned int> index; ///< input DOF index
-    Data< bool > indexFromEnd; ///< input DOF index starts from the end of input DOFs vector
-    Data<sofa::type::vector<unsigned int> >  repartition; ///< number of dest dofs per entry dof
-    Data< bool > globalToLocalCoords; ///< are the output DOFs initially expressed in global coordinates
 
-    Data< Real > m_rootAngularForceScaleFactor; ///< Scale factor applied on the angular force accumulated on the rigid model
-    Data< Real > m_rootLinearForceScaleFactor; ///< Scale factor applied on the linear force accumulated on the rigid model
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MAPPING_LINEAR()
+    sofa::core::objectmodel::RenamedData<unsigned> index;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MAPPING_LINEAR()
+    sofa::core::objectmodel::RenamedData<bool> indexFromEnd;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MAPPING_LINEAR()
+    sofa::core::objectmodel::RenamedData<sofa::type::vector<unsigned int> >  repartition;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MAPPING_LINEAR()
+    sofa::core::objectmodel::RenamedData<bool> globalToLocalCoords;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MAPPING_LINEAR()
+    sofa::core::objectmodel::RenamedData<Real> m_rootAngularForceScaleFactor;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_MAPPING_LINEAR()
+    sofa::core::objectmodel::RenamedData<Real> m_rootLinearForceScaleFactor;
+
+
+    Data<unsigned int> d_index; ///< input DOF index
+    Data< bool > d_indexFromEnd; ///< input DOF index starts from the end of input DOFs vector
+    Data<sofa::type::vector<unsigned int> >  d_repartition; ///< number of dest dofs per entry dof
+    Data< bool > d_globalToLocalCoords; ///< are the output DOFs initially expressed in global coordinates
+
+    Data< Real > d_rootAngularForceScaleFactor; ///< Scale factor applied on the angular force accumulated on the rigid model
+    Data< Real > d_rootLinearForceScaleFactor; ///< Scale factor applied on the linear force accumulated on the rigid model
 
     int addPoint ( const OutCoord& c );
     int addPoint ( const OutCoord& c, int indexFrom );
@@ -109,7 +131,7 @@ class DeformableOnRigidFrameMapping : public LinearMulti2Mapping<TIn, TInRoot, T
 
     /// Return true if the destination model has the same topology as the source model.
     ///
-    /// This is the case for mapping keeping a one-to-one correspondance between
+    /// This is the case for mapping keeping a one-to-one correspondence between
     /// input and output DOFs (mostly identity or data-conversion mappings).
     bool sameTopology() const override { return true; }
 

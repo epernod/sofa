@@ -33,10 +33,12 @@
 #include <sofa/type/vector.h>
 #include <set>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::constraint::projective
 {
 
-/// This class can be overridden if needed for additionnal storage within template specializations.
+/// This class can be overridden if needed for additional storage within template specializations.
 template <class DataTypes>
 class PositionBasedDynamicsProjectiveConstraintInternalData
 {
@@ -72,11 +74,23 @@ protected:
     friend class PositionBasedDynamicsProjectiveConstraintInternalData<DataTypes>;
 
 public:
-    Data< Real > stiffness; ///< Blending between current pos and target pos.
-    Data< VecCoord > position; ///< Target positions.
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<Real> stiffness;
 
-    Data < VecDeriv > velocity; ///< Velocities.
-    Data < VecCoord > old_position; ///< Old positions.
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData< VecCoord > position;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData< VecDeriv > velocity;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData< VecCoord > old_position;
+
+    Data< Real > d_stiffness; ///< Blending between current pos and target pos.
+    Data< VecCoord > d_position; ///< Target positions.
+
+    Data < VecDeriv > d_velocity; ///< Velocities.
+    Data < VecCoord > d_old_position; ///< Old positions.
 
     PositionBasedDynamicsProjectiveConstraint();
 

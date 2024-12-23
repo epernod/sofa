@@ -74,8 +74,8 @@ double LineSetSkinningMapping<TIn, TOut>::convolutionSegment(const type::Vec<3,R
 template <class TIn, class TOut>
 void LineSetSkinningMapping<TIn, TOut>::init()
 {
-    const OutVecCoord& xto = this->toModel->read(core::ConstVecCoordId::position())->getValue();
-    const InVecCoord& xfrom = this->fromModel->read(core::ConstVecCoordId::position())->getValue();
+    const OutVecCoord& xto = this->toModel->read(core::vec_id::read_access::position)->getValue();
+    const InVecCoord& xfrom = this->fromModel->read(core::vec_id::read_access::position)->getValue();
     m_topology = this->fromModel->getContext()->getMeshTopology();
     linesInfluencedByVertice.resize(xto.size());
 
@@ -199,8 +199,8 @@ void LineSetSkinningMapping<TIn, TOut>::draw(const core::visual::VisualParams* v
     const auto stateLifeCycle = vparams->drawTool()->makeStateLifeCycle();
     vparams->drawTool()->disableLighting();
 
-    const OutVecCoord& xto = this->toModel->read(core::ConstVecCoordId::position())->getValue();
-    const InVecCoord& xfrom = this->fromModel->read(core::ConstVecCoordId::position())->getValue();
+    const OutVecCoord& xto = this->toModel->read(core::vec_id::read_access::position)->getValue();
+    const InVecCoord& xfrom = this->fromModel->read(core::vec_id::read_access::position)->getValue();
 
     std::vector<sofa::type::RGBAColor> colorVector;
     std::vector<sofa::type::Vec3> vertices;
@@ -249,7 +249,7 @@ void LineSetSkinningMapping<TIn, TOut>::applyJ( const sofa::core::MechanicalPara
 {
     SOFA_UNUSED(mparams);
 
-    const InVecCoord& xfrom = this->fromModel->read(core::ConstVecCoordId::position())->getValue();
+    const InVecCoord& xfrom = this->fromModel->read(core::vec_id::read_access::position)->getValue();
     OutVecDeriv& out = *outData.beginEdit();
     const InVecDeriv& in = inData.getValue();
     for (unsigned int verticeIndex=0; verticeIndex<out.size(); verticeIndex++)
@@ -273,7 +273,7 @@ void LineSetSkinningMapping<TIn, TOut>::applyJT( const sofa::core::MechanicalPar
 
     InVecDeriv& out = *outData.beginEdit();
     const OutVecDeriv& in = inData.getValue();
-    const InVecCoord& xfrom = this->fromModel->read(core::ConstVecCoordId::position())->getValue();
+    const InVecCoord& xfrom = this->fromModel->read(core::vec_id::read_access::position)->getValue();
     out.clear();
     out.resize(xfrom.size());
 
@@ -319,7 +319,7 @@ void LineSetSkinningMapping<TIn, TOut>::applyJT( const sofa::core::ConstraintPar
 
     InMatrixDeriv& out = *outData.beginEdit();
     const OutMatrixDeriv& in = inData.getValue();
-    const InVecCoord& xfrom = this->fromModel->read(core::ConstVecCoordId::position())->getValue();
+    const InVecCoord& xfrom = this->fromModel->read(core::vec_id::read_access::position)->getValue();
 
     typename Out::MatrixDeriv::RowConstIterator rowItEnd = in.end();
 
@@ -338,14 +338,14 @@ void LineSetSkinningMapping<TIn, TOut>::applyJT( const sofa::core::ConstraintPar
                 const OutDeriv data = colIt.val();
                 const unsigned int verticeIndex = colIt.index();
 
-                //printf(" normale : %f %f %f",d.x(), d.y(), d.z());
+                //printf(" normal : %f %f %f",d.x(), d.y(), d.z());
                 for (unsigned int lineInfluencedIndex = 0; lineInfluencedIndex < linesInfluencedByVertice[verticeIndex].size(); lineInfluencedIndex++)
                 {
                     influencedLineType iline = linesInfluencedByVertice[verticeIndex][lineInfluencedIndex];
                     type::Vec<3,Real> IP = xfrom[m_topology->getLine(iline.lineIndex)[0]].getOrientation().rotate(iline.position);
                     InDeriv direction;
                     getVCenter(direction) = data * iline.weight;
-                    //printf("\n Weighted normale : %f %f %f",direction.getVCenter().x(), direction.getVCenter().y(), direction.getVCenter().z());
+                    //printf("\n Weighted normal : %f %f %f",direction.getVCenter().x(), direction.getVCenter().y(), direction.getVCenter().z());
                     getVOrientation(direction) = IP.cross(data) * iline.weight;
 
                     o.addCol(m_topology->getLine(iline.lineIndex)[0], direction);

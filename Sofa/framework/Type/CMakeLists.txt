@@ -7,7 +7,6 @@ set(HEADER_FILES
     ${SOFATYPESRC_ROOT}/config.h.in
     ${SOFATYPESRC_ROOT}/init.h
     ${SOFATYPESRC_ROOT}/BoundingBox.h
-    ${SOFATYPESRC_ROOT}/Color.h
     ${SOFATYPESRC_ROOT}/DualQuat.h
     ${SOFATYPESRC_ROOT}/DualQuat.inl
     ${SOFATYPESRC_ROOT}/Frame.h
@@ -35,8 +34,11 @@ set(HEADER_FILES
     ${SOFATYPESRC_ROOT}/fwd.h
     ${SOFATYPESRC_ROOT}/isRigidType.h
     ${SOFATYPESRC_ROOT}/stable_vector.h
+    ${SOFATYPESRC_ROOT}/StrongType.h
     ${SOFATYPESRC_ROOT}/trait/Rebind.h
     ${SOFATYPESRC_ROOT}/trait/is_container.h
+    ${SOFATYPESRC_ROOT}/trait/is_fixed_array.h
+    ${SOFATYPESRC_ROOT}/trait/is_specialization_of.h
     ${SOFATYPESRC_ROOT}/trait/is_vector.h
     ${SOFATYPESRC_ROOT}/vector.h
     ${SOFATYPESRC_ROOT}/vector_Integral.h
@@ -87,15 +89,11 @@ if(NOT Boost_FOUND)
     endif()
 endif()
 sofa_find_package(Boost QUIET REQUIRED)
-sofa_find_package(Sofa.Compat QUIET BOTH_SCOPES)
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Config)
 target_link_libraries(${PROJECT_NAME} PUBLIC Boost::boost)
-if(Sofa.Compat_FOUND)
-    target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Compat)
-endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Sofa.Framework) # IDE folder
 
