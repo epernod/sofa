@@ -99,5 +99,4 @@ static PointID getUniqueId(PointID ancestor0, PointID ancestor1, PointID ancesto
     return uniqID;
 }
 
-
 } //namespace sofa::component::topology::container::dynamic
