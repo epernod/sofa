@@ -546,6 +546,7 @@ void MeshTopology::init()
     else
         m_upperElementType = sofa::geometry::ElementType::POINT;
 
+    std::cout << "m_upperElementType: " << int(m_upperElementType) << std::endl;
     computeCrossElementArrays();
 }
 
@@ -556,6 +557,12 @@ void MeshTopology::computeCrossElementArrays()
     const auto quads = sofa::helper::getReadAccessor(d_seqQuads);
     const auto triangles = sofa::helper::getReadAccessor(d_seqTriangles);
     const auto edges = sofa::helper::getReadAccessor(d_seqEdges);
+
+    std::cout << "hexahedra: " << hexahedra.size() << std::endl;
+    std::cout << "tetrahedra: " << tetrahedra.size() << std::endl;
+    std::cout << "quads: " << quads.size() << std::endl;
+    std::cout << "triangles: " << triangles.size() << std::endl;
+    std::cout << "edges: " << edges.size() << std::endl;
 
     // compute the number of points, if the topology is charged from the scene or if it was loaded from a MeshLoader without any points data.
     if (nbPoints==0)
@@ -934,14 +941,23 @@ void MeshTopology::createEdgesInQuadArray ()
     const SeqQuads& quads = getQuads(); // do not use d_seqQuads directly as it might not be up-to-date
     m_edgesInQuad.clear();
     m_edgesInQuad.resize(quads.size());
+
+    const auto edges = sofa::helper::getReadAccessor(d_seqEdges);
+    for (unsigned int i = 0; i < edges.size(); ++i)
+    {
+        std::cout << i << " | edges: " << edges[i] << std::endl;
+    }
+
     for (unsigned int i = 0; i < quads.size(); ++i)
     {
         const Quad &t=quads[i];
+        std::cout << i << " | quads: " << quads[i] << std::endl;
         // adding edge i in the edge shell of both points
         for (unsigned int j=0; j<4; ++j)
         {
             const EdgeID edgeIndex = getEdgeIndex(t[(j+1)%4],t[(j+2)%4]);
             assert(edgeIndex != InvalidID);
+            std::cout << i << " | edgeIndex: " << edgeIndex << std::endl;
             m_edgesInQuad[i][j]=edgeIndex;
         }
     }
@@ -1352,12 +1368,17 @@ void MeshTopology::createQuadsAroundEdgeArray ()
     const SeqQuads& quads = getQuads(); // do not use d_seqQuads directly as it might not be up-to-date
     if (m_edgesInQuad.empty())
         createEdgesInQuadArray();
-
+    
     m_quadsAroundEdge.clear();
     m_quadsAroundEdge.resize( getNbEdges() );
+
+    std::cout << "m_quadsAroundEdge: " << m_quadsAroundEdge.size() << std::endl;
+
+   
     unsigned int j;
     for (unsigned int i = 0; i < quads.size(); ++i)
     {
+        std::cout << i << " | m_edgesInQuad: " << m_edgesInQuad[i] << std::endl;
         for (j=0; j<4; ++j)
             m_quadsAroundEdge[ m_edgesInQuad[i][j] ].push_back( i );
     }
