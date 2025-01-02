@@ -1299,6 +1299,64 @@ void TriangleSetGeometryAlgorithms< DataTypes >::prepareVertexDuplication(const 
     }
 }
 
+
+template<class DataTypes>
+bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersectionInPlane(
+    const sofa::type::Vec<3, Real>& a,
+    const sofa::type::Vec<3, Real>& b,
+    const TriangleID ind_t,
+    sofa::type::vector<EdgeID>& intersectedEdges,
+    sofa::type::vector<Real>& baryCoefs) const
+{
+    // Project A and B into triangle plan
+    const typename DataTypes::VecCoord& coords = (this->object->read(core::ConstVecCoordId::position())->getValue());
+    const Triangle& tri = this->m_topology->getTriangle(ind_t);
+
+    const typename DataTypes::Coord& c0 = coords[tri[0]];
+    const typename DataTypes::Coord& c1 = coords[tri[1]];
+    const typename DataTypes::Coord& c2 = coords[tri[2]];
+
+    type::fixed_array<Vec3, 3> triP = { Vec3(c0[0], c0[1], c0[2]), Vec3(c1[0], c1[1], c1[2]), Vec3(c2[0], c2[1], c2[2]) };
+    Vec3 v_normal = (triP[2] - triP[0]).cross(triP[1] - triP[0]);
+    v_normal.normalize();
+
+    const Vec3 pa_proj = a - v_normal * dot(a - triP[0], v_normal);
+    const Vec3 pb_proj = b - v_normal * dot(b - triP[0], v_normal);
+
+    const sofa::type::fixed_array<EdgeID, 3>& edgesInTri = this->m_topology->getEdgesInTriangle(ind_t);
+    for (const EdgeID& edgeId : edgesInTri)
+    {
+        const Edge& edge = this->m_topology->getEdge(edgeId);
+        Edge localIds;
+        for (int i = 0; i < 2; i++)
+        {
+            for (int j = 0; j < 3; j++) 
+            {
+                if (edge[i] == tri[j])
+                {
+                    localIds[i] = j;
+                    break;
+                }
+            }
+        }
+
+        type::Vec2 baryCoords(type::NOINIT);
+        bool res = geometry::Edge::intersectionWithEdge(pa_proj, pb_proj, triP[localIds[0]], triP[localIds[1]], baryCoords);
+
+        if (res)
+        {
+            intersectedEdges.push_back(edgeId);
+            baryCoefs.push_back(baryCoords[0]);
+        }
+    }
+
+    if (intersectedEdges.empty())
+        return false;
+    else
+        return true;
+}
+
+
 // Computes the intersection of the segment from point a to point b and the triangle indexed by t
 template<class DataTypes>
 bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersection(bool is_entered,
@@ -1352,6 +1410,8 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
 
         sofa::type::Vec<3,Real> v_ab = pb-pa;
         sofa::type::Vec<3,Real> v_ab_proj = v_ab - v_normal * dot(v_ab,v_normal); // projection (same values if incision in the plan)
+        // https://www.maplesoft.com/support/help/maple/view.aspx?path=MathApps/ProjectionOfVectorOntoPlane
+
         sofa::type::Vec<3,Real> pb_proj = v_ab_proj + pa;
 
         sofa::type::Vec<3,Real> v_01 = p1-p0;
@@ -1867,6 +1927,101 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeIntersectionsLineTriangl
 }
 
 
+template<class DataTypes>
+bool TriangleSetGeometryAlgorithms< DataTypes >::computeIntersectedPointsList2(
+    const sofa::type::Vec<3, Real>& a,
+    const sofa::type::Vec<3, Real>& b,
+    const TriangleID ind_ta, const TriangleID ind_tb,
+    sofa::type::vector< TriangleID >& triangles_list,
+    sofa::type::vector< EdgeID >& edges_list,
+    sofa::type::vector< Real >& coords_list) const
+{   
+    sofa::type::Vec<3, Real> current_point = a;
+    TriangleID current_triID = ind_ta;
+    EdgeID current_edgeID = sofa::InvalidID;
+    Real current_bary = 0;
+    const typename DataTypes::VecCoord& coords = (this->object->read(core::ConstVecCoordId::position())->getValue());
+    SOFA_UNUSED(ind_tb);
+    for(;;)
+    {
+        sofa::type::vector<EdgeID> intersectedEdges;
+        sofa::type::vector<Real> baryCoefs;        
+        
+        bool is_intersected = computeSegmentTriangleIntersectionInPlane(current_point, b, current_triID, intersectedEdges, baryCoefs);
+
+        // no intersection or more than 2 edges intersected should not happened
+        if (!is_intersected || intersectedEdges.size() > 2)
+        {
+            msg_warning() << "Error in computeSegmentTriangleIntersectionInPlane for triangle: " << current_triID << " | is_intersected is " << is_intersected << " and intersectedEdges.size() : " << intersectedEdges.size();
+            break;
+        }
+
+        // Add current triangle into the list of intersected triangles
+        triangles_list.push_back(current_triID);
+
+        if (intersectedEdges.size() == 1) // only one edge intersected, beginning or end
+        {
+            if (current_edgeID == intersectedEdges[0]) // reach end
+            {
+                break;
+            }
+
+            // new edge intersected
+            current_edgeID = intersectedEdges[0];
+            current_bary = baryCoefs[0];
+        }
+        else if (intersectedEdges.size() == 2) // triangle fully traversed
+        {
+            if (intersectedEdges[0] == current_edgeID) 
+            {
+                current_edgeID = intersectedEdges[1];
+                current_bary = baryCoefs[1];
+            }
+            else 
+            {
+                current_edgeID = intersectedEdges[0];
+                current_bary = baryCoefs[0];
+            }
+        }
+
+        // Add current edge and barycoef to the intersected lists
+        edges_list.push_back(current_edgeID);
+        coords_list.push_back(current_bary);
+
+        const Edge& edge = this->m_topology->getEdge(current_edgeID);
+
+        const typename DataTypes::Coord& c0 = coords[edge[0]];
+        const typename DataTypes::Coord& c1 = coords[edge[1]];
+        sofa::type::Vec<3, Real> p0 = { c0[0], c0[1], c0[2] };
+        sofa::type::Vec<3, Real> p1 = { c1[0], c1[1], c1[2] };
+
+        // update pA with the intersection point on the new edge 
+        sofa::type::Vec<3, Real> newIntersection = p0 * current_bary + p1 * (1.0 - current_bary) ;
+        current_point = current_point + (newIntersection - current_point) * 0.8; // add a small threshold to the current point projection
+
+        // search for next triangle to be intersected
+        sofa::type::vector< TriangleID > triAE = this->m_topology->getTrianglesAroundEdge(current_edgeID);
+        if (triAE.size() == 1)
+        {
+            break;
+        }
+        else if (triAE.size() == 2)
+        {
+            if (triAE[0] == current_triID)
+                current_triID = triAE[1];
+            else
+                current_triID = triAE[0];
+        }
+        else
+        {
+            msg_warning() << "non manifold triangulation not supported yet.";
+            break;
+        }
+    }
+
+    return !coords_list.empty();
+}
+
 
 // Computes the list of points (edge,coord) intersected by the segment from point a to point b
 // and the triangular mesh
@@ -1904,6 +2059,10 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeIntersectedPointsList(co
     TriangleID ind_triangle = ind_ta;
     is_intersected=computeSegmentTriangleIntersection(false, p_current, b, ind_t_current, indices, coord_t, coord_k);
 
+
+    std::cout << "indices: " << indices << std::endl;
+    std::cout << "coord_t: " << coord_t << std::endl;
+    std::cout << "coord_k: " << coord_k << std::endl;
 
     // In case the ind_t is not the good one.
     if ( (!is_intersected || indices[0] == last_point || indices[1] == last_point) && (last_point != sofa::InvalidID))
@@ -2278,6 +2437,165 @@ bool TriangleSetGeometryAlgorithms<DataTypes>::computeIntersectedObjectsList (co
 
     return true;
 }
+
+
+//template <typename DataTypes>
+//bool TriangleSetGeometryAlgorithms<DataTypes>::computeTriangleIncisionPath(const PointID last_point, const Vec3& pointA, const Vec3& pointB,
+//    TriangleID& ind_triA, TriangleID& ind_triB,
+//    TriangleIncisionPath* incisionPath,
+//    sofa::type::vector< TriangleSubdivider*> triangleToSplit)
+//{
+//    Vec3 current_point = pointA;
+//    TriangleID current_triID = ind_triA;
+//    EdgeID current_edgeID = sofa::InvalidID;
+//    Real current_bary = 0;
+//    const typename DataTypes::VecCoord& coords = (this->object->read(core::ConstVecCoordId::position())->getValue());
+//
+//    for (;;)
+//    {
+//        sofa::type::vector<EdgeID> intersectedEdges;
+//        sofa::type::vector<Real> baryCoefs;
+//        std::cout << "computeSegmentTriangleIntersectionInPlane: " << current_triID << " -> " << current_point << std::endl;
+//        bool is_intersected = computeSegmentTriangleIntersectionInPlane(current_point, pointB, current_triID, intersectedEdges, baryCoefs);
+//
+//        // no intersection or more than 2 edges intersected should not happened
+//        if (!is_intersected || intersectedEdges.size() > 2)
+//        {
+//            msg_warning() << "This should not happened!";
+//            break;
+//        }
+//
+//        // Add current triangle into the list of intersected triangles
+//        incisionPath->intersected_triangleIDs.push_back(current_triID);
+//        //TriangleSubdivider* triSubvider;
+//
+//        if (intersectedEdges.size() == 1) // only one edge intersected, beginning or end
+//        {
+//            if (current_edgeID == intersectedEdges[0]) // reach end
+//            {
+//                break;
+//            }
+//
+//            // new edge intersected
+//            current_edgeID = intersectedEdges[0];
+//            current_bary = baryCoefs[0];
+//            //TriangleSubdivider_2Node* triSubvider = new TriangleSubdivider_2Node(current_triID);
+//            //triSubvider->m_edge1Id = current_edgeID;
+//            //triSubvider->m_edge1Coef = current_bary;
+//            //triangleToSplit.push_back(triSubvider);
+//        }
+//        else if (intersectedEdges.size() == 2) // triangle fully traversed
+//        {
+//            if (intersectedEdges[0] == current_edgeID)
+//            {
+//                current_edgeID = intersectedEdges[1];
+//                current_bary = baryCoefs[1];
+//            }
+//            else
+//            {
+//                current_edgeID = intersectedEdges[0];
+//                current_bary = baryCoefs[0];
+//            }
+//
+//            //TriangleSubdivider_2Edge* triSubvider = new TriangleSubdivider_2Edge(current_triID);
+//
+//        }
+//
+//        // Add current edge and barycoef to the intersected lists
+//        incisionPath->intersected_edgeIDs.push_back(current_edgeID);
+//        incisionPath->intersected_baryCoefs.push_back(current_bary);
+//
+//        const Edge& edge = this->m_topology->getEdge(current_edgeID);
+//
+//        const typename DataTypes::Coord& c0 = coords[edge[0]];
+//        const typename DataTypes::Coord& c1 = coords[edge[1]];
+//        sofa::type::Vec<3, Real> p0 = { c0[0], c0[1], c0[2] };
+//        sofa::type::Vec<3, Real> p1 = { c1[0], c1[1], c1[2] };
+//
+//        // update pA with the intersection point on the new edge
+//        current_point = p0 + (p1 - p0) * current_bary;
+//
+//        // search for next triangle to be intersected
+//        sofa::type::vector< TriangleID > triAE = this->m_topology->getTrianglesAroundEdge(current_edgeID);
+//        if (triAE.size() == 1)
+//        {
+//            break;
+//        }
+//        else if (triAE.size() == 2)
+//        {
+//            if (triAE[0] == current_triID)
+//                current_triID = triAE[1];
+//            else
+//                current_triID = triAE[0];
+//        }
+//        else
+//        {
+//            msg_warning() << "non manifold triangulation not supported yet.";
+//            break;
+//        }
+//    }
+//
+//
+//
+//
+//    //// creating new declaration path:
+//    //sofa::type::Vec<3, Real> baryCoords;
+//
+//    //// 1 - First point a (for the moment: always a point in a triangle)
+//    //if (last_point != sofa::InvalidID)
+//    //{
+//    //    intersected_topoElements.push_back(core::topology::TopologyElementType::POINT);
+//    //    intersected_indices.push_back(last_point);
+//    //    const typename DataTypes::VecCoord& realC = (this->object->read(core::ConstVecCoordId::position())->getValue());
+//    //    for (unsigned int i = 0; i < 3; i++)
+//    //        baryCoords[i] = realC[last_point][i];
+//    //}
+//    //else
+//    //{
+//    //    auto coefs_a = computeTriangleBarycoefs(ind_triA, pointA);
+//    //    intersected_topoElements.push_back(core::topology::TopologyElementType::TRIANGLE);
+//    //    intersected_indices.push_back(ind_triA);
+//    //    for (unsigned int i = 0; i < 3; i++)
+//    //        baryCoords[i] = coefs_a[i];
+//    //}
+//    //intersected_barycoefs.push_back(baryCoords);
+//
+//
+//    //// 2 - All edges intersected (only edges for now)
+//    //for (size_t i = 0; i < edges_list.size(); i++)
+//    //{
+//    //    intersected_topoElements.push_back(core::topology::TopologyElementType::EDGE);
+//    //    intersected_indices.push_back(edges_list[i]);
+//
+//    //    baryCoords[0] = edge_barycoefs_list[i];
+//    //    baryCoords[1] = 0.0; // or 1 - edge_barycoefs_list[i] ??
+//    //    baryCoords[2] = 0.0;
+//
+//    //    intersected_barycoefs.push_back(baryCoords);
+//    //}
+//
+//    //// 3 - Last point b (for the moment: always a point in a triangle)
+//    //auto coefs_b = computeTriangleBarycoefs(ind_triB, pointB);
+//    //bool isOnPoint = false;
+//    //for (unsigned int i = 0; i < 3; i++)
+//    //    if (coefs_b[i] > 0.9999)
+//    //    {
+//    //        intersected_topoElements.push_back(core::topology::TopologyElementType::POINT);
+//    //        intersected_indices.push_back(this->m_topology->getTriangle(ind_triB)[i]);
+//    //        isOnPoint = true;
+//    //        break;
+//    //    }
+//
+//    //if (!isOnPoint)
+//    //{
+//    //    intersected_topoElements.push_back(core::topology::TopologyElementType::TRIANGLE);
+//    //    intersected_indices.push_back(ind_triB);
+//    //}
+//    //for (unsigned int i = 0; i < 3; i++)
+//    //    baryCoords[i] = coefs_b[i];
+//
+//    //intersected_barycoefs.push_back(baryCoords);
+//}
 
 
 /// Get the triangle in a given direction from a point.
