@@ -239,10 +239,17 @@ public:
         Real& baryCoef, Real& coord_kmin) const;
 
 
+    /** \brief Computes the intersection between the edges of the Triangle triId and the vector [AB] projected into this Triangle frame.
+     * @param ptA : first input point
+     * @param ptB : last input point
+     * @param triId : index of the triangle whose edges will be checked
+     * @param intersectedEdges : output list of Edge global Ids that are intersected by vector AB (size could be 0, 1 or 2)
+     * @param baryCoefs : output list of barycoef corresponding to the relative position of the intersection on the edge (same size and order as @sa intersectedEdges)
+    */
     bool computeSegmentTriangleIntersectionInPlane(
-        const sofa::type::Vec<3, Real>& a,
-        const sofa::type::Vec<3, Real>& b,
-        const TriangleID ind_t,
+        const sofa::type::Vec<3, Real>& ptA,
+        const sofa::type::Vec<3, Real>& ptB,
+        const TriangleID triId,
         sofa::type::vector<EdgeID>& intersectedEdges,
         sofa::type::vector<Real>& baryCoefs) const;
 
@@ -276,7 +283,7 @@ public:
             bool& is_on_boundary) const;
 
 
-    bool computeIntersectedPointsList2(const sofa::type::Vec<3, Real>& a, const sofa::type::Vec<3, Real>& b,
+    bool computeIntersectedPointsList2(const sofa::type::Vec<3, Real>& ptA, const sofa::type::Vec<3, Real>& ptB,
         const TriangleID ind_ta, const TriangleID ind_tb,
         sofa::type::vector< TriangleID >& triangles_list,
         sofa::type::vector< EdgeID >& edges_list,
