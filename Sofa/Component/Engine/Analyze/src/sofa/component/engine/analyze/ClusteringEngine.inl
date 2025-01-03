@@ -44,7 +44,7 @@ using sofa::helper::WriteOnlyAccessor;
 
 template <class DataTypes>
 ClusteringEngine<DataTypes>::ClusteringEngine()
-    : d_useTopo(initData(&d_useTopo, true, "useTopo", "Use avalaible topology to compute neighborhood."))
+    : d_useTopo(initData(&d_useTopo, true, "useTopo", "Use available topology to compute neighborhood."))
     , d_radius(initData(&d_radius, (Real)1.0, "radius", "Neighborhood range."))
     , d_fixedRadius(initData(&d_fixedRadius, (Real)1.0, "fixedRadius", "Neighborhood range (for non mechanical particles)."))
     , d_nbClusters(initData(&d_nbClusters, (int)-1, "number", "Number of clusters (-1 means that all input points are selected)."))
@@ -383,7 +383,7 @@ void ClusteringEngine<DataTypes>::draw(const core::visual::VisualParams* vparams
 
         const auto stateLifeCycle = vparams->drawTool()->makeStateLifeCycle();
 
-        const VecCoord& currentPositions = this->mstate->read(core::ConstVecCoordId::position())->getValue();
+        const VecCoord& currentPositions = this->mstate->read(core::vec_id::read_access::position)->getValue();
         const ReadAccessor< Data< VVI > > clust = this->d_cluster;
         const unsigned int nbp = currentPositions.size();
 

@@ -36,11 +36,11 @@ namespace sofa::gl::component::rendering2d
 using namespace sofa::type;
 using namespace sofa::defaulttype;
 
-//Register OglViewport in the Object Factory
-int OglViewportClass = core::RegisterObject("OglViewport")
-        .add< OglViewport >()
-        ;
-
+void registerOglViewport(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Set an additional viewport into the main one.")
+        .add< OglViewport >());
+}
 
 OglViewport::OglViewport()
     :p_screenPosition(initData(&p_screenPosition, "screenPosition", "Viewport position"))
@@ -77,7 +77,7 @@ void OglViewport::init()
     }
 }
 
-void OglViewport::initVisual()
+void OglViewport::doInitVisual(const core::visual::VisualParams*)
 {
     if (p_useFBO.getValue())
     {
@@ -95,7 +95,7 @@ bool OglViewport::isVisible(const core::visual::VisualParams*)
     {
         sofa::component::visual::VisualStyle* vstyle = nullptr;
         this->getContext()->get(vstyle);
-        if (vstyle && !vstyle->displayFlags.getValue().getShowAdvancedRendering())
+        if (vstyle && !vstyle->d_displayFlags.getValue().getShowAdvancedRendering())
             return false;
     }
     return true;

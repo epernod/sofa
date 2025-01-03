@@ -28,7 +28,6 @@
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 #include <sofa/type/SVector.h>
-#include <sofa/helper/set.h>
 #include <sofa/helper/map.h>
 #include <sofa/helper/OptionsGroup.h>
 #include <sofa/component/topology/container/dynamic/DynamicSparseGridTopologyContainer.h>
@@ -41,10 +40,12 @@
 #define TYPE_VORONOI 3
 #define TYPE_HARMONIC_STIFFNESS 4
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::engine::analyze
 {
 
-/// This class can be overridden if needed for additionnal storage within template specializations.
+/// This class can be overridden if needed for additional storage within template specializations.
 template<class DataTypes>
 class DistancesInternalData
 {
@@ -76,18 +77,56 @@ protected:
     ~Distances() override {}
 
 public:
-    Data<unsigned int> showMapIndex; ///< Frame DOF index on which display values.
-    Data<bool> showDistanceMap; ///< show the dsitance for each point of the target point set.
-    Data<bool> showGoalDistanceMap; ///< show the dsitance for each point of the target point set.
-    Data<double> showTextScaleFactor; ///< Scale to apply on the text.
-    Data<bool> showGradientMap; ///< show gradients for each point of the target point set.
-    Data<double> showGradientsScaleFactor; ///< scale for the gradients displayed.
-    Data<Coord> offset; ///< translation offset between the topology and the point set.
-    Data<sofa::helper::OptionsGroup> distanceType; ///< type of distance to compute for inserted frames.
-    Data<bool> initTarget; ///< initialize the target MechanicalObject from the grid.
-    Data<int> initTargetStep; ///< initialize the target MechanicalObject from the grid using this step.
-    Data<std::map<unsigned int, unsigned int> > zonesFramePair; ///< Correspondance between the segmented value and the frames.
-    Data<double> harmonicMaxValue; ///< Max value used to initialize the harmonic distance grid.
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<unsigned int> showMapIndex;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<bool> showDistanceMap;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<bool> showGoalDistanceMap;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<double> showTextScaleFactor;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<bool> showGradientMap;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<double> showGradientsScaleFactor;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<Coord> offset;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<sofa::helper::OptionsGroup> distanceType;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<bool> initTarget;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<int> initTargetStep;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<std::map<unsigned int, unsigned int> > zonesFramePair;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<double> harmonicMaxValue;
+
+
+    Data<unsigned int> d_showMapIndex; ///< Frame DOF index on which display values.
+    Data<bool> d_showDistanceMap; ///< show the distance for each point of the target point set.
+    Data<bool> d_showGoalDistanceMap; ///< show the distance for each point of the target point set.
+    Data<double> d_showTextScaleFactor; ///< Scale to apply on the text.
+    Data<bool> d_showGradientMap; ///< show gradients for each point of the target point set.
+    Data<double> d_showGradientsScaleFactor; ///< scale for the gradients displayed.
+    Data<Coord> d_offset; ///< translation offset between the topology and the point set.
+    Data<sofa::helper::OptionsGroup> d_distanceType; ///< type of distance to compute for inserted frames.
+    Data<bool> d_initTarget; ///< initialize the target MechanicalObject from the grid.
+    Data<int> d_initTargetStep; ///< initialize the target MechanicalObject from the grid using this step.
+    Data<std::map<unsigned int, unsigned int> > d_zonesFramePair; ///< Correspondence between the segmented value and the frames.
+    Data<double> d_harmonicMaxValue; ///< Max value used to initialize the harmonic distance grid.
 
     void init() override;
 
@@ -171,12 +210,12 @@ public:
         {
             if ( arg->getAttribute ( "hexaContainerPath" ) )
             {
-                obj->hexaContainerPath.setValue ( arg->getAttribute ( "hexaContainerPath" ) );
+                obj->d_hexaContainerPath.setValue (arg->getAttribute ("hexaContainerPath" ) );
                 arg->removeAttribute ( "hexaContainerPath" );
             }
             if ( arg->getAttribute ( "targetPath" ) )
             {
-                obj->targetPath.setValue ( arg->getAttribute ( "targetPath" ) );
+                obj->d_targetPath.setValue (arg->getAttribute ("targetPath" ) );
                 arg->removeAttribute ( "targetPath" );
             }
             obj->parse ( arg );
@@ -186,11 +225,22 @@ public:
     }
 
 private:
-    Data<std::string> fileDistance; ///< file containing the result of the computation of the distances
-    Data<std::string> targetPath; ///< path to the goal point set topology
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<std::string> fileDistance;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<std::string> targetPath;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<std::string> hexaContainerPath;
+
+
+    Data<std::string> d_fileDistance; ///< file containing the result of the computation of the distances
+    Data<std::string> d_targetPath; ///< path to the goal point set topology
     core::behavior::MechanicalState<DataTypes>* target;
 
-    Data<std::string> hexaContainerPath; ///< path to the grid used to compute the distances
+    Data<std::string> d_hexaContainerPath; ///< path to the grid used to compute the distances
     sofa::component::topology::container::dynamic::DynamicSparseGridTopologyContainer* hexaContainer;
     sofa::component::topology::container::dynamic::DynamicSparseGridGeometryAlgorithms< DataTypes >* hexaGeoAlgo;
     const unsigned char * densityValues; // Density values

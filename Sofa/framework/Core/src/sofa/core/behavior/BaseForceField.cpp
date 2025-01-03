@@ -31,7 +31,7 @@ namespace sofa::core::behavior
 
 BaseForceField::BaseForceField()
     : StateAccessor()
-    , isCompliance( initData(&isCompliance, false, "isCompliance", "Consider the component as a compliance, else as a stiffness"))
+    , isCompliance(this, "v24.12", "v25.06", "isCompliance", "Consider the component as a compliance, else as a stiffness")
     , rayleighStiffness( initData(&rayleighStiffness, 0_sreal, "rayleighStiffness", "Rayleigh damping - stiffness matrix coefficient"))
 {
 }
@@ -60,7 +60,7 @@ void BaseForceField::buildStiffnessMatrix(StiffnessMatrix* matrix)
     if (hasEmittedWarning.insert(this).second)
     {
         dmsg_warning() << "buildStiffnessMatrix not implemented: for compatibility reason, the "
-            "deprecated API (addKToMatrix) will be used. This compatibility will disapear in the "
+            "deprecated API (addKToMatrix) will be used. This compatibility will disappear in the "
             "future, and will cause issues in simulations. Please update the code of " <<
             this->getClassName() << " to ensure right behavior: the function addKToMatrix "
             "has been replaced by buildStiffnessMatrix";
@@ -105,7 +105,7 @@ void BaseForceField::buildDampingMatrix(DampingMatrix* matrix)
     if (hasEmittedWarning.insert(this).second)
     {
         dmsg_warning() << "buildDampingMatrix not implemented: for compatibility reason, the "
-            "deprecated API (addBToMatrix) will be used. This compatibility will disapear in the "
+            "deprecated API (addBToMatrix) will be used. This compatibility will disappear in the "
             "future, and will cause issues in simulations. Please update the code of " <<
             this->getClassName() << " to ensure right behavior: the function addBToMatrix "
             "has been replaced by buildDampingMatrix";

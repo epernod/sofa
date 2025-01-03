@@ -35,9 +35,11 @@ namespace sofa::core::objectmodel {
 namespace sofa::simulation
 {
 
-int DefaultVisualManagerLoopClass = core::RegisterObject("The simplest Visual Loop Manager, created by default when user do not put on scene")
-        .add< DefaultVisualManagerLoop >()
-        ;
+void registerDefaultVisualManagerLoop(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Manager of the visual loop, created by default when the user does not define one in the scene.")
+        .add< DefaultVisualManagerLoop >());
+}
 
 DefaultVisualManagerLoop::DefaultVisualManagerLoop() :
     l_node(initLink("targetNode","Link to the scene's node where the rendering will take place"))
@@ -56,23 +58,23 @@ void DefaultVisualManagerLoop::init()
 }
 
 
-void DefaultVisualManagerLoop::initStep(sofa::core::ExecParams* params)
+void DefaultVisualManagerLoop::initStep(sofa::core::visual::VisualParams* vparams)
 {
     if ( !l_node ) return;
-    l_node->execute<VisualInitVisitor>(params);
+    l_node->execute<VisualInitVisitor>(vparams);
     // Do a visual update now as it is not done in load() anymore
     /// \todo Separate this into another method?
-    l_node->execute<VisualUpdateVisitor>(params);
+    l_node->execute<VisualUpdateVisitor>(vparams);
 }
 
-void DefaultVisualManagerLoop::updateStep(sofa::core::ExecParams* params)
+void DefaultVisualManagerLoop::updateStep(sofa::core::visual::VisualParams* vparams)
 {
     if ( !l_node ) return;
 #ifdef SOFA_DUMP_VISITOR_INFO
     simulation::Visitor::printNode("UpdateVisual");
 #endif
 
-    l_node->execute<VisualUpdateVisitor>(params);
+    l_node->execute<VisualUpdateVisitor>(vparams);
     
 #ifdef SOFA_DUMP_VISITOR_INFO
     simulation::Visitor::printCloseNode("UpdateVisual");

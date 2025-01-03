@@ -34,7 +34,6 @@ public:
     SOFA_CLASS(SOFA_TEMPLATE(BaseAssemblingMatrixAccumulator, c), sofa::core::get_base_object_strong_type<c>);
     using ComponentType = typename Inherit1::ComponentType;
 
-    using Inherit1::initData;
     using Inherit1::add;
 
     virtual void setMatrixSize(const sofa::type::Vec2u&);
@@ -52,9 +51,9 @@ protected:
 
     BaseAssemblingMatrixAccumulator();
 
-    Data< sofa::type::Vec2u > d_matrixSize; /// Size of the local matrix
-    Data< sofa::type::Vec2u > d_positionInGlobalMatrix; /// Position of this local matrix in the global matrix
-    Data< SReal > d_factor; /// factor applied on matrix entries
+    Data< sofa::type::Vec2u > d_matrixSize; ///< Size of the local matrix
+    Data< sofa::type::Vec2u > d_positionInGlobalMatrix; ///< Position of this local matrix in the global matrix
+    Data< SReal > d_factor; ///< Factor applied to matrix entries. This factor depends on the ODE solver and the associated component.
 
     sofa::linearalgebra::BaseMatrix* m_globalMatrix { nullptr };
 

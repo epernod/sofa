@@ -42,25 +42,23 @@
 namespace sofa::component::topology::mapping
 {
 
-using namespace sofa::defaulttype;
-
 using namespace sofa::component::topology;
 using namespace sofa::core::topology;
 
-// Register in the Factory
-int Hexa2QuadTopologicalMappingClass = core::RegisterObject("Special case of mapping where HexahedronSetTopology is converted to QuadSetTopology")
-        .add< Hexa2QuadTopologicalMapping >()
-
-        ;
-
-// Implementation
+void registerHexa2QuadTopologicalMapping(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Topological mapping where HexahedronSetTopology is converted to QuadSetTopology")
+        .add< Hexa2QuadTopologicalMapping >());
+}
 
 Hexa2QuadTopologicalMapping::Hexa2QuadTopologicalMapping()
     : sofa::core::topology::TopologicalMapping()
-    , flipNormals(initData(&flipNormals, bool(false), "flipNormals", "Flip Normal ? (Inverse point order when creating triangle)"))
+    , d_flipNormals(initData(&d_flipNormals, bool(false), "flipNormals", "Flip Normal ? (Inverse point order when creating triangle)"))
 {
     m_inputType = geometry::ElementType::HEXAHEDRON;
     m_outputType = geometry::ElementType::QUAD;
+
+    flipNormals.setOriginalData(&d_flipNormals);
 }
 
 void Hexa2QuadTopologicalMapping::init()
@@ -94,7 +92,7 @@ void Hexa2QuadTopologicalMapping::init()
     Loc2GlobVec.clear();
     Glob2LocMap.clear();
 
-    const bool flipN = flipNormals.getValue();
+    const bool flipN = d_flipNormals.getValue();
 
     for (unsigned int i=0; i<quadArray.size(); ++i)
     {
@@ -250,7 +248,7 @@ void Hexa2QuadTopologicalMapping::updateTopologicalMappingTopDown()
             sofa::type::vector< core::topology::BaseMeshTopology::Quad > quads_to_create;
             sofa::type::vector< Index > quadsIndexList;
             auto nb_elems = toModel->getNbQuads();
-            const bool flipN = flipNormals.getValue();
+            const bool flipN = d_flipNormals.getValue();
 
             for (unsigned int i = 0; i < tab.size(); ++i)
             {

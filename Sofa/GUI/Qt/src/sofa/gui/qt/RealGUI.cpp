@@ -276,7 +276,7 @@ void RealGUI::CreateApplication(int /*_argc*/, char** /*_argv*/)
     application = new QSOFAApplication ( *argc,argv );
 
     //force locale to Standard C
-    //(must be done immediatly after the QApplication has been created)
+    //(must be done immediately after the QApplication has been created)
     const QLocale locale(QLocale::C);
     QLocale::setDefault(locale);
 }
@@ -447,7 +447,7 @@ RealGUI::RealGUI ( const char* viewername)
 
     currentTabChanged ( tabs->currentIndex() );
 
-    createBackgroundGUIInfos(); // add GUI for Background Informations
+    createBackgroundGUIInfos(); // add GUI for Background Information
 
     createWindowVisitor();
 
@@ -1260,7 +1260,7 @@ void RealGUI::createDisplayFlags(Node::SPtr root)
         root->get(visualStyle);
         if(visualStyle)
         {
-            displayFlag = new DisplayFlagsDataWidget(tabView,"displayFlagwidget",&visualStyle->displayFlags, true);
+            displayFlag = new DisplayFlagsDataWidget(tabView, "displayFlagwidget", &visualStyle->d_displayFlags, true);
             displayFlag->createWidgets();
             displayFlag->updateWidgetValue();
             connect( displayFlag, SIGNAL( WidgetDirty(bool) ), this, SLOT(showhideElements() ));
@@ -1577,7 +1577,6 @@ void RealGUI::createSimulationGraph()
     connect(simulationGraph, SIGNAL( RootNodeChanged(sofa::simulation::Node*, const char*) ), this, SLOT ( newRootNode(sofa::simulation::Node* , const char*) ) );
     connect(simulationGraph, SIGNAL( NodeRemoved() ), this, SLOT( update() ) );
     connect(simulationGraph, SIGNAL( Lock(bool) ), this, SLOT( lockAnimation(bool) ) );
-    connect(simulationGraph, SIGNAL( RequestSaving(sofa::simulation::Node*) ), this, SLOT( fileSaveAs(sofa::simulation::Node*) ) );
     connect(simulationGraph, SIGNAL( RequestExportOBJ(sofa::simulation::Node*, bool) ), this, SLOT( exportOBJ(sofa::simulation::Node*, bool) ) );
     connect(simulationGraph, SIGNAL( RequestActivation(sofa::simulation::Node*, bool) ), this, SLOT( activateNode(sofa::simulation::Node*, bool) ) );
     connect(simulationGraph, SIGNAL( RequestSleeping(sofa::simulation::Node*, bool) ), this, SLOT( setSleepingNode(sofa::simulation::Node*, bool) ) );

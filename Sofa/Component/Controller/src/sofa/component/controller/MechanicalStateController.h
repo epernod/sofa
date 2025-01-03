@@ -27,6 +27,8 @@
 #include <sofa/defaulttype/RigidTypes.h>
 #include <sofa/core/behavior/MechanicalState.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::controller
 {
 
@@ -128,14 +130,25 @@ public:
      */
     void applyController(void);
 protected:
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONTROLLER()
+    sofa::core::objectmodel::RenamedData< unsigned int > index;
 
-    Data< unsigned int > index; ///< Controlled DOF index.
-    Data< bool > onlyTranslation; ///< Controlling the DOF only in translation
-    Data< bool > buttonDeviceState; ///< state of ths device button
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONTROLLER()
+    sofa::core::objectmodel::RenamedData< bool > onlyTranslation;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONTROLLER()
+    sofa::core::objectmodel::RenamedData< bool > buttonDeviceState;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONTROLLER()
+    sofa::core::objectmodel::RenamedData< sofa::type::Vec<3,Real> > mainDirection;
+
+    Data< unsigned int > d_index; ///< Index of the controlled DOF
+    Data< bool > d_onlyTranslation; ///< Controlling the DOF only in translation
+    Data< bool > d_buttonDeviceState; ///< state of ths device button
 
     core::behavior::MechanicalState<DataTypes> *mState; ///< Controlled MechanicalState.
 
-    Data< sofa::type::Vec<3,Real> > mainDirection; ///< Direction corresponding to the Mouse vertical axis. Default value is (0.0,0.0,-1.0), Z axis.
+    Data< sofa::type::Vec<3,Real> > d_mainDirection; ///< Main direction and orientation of the controlled DOF
 
     enum MouseMode { None=0, BtLeft, BtRight, BtMiddle, Wheel }; ///< Mouse current mode.
     bool device;

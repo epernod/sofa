@@ -27,6 +27,7 @@
 #include <sofa/helper/accessor.h>
 #include <istream>
 #include <sofa/core/objectmodel/DataContentValue.h>
+#include <sofa/core/trait/DataTypes.h>
 namespace sofa
 {
 namespace core::objectmodel
@@ -287,7 +288,7 @@ std::string Data<T>::getDefaultValueString() const
 template<class T>
 std::string Data<T>::getValueTypeString() const
 {
-    return BaseData::typeName(&getValue());
+    return BaseData::typeName<T>();
 }
 
 template <class T>
@@ -420,7 +421,7 @@ public:
 
 
 /** @brief The WriteOnlyAccessor provides an access to the Data without triggering an engine update.
- * This should be the prefered writeAccessor for most of the cases as it avoids uncessary Data updates.
+ * This should be the preferred writeAccessor for most of the cases as it avoids unnecessary Data updates.
  * @warning read access to the Data is NOT up-to-date
  */
 template<class T>

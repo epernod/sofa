@@ -52,7 +52,7 @@ struct SquareDistanceMappingTest : public sofa::mapping_test::Mapping_test<Squar
         this->errorMax *= 10;
 
         SquareDistanceMapping* map = static_cast<SquareDistanceMapping*>( this->mapping );
-//        map->f_computeDistance.setValue(true);
+//        map->d_computeDistance.setValue(true);
         sofa::helper::getWriteAccessor(map->d_geometricStiffness)->setSelectedItem(1);
 
         const component::topology::container::dynamic::EdgeSetTopologyContainer::SPtr edges = sofa::core::objectmodel::New<component::topology::container::dynamic::EdgeSetTopologyContainer>();
@@ -79,13 +79,13 @@ struct SquareDistanceMappingTest : public sofa::mapping_test::Mapping_test<Squar
 //        this->errorMax *= 10;
 
 //        SquareDistanceMapping* map = static_cast<SquareDistanceMapping*>( this->mapping );
-////        map->f_computeDistance.setValue(true);
+////        map->d_computeDistance.setValue(true);
 //        map->d_geometricStiffness.setValue(1);
 
 //        type::vector< SReal > restLength(2);
 //        restLength[0] = .5;
 //        restLength[1] = 2;
-//        map->f_restLengths.setValue( restLength );
+//        map->d_restLengths.setValue( restLength );
 
 //        component::topology::container::dynamic::EdgeSetTopologyContainer::SPtr edges = modeling::addNew<component::topology::container::dynamic::EdgeSetTopologyContainer>(this->root);
 //        edges->addEdge( 0, 1 );
@@ -108,14 +108,14 @@ struct SquareDistanceMappingTest : public sofa::mapping_test::Mapping_test<Squar
 };
 
 
-// Define the list of types to instanciate.
+// Define the list of types to instantiate.
 using ::testing::Types;
 typedef Types<
 component::mapping::nonlinear::SquareDistanceMapping<defaulttype::Vec3Types,defaulttype::Vec1Types>
 , component::mapping::nonlinear::SquareDistanceMapping<defaulttype::Rigid3Types,defaulttype::Vec1Types>
-> DataTypes; // the types to instanciate.
+> DataTypes; // the types to instantiate.
 
-// Test suite for all the instanciations
+// Test suite for all the instantiations
 TYPED_TEST_SUITE( SquareDistanceMappingTest, DataTypes );
 
 // test case
@@ -212,10 +212,10 @@ struct SquareDistanceMappingCompare_test : NumericTest<SReal>
         //position
         {
             sofa::type::vector<SReal> mstatex0(mstate0->getMatrixSize());
-            mstate0->copyToBuffer(mstatex0.data(), core::ConstVecCoordId::position(), mstate0->getMatrixSize());
+            mstate0->copyToBuffer(mstatex0.data(), core::vec_id::read_access::position, mstate0->getMatrixSize());
 
             sofa::type::vector<SReal> mstatex1(mstate1->getMatrixSize());
-            mstate1->copyToBuffer(mstatex1.data(), core::ConstVecCoordId::position(), mstate1->getMatrixSize());
+            mstate1->copyToBuffer(mstatex1.data(), core::vec_id::read_access::position, mstate1->getMatrixSize());
 
             EXPECT_LT(this->vectorMaxDiff(mstatex0, mstatex1), epsilon) << "Time step " << timeStepCount
                 << "\n" << mstatex0 << "\n" << mstatex1;
@@ -224,10 +224,10 @@ struct SquareDistanceMappingCompare_test : NumericTest<SReal>
         //velocity
         {
             sofa::type::vector<SReal> mstatev0(mstate0->getMatrixSize());
-            mstate0->copyToBuffer(mstatev0.data(), core::ConstVecDerivId::velocity(), mstate0->getMatrixSize());
+            mstate0->copyToBuffer(mstatev0.data(), core::vec_id::read_access::velocity, mstate0->getMatrixSize());
 
             sofa::type::vector<SReal> mstatev1(mstate1->getMatrixSize());
-            mstate1->copyToBuffer(mstatev1.data(), core::ConstVecDerivId::velocity(), mstate1->getMatrixSize());
+            mstate1->copyToBuffer(mstatev1.data(), core::vec_id::read_access::velocity, mstate1->getMatrixSize());
 
             EXPECT_LT(this->vectorMaxDiff(mstatev0, mstatev1), epsilon) << "Time step " << timeStepCount
                 << "\n" << mstatev0 << "\n" << mstatev1;
@@ -236,10 +236,10 @@ struct SquareDistanceMappingCompare_test : NumericTest<SReal>
         //force
         {
             sofa::type::vector<SReal> mstatef0(mstate0->getMatrixSize());
-            mstate0->copyToBuffer(mstatef0.data(), core::ConstVecDerivId::force(), mstate0->getMatrixSize());
+            mstate0->copyToBuffer(mstatef0.data(), core::vec_id::read_access::force, mstate0->getMatrixSize());
 
             sofa::type::vector<SReal> mstatef1(mstate1->getMatrixSize());
-            mstate1->copyToBuffer(mstatef1.data(), core::ConstVecDerivId::force(), mstate1->getMatrixSize());
+            mstate1->copyToBuffer(mstatef1.data(), core::vec_id::read_access::force, mstate1->getMatrixSize());
 
             EXPECT_LT(this->vectorMaxDiff(mstatef0, mstatef1), epsilon) << "Time step " << timeStepCount
                 << "\n" << mstatef0 << "\n" << mstatef1;

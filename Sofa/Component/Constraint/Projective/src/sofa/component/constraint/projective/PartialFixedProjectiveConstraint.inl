@@ -34,8 +34,8 @@ namespace sofa::component::constraint::projective
 
 template <class DataTypes>
 PartialFixedProjectiveConstraint<DataTypes>::PartialFixedProjectiveConstraint()
-    : d_fixedDirections( initData(&d_fixedDirections,"fixedDirections","for each direction, 1 if fixed, 0 if free") )
-    , d_projectVelocity(initData(&d_projectVelocity, false, "projectVelocity", "project velocity to ensure no drift of the fixed point"))
+    : d_fixedDirections( initData(&d_fixedDirections,"fixedDirections","Defines the directions in which the particles are fixed: true (or 1) for fixed, false (or 0) for free") )
+    , d_projectVelocity(initData(&d_projectVelocity, false, "projectVelocity", "activate project velocity to maintain a constant velocity"))
 {
     VecBool blockedDirection;
     for( unsigned i=0; i<NumDimensions; i++)
@@ -97,7 +97,7 @@ void PartialFixedProjectiveConstraint<DataTypes>::projectResponse(const core::Me
 
 // projectVelocity applies the same changes on velocity vector as projectResponse on position vector :
 // Each fixed point received a null velocity vector.
-// When a new fixed point is added while its velocity vector is already null, projectVelocity is not usefull.
+// When a new fixed point is added while its velocity vector is already null, projectVelocity is not useful.
 // But when a new fixed point is added while its velocity vector is not null, it's necessary to fix it to null or 
 // to set the projectVelocity option to True. If not, the fixed point is going to drift.
 template <class DataTypes>
@@ -112,7 +112,7 @@ void PartialFixedProjectiveConstraint<DataTypes>::projectVelocity(const core::Me
 
     if ( this->d_fixAll.getValue() )
     {
-        // fix everyting
+        // fix everything
         for (Size i = 0; i < res.size(); i++)
         {
             for (unsigned int c = 0; c < NumDimensions; ++c)

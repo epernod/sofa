@@ -34,20 +34,20 @@ namespace sofa::component::collision::geometry
 template<class DataTypes>
 SphereCollisionModel<DataTypes>::SphereCollisionModel()
     : d_radius(initData(&d_radius, "listRadius", "Radius of each sphere"))
-    , d_defaultRadius(initData(&d_defaultRadius, (SReal)(1.0), "radius", "Default Radius"))
+    , d_defaultRadius(initData(&d_defaultRadius, (SReal)(1.0), "radius", "Default radius"))
     , d_showImpostors(initData(&d_showImpostors, true, "showImpostors", "Draw spheres as impostors instead of \"real\" spheres"))
     , mstate(nullptr)
 {
     enum_type = SPHERE_TYPE;
 
-    radius.setParent(&d_radius);
-    defaultRadius.setParent(&d_defaultRadius);
+    radius.setOriginalData(&d_radius);
+    defaultRadius.setOriginalData(&d_defaultRadius);
 }
 
 template<class DataTypes>
 SphereCollisionModel<DataTypes>::SphereCollisionModel(core::behavior::MechanicalState<DataTypes>* _mstate )
     : d_radius(initData(&d_radius, "listRadius", "Radius of each sphere"))
-    , d_defaultRadius(initData(&d_defaultRadius, (SReal)(1.0), "radius", "Default Radius. (default=1.0)"))
+    , d_defaultRadius(initData(&d_defaultRadius, (SReal)(1.0), "radius", "Default radius"))
     , d_showImpostors(initData(&d_showImpostors, true, "showImpostors", "Draw spheres as impostors instead of \"real\" spheres"))
     , mstate(_mstate)
 {
@@ -78,8 +78,9 @@ void SphereCollisionModel<DataTypes>::resize(sofa::Size size)
 template<class DataTypes>
 void SphereCollisionModel<DataTypes>::init()
 {
-    if(d_componentState.getValue() == ComponentState::Valid){
-        msg_warning(this) << "Calling an already fully initialized component. You should use reinit instead." ;
+    if(this->isComponentStateValid())
+    {
+        msg_warning() << "Calling an already fully initialized component. You should use reinit instead." ;
     }
 
     this->CollisionModel::init();

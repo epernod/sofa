@@ -79,7 +79,7 @@ void SuturePointPerformer<DataTypes>::start()
 
         if (!SpringObject)
         {
-            msg_error(this->m_interactor) << "Can't find StiffSpringForceField.";
+            msg_error(this->m_interactor) << "Can't find SpringForceField.";
             return;
         }
         else if (!triangleContainer)
@@ -111,13 +111,13 @@ void SuturePointPerformer<DataTypes>::start()
 
         for (unsigned int i=0; i<3; i++)
         {
-            const sofa::type::Vec3& tmp = (MechanicalObject->read(core::ConstVecCoordId::position())->getValue())[ Triangle1[i] ];
+            const sofa::type::Vec3& tmp = (MechanicalObject->read(core::vec_id::read_access::position)->getValue())[ Triangle1[i] ];
             listCoords.push_back (tmp);
         }
 
         for (unsigned int i=0; i<3; i++)
         {
-            const sofa::type::Vec3& tmp = (MechanicalObject->read(core::ConstVecCoordId::position())->getValue())[ Triangle2[i] ];
+            const sofa::type::Vec3& tmp = (MechanicalObject->read(core::vec_id::read_access::position)->getValue())[ Triangle2[i] ];
             listCoords.push_back (tmp);
         }
 

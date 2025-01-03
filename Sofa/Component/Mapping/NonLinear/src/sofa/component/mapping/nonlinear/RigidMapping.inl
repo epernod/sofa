@@ -179,7 +179,7 @@ void RigidMapping<TIn, TOut>::reinit()
 {
     if (d_points.getValue().empty() && this->toModel != nullptr && !d_useX0.getValue())
     {
-        const OutVecCoord& xTo =this->toModel->read(core::ConstVecCoordId::position())->getValue();
+        const OutVecCoord& xTo =this->toModel->read(core::vec_id::read_access::position)->getValue();
         helper::WriteOnlyAccessor<Data<OutVecCoord> > points = d_points;
         sofa::Size toModelSize = xTo.size();
         points.resize(toModelSize);
@@ -187,7 +187,7 @@ void RigidMapping<TIn, TOut>::reinit()
         if (d_globalToLocalCoords.getValue())
         {
             unsigned int i = 0;
-            const InVecCoord& xFrom =this->fromModel->read(core::ConstVecCoordId::position())->getValue();
+            const InVecCoord& xFrom =this->fromModel->read(core::vec_id::read_access::position)->getValue();
 
             for (i = 0; i < toModelSize; i++)
             {
@@ -290,7 +290,7 @@ const typename RigidMapping<TIn, TOut>::OutVecCoord & RigidMapping<TIn, TOut>::g
 {
     if (d_useX0.getValue())
     {
-        const Data<OutVecCoord>* v = this->toModel.get()->read(core::VecCoordId::restPosition());
+        const Data<OutVecCoord>* v = this->toModel.get()->read(core::vec_id::write_access::restPosition);
         if (v)
         {
             return v->getValue();
@@ -511,8 +511,8 @@ void fill_block(Eigen::Matrix<U, 2, 3>& block, const Coord& v) {
 template <class TIn, class TOut>
 const type::vector<sofa::linearalgebra::BaseMatrix*>* RigidMapping<TIn, TOut>::getJs()
 {
-    const OutVecCoord& out =this->toModel->read(core::ConstVecCoordId::position())->getValue();
-    const InVecCoord& in =this->fromModel->read(core::ConstVecCoordId::position())->getValue();
+    const OutVecCoord& out =this->toModel->read(core::vec_id::read_access::position)->getValue();
+    const InVecCoord& in =this->fromModel->read(core::vec_id::read_access::position)->getValue();
 
     typename SparseMatrixEigen::CompressedMatrix& J = m_eigenJacobian.compressedMatrix;
 
@@ -700,8 +700,8 @@ void RigidMapping<TIn, TOut>::buildGeometricStiffnessMatrix(
 template <class TIn, class TOut>
 const sofa::linearalgebra::BaseMatrix* RigidMapping<TIn, TOut>::getJ()
 {
-    const OutVecCoord& out =this->toModel->read(core::ConstVecCoordId::position())->getValue();
-    const InVecCoord& in =this->fromModel->read(core::ConstVecCoordId::position())->getValue();
+    const OutVecCoord& out =this->toModel->read(core::vec_id::read_access::position)->getValue();
+    const InVecCoord& in =this->fromModel->read(core::vec_id::read_access::position)->getValue();
     const OutVecCoord& pts = this->getPoints();
     assert(pts.size() == out.size());
 
@@ -777,7 +777,7 @@ void RigidMapping<TIn, TOut>::draw(const core::visual::VisualParams* vparams)
     std::vector<type::Vec3> points;
     type::Vec3 point;
 
-    const OutVecCoord& x =this->toModel->read(core::ConstVecCoordId::position())->getValue();
+    const OutVecCoord& x =this->toModel->read(core::vec_id::read_access::position)->getValue();
     for (unsigned int i = 0; i < x.size(); i++)
     {
         point = Out::getCPos(x[i]);
@@ -793,10 +793,10 @@ void RigidMapping<TIn, TOut>::parse(core::objectmodel::BaseObjectDescription* ar
     Inherit::parse(arg);
 
     // to be backward compatible with previous data structure
-    const char* repartitionChar = arg->getAttribute("repartition");
+    const char* repartitionChar = arg->getAttribute("d_repartition");
     if( repartitionChar )
     {
-        msg_deprecated() << "parse: You are using a deprecated Data 'repartition', please use the new structure data rigidIndexPerPoint";
+        msg_deprecated() << "parse: You are using a deprecated Data 'd_repartition', please use the new structure data rigidIndexPerPoint";
 
         type::vector< unsigned int > repartition;
         std::istringstream ss( repartitionChar );

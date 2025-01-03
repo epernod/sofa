@@ -27,6 +27,8 @@
 #include <sofa/core/behavior/MechanicalState.h>
 #include <sofa/core/behavior/OdeSolver.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::constraint::lagrangian::model
 {
 
@@ -86,11 +88,19 @@ public:
 
 protected:
 
-    unsigned int cid;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_LAGRANGIAN_MODEL()
+    sofa::core::objectmodel::RenamedData<int> index;
 
-    Data<int> index; ///< index of the stop constraint
-    Data<SReal> min; ///< minimum value accepted
-    Data<SReal> max; ///< maximum value accepted
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_LAGRANGIAN_MODEL()
+    sofa::core::objectmodel::RenamedData<SReal> min;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_LAGRANGIAN_MODEL()
+    sofa::core::objectmodel::RenamedData<SReal> max;
+
+
+    Data<int> d_index; ///< index of the stop constraint
+    Data<SReal> d_min; ///< minimum value accepted
+    Data<SReal> d_max; ///< maximum value accepted
 
 
 

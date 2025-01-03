@@ -27,7 +27,7 @@ namespace sofa::component::linearsystem
 {
 
 /**
- * Matrix prjection method computing the matrix projection taking advantage of the constant sparsity pattern
+ * Matrix projection method computing the matrix projection taking advantage of the constant sparsity pattern
  */
 template<class TMatrix>
 class ConstantSparsityProjectionMethod : public MatrixProjectionMethod<TMatrix>
@@ -40,7 +40,7 @@ public:
     ConstantSparsityProjectionMethod();
     ~ConstantSparsityProjectionMethod() override;
 
-    Data<bool> d_parallelProduct;
+    Data<bool> d_parallelProduct; ///< Compute the matrix product in parallel
 
     void init() override;
     void reinit() override;

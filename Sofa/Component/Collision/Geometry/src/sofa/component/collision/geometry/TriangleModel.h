@@ -135,7 +135,7 @@ public:
 
 	enum { NBARY = 2 };
 
-    Data<bool> d_bothSide; ///< to activate collision on both side of the triangle model
+    Data<bool> d_bothSide; ///< activate collision on both side of the triangle model
     Data<bool> d_computeNormals; ///< set to false to disable computation of triangles normal
     Data<bool> d_useCurvature; ///< use the curvature of the mesh to avoid some self-intersection test
     
@@ -189,7 +189,7 @@ public:
     core::behavior::MechanicalState<DataTypes>* getMechanicalState() { return m_mstate; }
     const core::behavior::MechanicalState<DataTypes>* getMechanicalState() const { return m_mstate; }
 
-    const VecCoord& getX() const { return(getMechanicalState()->read(core::ConstVecCoordId::position())->getValue()); }
+    const VecCoord& getX() const { return(getMechanicalState()->read(core::vec_id::read_access::position)->getValue()); }
     const sofa::core::topology::BaseMeshTopology::SeqTriangles& getTriangles() const { return *m_triangles; }
     const VecDeriv& getNormals() const { return m_normals; }
     int getTriangleFlags(sofa::core::topology::BaseMeshTopology::TriangleID i);

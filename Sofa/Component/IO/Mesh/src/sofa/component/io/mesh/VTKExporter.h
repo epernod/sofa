@@ -30,6 +30,8 @@
 
 #include <fstream>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::_vtkexporter_
 {
 
@@ -54,53 +56,53 @@ protected:
     std::string segmentString(std::string str, unsigned int n);
 
 public:
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
     sofa::core::objectmodel::DataFileName vtkFilename;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< bool > fileFormat;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< bool > fileFormat;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data<defaulttype::Vec3Types::VecCoord> position;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData<defaulttype::Vec3Types::VecCoord> position;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< bool > writeEdges;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< bool > writeEdges;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< bool > writeTriangles;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< bool > writeTriangles;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< bool > writeQuads;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< bool > writeQuads;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< bool > writeTetras;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< bool > writeTetras;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< bool > writeHexas;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< bool > writeHexas;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data<type::vector<std::string> > dPointsDataFields;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData<type::vector<std::string> > dPointsDataFields;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data<type::vector<std::string> > dCellsDataFields;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData<type::vector<std::string> > dCellsDataFields;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< unsigned int > exportEveryNbSteps;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< unsigned int > exportEveryNbSteps;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< bool > exportAtBegin;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< bool > exportAtBegin;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< bool > exportAtEnd;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< bool > exportAtEnd;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< bool > overwrite;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< bool > overwrite;
 
 
 
 
     sofa::core::objectmodel::DataFileName d_vtkFilename;
-    Data<bool> d_fileFormat;	///< 0 for Simple Legacy Formats, 1 for XML File Format
+    Data<bool> d_fileFormat; ///< Set to true to use XML format
     Data<defaulttype::Vec3Types::VecCoord> d_position; ///< points position (will use points from topology or mechanical state if this is empty)
     Data<bool> d_writeEdges; ///< write edge topology
     Data<bool> d_writeTriangles; ///< write triangle topology

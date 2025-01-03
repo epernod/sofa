@@ -25,7 +25,6 @@
 #include <sofa/helper/ScopedAdvancedTimer.h>
 #include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/simulation/VectorOperations.h>
-#include <sofa/core/behavior/MultiMatrix.h>
 #include <sofa/simulation/Node.h>
 #include <sofa/simulation/mechanicalvisitor/MechanicalPropagateOnlyPositionAndVelocityVisitor.h>
 
@@ -46,29 +45,29 @@ StaticSolver::StaticSolver()
     : d_newton_iterations(initData(&d_newton_iterations,
             (unsigned) 1,
             "newton_iterations",
-            "Number of newton iterations between each load increments (normally, one load increment per simulation time-step."))
+            "Number of Newton iterations between each load increments (normally, one load increment per simulation time-step."))
     , d_absolute_correction_tolerance_threshold(initData(&d_absolute_correction_tolerance_threshold,
             1e-5_sreal,
             "absolute_correction_tolerance_threshold",
-            "Convergence criterion: The newton iterations will stop when the norm |du| is smaller than this threshold."))
+            "Convergence criterion of the norm |du| under which the Newton iterations stop"))
     , d_relative_correction_tolerance_threshold(initData(&d_relative_correction_tolerance_threshold,
             1e-5_sreal,
             "relative_correction_tolerance_threshold",
-            "Convergence criterion: The newton iterations will stop when the ratio |du| / |U| is smaller than this threshold."))
+            "Convergence criterion regarding the ratio |du| / |U| under which the Newton iterations stop"))
     , d_absolute_residual_tolerance_threshold( initData(&d_absolute_residual_tolerance_threshold,
             1e-5_sreal,
             "absolute_residual_tolerance_threshold",
-            "Convergence criterion: The newton iterations will stop when the norm |R| is smaller than this threshold. "
-            "Use a negative value to disable this criterion."))
+            "Convergence criterion of the norm |R| under which the Newton iterations stop."
+            "Use a negative value to disable this criterion"))
     , d_relative_residual_tolerance_threshold( initData(&d_relative_residual_tolerance_threshold,
             1e-5_sreal,
             "relative_residual_tolerance_threshold",
-            "Convergence criterion: The newton iterations will stop when the ratio |R|/|R0| is smaller than this threshold. "
-            "Use a negative value to disable this criterion."))
+            "Convergence criterion regarding the ratio |R|/|R0| under which the Newton iterations stop."
+            "Use a negative value to disable this criterion"))
     , d_should_diverge_when_residual_is_growing( initData(&d_should_diverge_when_residual_is_growing,
             false,
             "should_diverge_when_residual_is_growing",
-            "Divergence criterion: The newton iterations will stop when the residual is greater than the one from the previous iteration."))
+            "Boolean stopping Newton iterations when the residual is greater than the one from the previous iteration"))
 {}
 
 void StaticSolver::solve(const sofa::core::ExecParams* params, SReal dt, sofa::core::MultiVecCoordId xResult, sofa::core::MultiVecDerivId vResult)
@@ -78,7 +77,6 @@ void StaticSolver::solve(const sofa::core::ExecParams* params, SReal dt, sofa::c
 
     using std::chrono::steady_clock;
     using sofa::helper::ScopedAdvancedTimer;
-    using sofa::core::behavior::MultiMatrix;
     using sofa::simulation::common::VectorOperations;
     using sofa::simulation::common::MechanicalOperations;
 
@@ -94,8 +92,8 @@ void StaticSolver::solve(const sofa::core::ExecParams* params, SReal dt, sofa::c
 
     // Initialize the set of multi-vectors used by this solver
     MultiVecCoord x(&vop, xResult );
-    MultiVecDeriv force( &vop, sofa::core::VecDerivId::force() );
-    MultiVecDeriv dx( &vop, sofa::core::VecDerivId::dx() );
+    MultiVecDeriv force( &vop, sofa::core::vec_id::write_access::force );
+    MultiVecDeriv dx( &vop, sofa::core::vec_id::write_access::dx );
     dx.realloc( &vop , true, true);
     U.realloc( &vop );
     U.clear();
@@ -206,30 +204,28 @@ void StaticSolver::solve(const sofa::core::ExecParams* params, SReal dt, sofa::c
         t = steady_clock::now();
 
         // Part I. Assemble the system matrix.
-        MultiMatrix<MechanicalOperations> matrix(&mop);
         {
             SCOPED_TIMER("MBKBuild");
-            // 1. The MechanicalMatrix::K is a simple structure that stores three floats called factors: m, b and k.
-            // 2. the * operator simply multiplies each of the three factors with a value. No matrix is built yet.
-            // 3. The = operator first search for a linear solver in the current context. It then calls the
-            //    "setSystemMBKMatrix" method of the linear solver.
-
             //    A. For LinearSolver using a GraphScatteredMatrix (ie, non-assembled matrices), nothing appends.
             //    B. For LinearSolver using other type of matrices (FullMatrix, SparseMatrix, CompressedRowSparseMatrix),
             //       the "addMBKToMatrix" method is called on each BaseForceField objects and the "applyConstraint" method
             //       is called on every BaseProjectiveConstraintSet objects. An example of such constraint set is the
             //       FixedProjectiveConstraint. In this case, it will set to 0 every column (_, i) and row (i, _) of the assembled
             //       matrix for the ith degree of freedom.
-            matrix.setSystemMBKMatrix(MechanicalMatrix::K * -1.0);
+            mop.setSystemMBKMatrix(
+                core::MatricesFactors::M(0),
+                core::MatricesFactors::B(0),
+                core::MatricesFactors::K(-1), l_linearSolver.get());
         }
 
         // Part II. Solve the unknown increment.
         {
             SCOPED_TIMER("MBKSolve");
-            // Calls methods "setSystemRHVector", "setSystemLHVector" and "solveSystem" of the LinearSolver component
             // for CG: calls iteratively addDForce, mapped:  [applyJ, addDForce, applyJt(vec)]+
             // for Direct: solves the system, everything's already assembled
-            matrix.solve(dx, force);
+            l_linearSolver->setSystemLHVector(dx);
+            l_linearSolver->setSystemRHVector(force);
+            l_linearSolver->solveSystem();
         }
 
         // Part III. Propagate the solution increment and update geometry.
@@ -405,9 +401,10 @@ void StaticSolver::solve(const sofa::core::ExecParams* params, SReal dt, sofa::c
     sofa::helper::AdvancedTimer::valSet("correction", std::sqrt(dx_squared_norm));
 }
 
-
-int StaticSolverClass = sofa::core::RegisterObject("Static ODE Solver")
-    .add< StaticSolver >()
-;
+void registerStaticSolver(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Static ODE Solver.")
+        .add< StaticSolver >());
+}
 
 } // namespace sofa::component::odesolver::backward

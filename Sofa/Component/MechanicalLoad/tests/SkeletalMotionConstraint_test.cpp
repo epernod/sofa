@@ -128,7 +128,7 @@ struct SkeletalMotionProjectiveConstraint_test : public BaseSimulationTest, Nume
 
     bool test_projectPosition()
     {
-        projection->projectPosition(core::mechanicalparams::defaultInstance(), *dofs->write(core::VecCoordId::position()));
+        projection->projectPosition(core::mechanicalparams::defaultInstance(), *dofs->write(core::vec_id::write_access::position));
         typename MechanicalObject::ReadVecCoord x = dofs->readPositions();
         Coord target0(CPos(0.5,0.5,0.5), CRot(0, 0.19509, 0, 0.980785));
         Coord target1(CPos(0.5,1.5,0.5), CRot(0.69352, 0.13795, -0.13795, 0.69352));
@@ -153,7 +153,7 @@ struct SkeletalMotionProjectiveConstraint_test : public BaseSimulationTest, Nume
 
     bool test_projectVelocity()
     {
-        projection->projectVelocity(core::mechanicalparams::defaultInstance(), *dofs->write(core::VecDerivId::velocity()));
+        projection->projectVelocity(core::mechanicalparams::defaultInstance(), *dofs->write(core::vec_id::write_access::velocity));
         typename MechanicalObject::ReadVecDeriv x = dofs->readVelocities();
         bool succeed = true;
         Deriv target(CPos(1,1,1), typename Deriv::Rot(0,0.785397,0));
@@ -177,13 +177,13 @@ struct SkeletalMotionProjectiveConstraint_test : public BaseSimulationTest, Nume
  };
 
 
-// Define the list of DataTypes to instanciate
+// Define the list of DataTypes to instantiate
 using ::testing::Types;
 typedef Types<
     Rigid3Types
-> DataTypes; // the types to instanciate.
+> DataTypes; // the types to instantiate.
 
-// Test suite for all the instanciations
+// Test suite for all the instantiations
 TYPED_TEST_SUITE(SkeletalMotionProjectiveConstraint_test, DataTypes);
 // first test case
 TYPED_TEST( SkeletalMotionProjectiveConstraint_test , twoConstrainedBones )

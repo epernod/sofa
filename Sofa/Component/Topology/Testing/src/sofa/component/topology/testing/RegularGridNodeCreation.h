@@ -62,7 +62,7 @@ PatchTestStruct<DataTypes> createRegularGridScene(
     PatchTestStruct<DataTypes> patchStruct;
     typedef typename DataTypes::Real Real;
     typedef typename component::statecontainer::MechanicalObject<DataTypes> MechanicalObject;
-    typedef typename sofa::component::mass::UniformMass <DataTypes> UniformMass;
+    typedef typename sofa::component::mass::UniformMass<DataTypes> UniformMass;
     typedef component::topology::container::grid::RegularGridTopology RegularGridTopology;
     typedef typename component::engine::select::BoxROI<DataTypes> BoxRoi;
     typedef typename sofa::component::engine::select::PairBoxROI<DataTypes> PairBoxRoi;
@@ -90,6 +90,7 @@ PatchTestStruct<DataTypes> createRegularGridScene(
 
     // Mass
     typename UniformMass::SPtr mass = modeling::addNew<UniformMass>(SquareNode,"mass");
+    mass->d_totalMass.setValue(1.0);
 
     // Regular grid topology
     const RegularGridTopology::SPtr gridMesh = modeling::addNew<RegularGridTopology>(SquareNode,"loader");
@@ -115,8 +116,8 @@ PatchTestStruct<DataTypes> createRegularGridScene(
 
     //Affine constraint
     patchStruct.affineConstraint  = modeling::addNew<AffineMovementProjectiveConstraint>(SquareNode,"affineConstraint");
-    modeling::setDataLink(&boxRoi->d_indices,&patchStruct.affineConstraint->m_meshIndices);
-    modeling::setDataLink(&pairBoxRoi->f_indices,& patchStruct.affineConstraint->m_indices);
+    modeling::setDataLink(&boxRoi->d_indices,&patchStruct.affineConstraint->d_meshIndices);
+    modeling::setDataLink(&pairBoxRoi->f_indices,& patchStruct.affineConstraint->d_indices);
 
     patchStruct.SquareNode = SquareNode;
     return patchStruct;

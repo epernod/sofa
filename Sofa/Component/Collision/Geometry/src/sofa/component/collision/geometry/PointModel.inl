@@ -42,9 +42,9 @@ PointCollisionModel<DataTypes>::PointCollisionModel()
 {
     enum_type = POINT_TYPE;
 
-    bothSide.setParent(&d_bothSide);
-    computeNormals.setParent(&d_computeNormals);
-    m_displayFreePosition.setParent(&d_displayFreePosition);
+    bothSide.setOriginalData(&d_bothSide);
+    computeNormals.setOriginalData(&d_computeNormals);
+    m_displayFreePosition.setOriginalData(&d_displayFreePosition);
 }
 
 template<class DataTypes>
@@ -134,7 +134,7 @@ void PointCollisionModel<DataTypes>::computeBoundingTree(int maxDepth)
     cubeModel->resize(size);
     if (!empty())
     {
-        //VecCoord& x =mstate->read(core::ConstVecCoordId::position())->getValue();
+        //VecCoord& x =mstate->read(core::vec_id::read_access::position)->getValue();
         const SReal distance = this->proximity.getValue();
         for (sofa::Size i=0; i<size; i++)
         {
@@ -166,8 +166,8 @@ void PointCollisionModel<DataTypes>::computeContinuousBoundingTree(SReal dt, int
     cubeModel->resize(size);
     if (!empty())
     {
-        //VecCoord& x =mstate->read(core::ConstVecCoordId::position())->getValue();
-        //VecDeriv& v = mstate->read(core::ConstVecDerivId::velocity())->getValue();
+        //VecCoord& x =mstate->read(core::vec_id::read_access::position)->getValue();
+        //VecDeriv& v = mstate->read(core::vec_id::read_access::velocity)->getValue();
         const SReal distance = (SReal)this->proximity.getValue();
         for (sofa::Size i=0; i<size; i++)
         {
@@ -193,7 +193,7 @@ void PointCollisionModel<DataTypes>::computeContinuousBoundingTree(SReal dt, int
 template<class DataTypes>
 void PointCollisionModel<DataTypes>::updateNormals()
 {
-    const VecCoord& x = this->mstate->read(core::ConstVecCoordId::position())->getValue();
+    const VecCoord& x = this->mstate->read(core::vec_id::read_access::position)->getValue();
     auto n = x.size();
     normals.resize(n);
     for (sofa::Index i=0; i<n; ++i)

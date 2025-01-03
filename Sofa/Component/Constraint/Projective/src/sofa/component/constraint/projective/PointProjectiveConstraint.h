@@ -33,10 +33,12 @@
 #include <sofa/core/topology/TopologySubsetIndices.h>
 #include <set>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::constraint::projective
 {
 
-/// This class can be overridden if needed for additionnal storage within template specializations.
+/// This class can be overridden if needed for additional storage within template specializations.
 template <class DataTypes>
 class PointProjectiveConstraintInternalData
 {
@@ -75,16 +77,30 @@ protected:
     virtual ~PointProjectiveConstraint();
 
 public:
-    SetIndex f_indices;    ///< the indices of the points to project to the target
-    Data<Coord> f_point;    ///< the target of the projection
-    Data<bool> f_fixAll;    ///< to project all the points, rather than those listed in f_indices
-    Data<SReal> f_drawSize; ///< 0 -> point based rendering, >0 -> radius of spheres
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<sofa::type::vector<Index>> f_indices;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<Coord> f_point;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<bool> f_fixAll;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<SReal> f_drawSize;
+
+
+    SetIndex d_indices;    ///< the indices of the points to project to the target
+    Data<Coord> d_point; ///< Target of the projection
+    Data<bool> d_fixAll; ///< filter all the DOF to implement a fixed object
+    Data<SReal> d_drawSize; ///< Size of the rendered particles (0 -> point based rendering, >0 -> radius of spheres)
 
     /// Link to be set to the topology container in the component graph.
     SingleLink<PointProjectiveConstraint<DataTypes>, sofa::core::topology::BaseMeshTopology, BaseLink::FLAG_STOREPATH | BaseLink::FLAG_STRONGLINK> l_topology;
 
 protected:
-    PointProjectiveConstraintInternalData<DataTypes>* data;
+    std::unique_ptr<PointProjectiveConstraintInternalData<DataTypes>> data;
     friend class PointProjectiveConstraintInternalData<DataTypes>;
 
 
@@ -114,7 +130,7 @@ public:
 
     void draw(const core::visual::VisualParams* vparams) override;
 
-    bool fixAllDOFs() const { return f_fixAll.getValue(); }
+    bool fixAllDOFs() const { return d_fixAll.getValue(); }
 
 protected :
 

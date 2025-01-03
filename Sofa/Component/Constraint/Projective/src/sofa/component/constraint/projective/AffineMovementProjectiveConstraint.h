@@ -34,6 +34,8 @@
 #include <type_traits>
 #include <set>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::constraint::projective
 {
 
@@ -74,26 +76,52 @@ public:
     typedef type::Mat<3,3,Real> RotationMatrix;
 
 protected:
-    AffineMovementProjectiveConstraintInternalData<DataTypes> *data;
+    std::unique_ptr<AffineMovementProjectiveConstraintInternalData<DataTypes>> data { nullptr };
     friend class AffineMovementProjectiveConstraintInternalData<DataTypes>;
 
 public :
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<sofa::type::vector<sofa::Index> > m_meshIndices;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<sofa::type::vector<sofa::Index> > m_indices;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<SReal> m_beginConstraintTime;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<SReal> m_endConstraintTime;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<RotationMatrix> m_rotation;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<Quat>  m_quaternion;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<Vec3> m_translation;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONSTRAINT_PROJECTIVE()
+    sofa::core::objectmodel::RenamedData<bool> m_drawConstrainedPoints;
+
+
     /// indices of the DOFs of the mesh
-    SetIndex m_meshIndices;
+    SetIndex d_meshIndices;
      /// indices of the DOFs the constraint is applied to
-    SetIndex m_indices;
+    SetIndex d_indices;
     /// data begin time when the constraint is applied
-    Data <SReal> m_beginConstraintTime;
+    Data <SReal> d_beginConstraintTime;
     /// data end time when the constraint is applied
-    Data <SReal> m_endConstraintTime;
+    Data <SReal> d_endConstraintTime;
     /// Rotation Matrix of affine transformation
-    Data<RotationMatrix> m_rotation;
+    Data<RotationMatrix> d_rotation;
     /// Quaternion of affine transformation (for rigid)
-    Data<Quat> m_quaternion;
+    Data<Quat> d_quaternion;
     /// Translation Matrix of affine transformation
-    Data<Vec3> m_translation;
+    Data<Vec3> d_translation;
     /// Draw constrained points
-    Data <bool> m_drawConstrainedPoints;
+    Data <bool> d_drawConstrainedPoints;
     /// initial constrained DOFs position
     VecCoord x0;
     /// final constrained DOFs position

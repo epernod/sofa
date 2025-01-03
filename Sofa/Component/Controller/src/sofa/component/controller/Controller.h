@@ -24,6 +24,8 @@
 
 #include <sofa/core/behavior/BaseController.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::core::objectmodel
 {
     class Event;
@@ -108,11 +110,11 @@ public:
     virtual void onGUIEvent(core::objectmodel::GUIEvent *) {}
 
 protected:
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data < bool > handleEventTriggersUpdate;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_CONTROLLER()
+    sofa::core::objectmodel::RenamedData < bool > handleEventTriggersUpdate;
 
 
-    Data< bool > d_handleEventTriggersUpdate; ///< Event reception triggers object update
+    Data< bool > d_handleEventTriggersUpdate; ///< Event handling frequency controls the controller update frequency
 
 public:
 

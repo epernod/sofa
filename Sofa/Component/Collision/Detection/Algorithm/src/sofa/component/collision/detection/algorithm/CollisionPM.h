@@ -38,7 +38,7 @@ namespace sofa::component::collision::detection::algorithm
 
         /**
           *x and y value are used to identify this pair, the order is not important but the order of elem1_ and elem2_ is because
-          *when using intersect funcion we run inter->intersect(elem1,elem2,output), so the intersect method must handle the order you give.
+          *when using intersect function we run inter->intersect(elem1,elem2,output), so the intersect method must handle the order you give.
           */
         CollidingPair(const core::CollisionElementIterator & elem1_,const core::CollisionElementIterator & elem2_,core::collision::ElementIntersector * /*inter*/) :
             elem1(elem1_),elem2(elem2_)
@@ -200,7 +200,7 @@ namespace sofa::component::collision::detection::algorithm
                         for(umap_collision::iterator it = _coll_pairs[i][j].begin() ; it != _coll_pairs[i][j].end() ; ++it){
                             core::collision::DetectionOutputVector*& output = phase->getDetectionOutputs(it->second.elem1.getCollisionModel(),it->second.elem2.getCollisionModel());
                             ei->beginIntersect(it->second.elem1.getCollisionModel(),it->second.elem2.getCollisionModel(),output);
-                            ei->intersect(it->second.elem1,it->second.elem2,output);
+                            ei->intersect(it->second.elem1,it->second.elem2,output, phase->getIntersectionMethod());
                         }
                     }
                 }

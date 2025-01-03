@@ -26,7 +26,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 ### Sofa using type double or float
 set(SOFA_FLOATING_POINT_TYPE double CACHE STRING
     "Type used for floating point values in SOFA. It actually determines:
-    - what template instanciations will be compiled (via the definition of the
+    - what template instantiations will be compiled (via the definition of the
     SOFA_FLOAT and SOFA_DOUBLE macros)
     - what is the type behind the 'SReal' typedef used throughout SOFA.")
 set_property(CACHE SOFA_FLOATING_POINT_TYPE PROPERTY STRINGS float double)
@@ -95,16 +95,12 @@ set(SOFACONFIG_BUILD_OPTIONS_SRC
     ${SOFACONFIGSRC_ROOT}/config/build_option_bbox.h.in
 )
 
-# Header-only library (not handled well by macros & stuff so commented)
-# add_library(${PROJECT_NAME} INTERFACE)
-# target_sources(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${HEADER_FILES};${SOFACONFIG_BUILD_OPTIONS_SRC}>")
-
 # Library
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOFACONFIG_BUILD_OPTIONS_SRC} ${SOURCE_FILES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>")
 
-if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+if((CMAKE_SYSTEM_NAME STREQUAL Windows) AND SOFA_USE_DEPENDENCY_PACK)
     target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC "$<INSTALL_INTERFACE:include/extlibs/WinDepPack>")
 endif()
 
@@ -143,18 +139,6 @@ endif()
 
 ## GCC-specific
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU")
-    ## Find out the version of g++ (and save it in GCXX_VERSION)
-    if(CMAKE_CXX_COMPILER_ARG1) # CXX="ccache g++"
-        string(STRIP ${CMAKE_CXX_COMPILER_ARG1} CMAKE_CXX_COMPILER_ARG1_stripped)
-        execute_process(COMMAND ${CMAKE_CXX_COMPILER_ARG1_stripped} -dumpversion OUTPUT_VARIABLE GCXX_VERSION)
-    else()
-        execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE GCXX_VERSION)
-    endif()
-
-    ## Disable partial inlining under gcc 4.6 (Why? -> the memory was exploding)
-    if("${GCXX_VERSION}" VERSION_EQUAL 4.6)
-        list(APPEND SOFACONFIG_COMPILE_OPTIONS_RELEASE "-fno-partial-inlining")
-    endif()
 
     # stack-protector
     list(APPEND SOFACONFIG_COMPILE_OPTIONS_RELEASE "-fstack-protector;--param=ssp-buffer-size=4")
@@ -182,8 +166,14 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR ${CMAKE_CXX_COMPILER_ID} MATCHES "C
 
     option(SOFA_ENABLE_THREAD_SANITIZER "Enable thread sanitizer (only gcc or clang)" OFF)
     if(SOFA_ENABLE_THREAD_SANITIZER)
-        list(APPEND SOFACONFIG_COMPILE_OPTIONS "-fsanitize=thread")
+        list(APPEND SOFACONFIG_COMPILE_OPTIONS "-fsanitize=thread;-fno-omit-frame-pointer")
         list(APPEND SOFACONFIG_LINK_OPTIONS "-fsanitize=thread")
+    endif()
+
+    option(SOFA_ENABLE_MEMORY_SANITIZER "Enable memory sanitizer (only gcc or clang)" OFF)
+    if(SOFA_ENABLE_MEMORY_SANITIZER)
+        list(APPEND SOFACONFIG_COMPILE_OPTIONS "-fsanitize=address;-fno-omit-frame-pointer")
+        list(APPEND SOFACONFIG_LINK_OPTIONS "-fsanitize=address")
     endif()
 endif()
 
@@ -209,10 +199,9 @@ if(WIN32)
     # it happens because we put explicit instantiation in a separate translation unit
     # it is by design, so this warning is irrelevant in our project
 
-    if(MSVC_TOOLSET_VERSION GREATER 140) # > VS 2015
-        list(APPEND SOFACONFIG_COMPILE_OPTIONS "/Zc:__cplusplus")
-    endif()
-
+    # https://learn.microsoft.com/en-us/cpp/build/reference/zc-cplusplus?view=msvc-170
+    list(APPEND SOFACONFIG_COMPILE_OPTIONS "/Zc:__cplusplus")
+    
     # Experimental: compilation with MSVC/Clang-cl
     if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
         if( ${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL MSVC) # something weird happens if we put the two test in one if ??
@@ -271,20 +260,6 @@ if(SOFA_ENABLE_BUILTIN_TIMER)
     set(SOFA_ENABLE_SCOPED_ADVANCED_TIMER 1)
 endif()
 
-# An important C++11 feature may be not enabled due to
-# the compiler being built without the --enable-libstdcxx-time option.
-if(CMAKE_COMPILER_IS_GNUCXX)
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
-        list(APPEND SOFACONFIG_COMPILE_OPTIONS "-D_GLIBCXX_USE_NANOSLEEP -D_GLIBCXX_USE_SCHED_YIELD")
-    endif()
-endif()
-
-# hack for clang on old macosx (version < 10.9, such as the dashboard servers)
-# that is using, by default at that time, a libstdc++ that did not fully implement c++11
-if(APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND CMAKE_SYSTEM_VERSION VERSION_LESS "10.9" AND ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" )
-    list(APPEND SOFACONFIG_COMPILE_OPTIONS "-stdlib=libc++")
-endif()
-
 if(CMAKE_SYSTEM_NAME STREQUAL Linux AND NOT CMAKE_BUILD_TYPE MATCHES "Debug")
     target_compile_definitions(${PROJECT_NAME} PUBLIC "NDEBUG")
     # On Windows and MacOS, NDEBUG and _DEBUG are automatically
@@ -321,29 +296,22 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   MAP_IMPORTED_CONFIG_MINSIZEREL Release
   MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release
   )
-target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:RELEASE>:${SOFACONFIG_COMPILE_OPTIONS_RELEASE}>")
-target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:${SOFACONFIG_COMPILE_OPTIONS_DEBUG}>")
-target_compile_options(${PROJECT_NAME} PUBLIC "${SOFACONFIG_COMPILE_OPTIONS}")
 
-# target_link_option only available with cmake >= 3.13
-if(${CMAKE_VERSION} VERSION_LESS "3.13.0")
-    if(NOT SOFACONFIG_LINK_OPTIONS_RELEASE STREQUAL "")
-        string(REPLACE ";" " " SOFACONFIG_LINK_OPTIONS_RELEASE "${SOFACONFIG_LINK_OPTIONS_RELEASE}")
-        set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "${SOFACONFIG_LINK_OPTIONS_RELEASE}")
-    endif()
-    if(NOT SOFACONFIG_LINK_OPTIONS_DEBUG STREQUAL "")
-        string(REPLACE ";" " " SOFACONFIG_LINK_OPTIONS_DEBUG "${SOFACONFIG_LINK_OPTIONS_DEBUG}")
-        set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS_DEBUG "${SOFACONFIG_LINK_OPTIONS_DEBUG}")
-    endif()
-    if(NOT SOFACONFIG_LINK_OPTIONS STREQUAL "")
-        string(REPLACE ";" " " SOFACONFIG_LINK_OPTIONS "${SOFACONFIG_LINK_OPTIONS}")
-        set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "${SOFACONFIG_LINK_OPTIONS}")
-    endif()
-else()
-    target_link_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:RELEASE>:${SOFACONFIG_LINK_OPTIONS_RELEASE}>")
-    target_link_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:DEBUG>:${SOFACONFIG_LINK_OPTIONS_DEBUG}>")
-    target_link_options(${PROJECT_NAME} PUBLIC "${SOFACONFIG_LINK_OPTIONS}")
-endif()
+set(is_cxx "$<COMPILE_LANGUAGE:CXX>")
+set(is_c "$<COMPILE_LANGUAGE:C>")
+set(is_c_cxx "$<OR:${is_cxx},${is_c}>")
+set(is_release "$<CONFIG:RELEASE>")
+set(is_debug "$<CONFIG:DEBUG>")
+set(is_c_cxx_release "$<AND:${is_c_cxx},${is_release}>")
+set(is_c_cxx_debug "$<AND:${is_c_cxx},${is_debug}>")
+
+target_compile_options(${PROJECT_NAME} PUBLIC "$<${is_c_cxx_release}:${SOFACONFIG_COMPILE_OPTIONS_RELEASE}>")
+target_compile_options(${PROJECT_NAME} PUBLIC "$<${is_c_cxx_debug}:${SOFACONFIG_COMPILE_OPTIONS_DEBUG}>")
+target_compile_options(${PROJECT_NAME} PUBLIC "$<${is_c_cxx}:${SOFACONFIG_COMPILE_OPTIONS}>")
+
+target_link_options(${PROJECT_NAME} PUBLIC "$<${is_c_cxx_release}:${SOFACONFIG_LINK_OPTIONS_RELEASE}>")
+target_link_options(${PROJECT_NAME} PUBLIC "$<${is_c_cxx_debug}:${SOFACONFIG_LINK_OPTIONS_DEBUG}>")
+target_link_options(${PROJECT_NAME} PUBLIC "$<${is_c_cxx}:${SOFACONFIG_LINK_OPTIONS}>")
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Sofa.Framework) # IDE folder
 

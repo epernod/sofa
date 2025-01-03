@@ -107,7 +107,7 @@ public:
     /// to display the center of gravity of the system
     Data< bool > d_showCenterOfGravity;
 
-    Data< float > d_showAxisSize; ///< factor length of the axis displayed (only used for rigids)
+    Data< float > d_showAxisSize; ///< Factor length of the axis displayed (only used for rigids)
     core::objectmodel::DataFileName d_fileMass; ///< an Xsp3.0 file to specify the mass parameters
 
     /// value defining the initialization process of the mass (0 : totalMass, 1 : massDensity, 2 : vertexMass)
@@ -262,7 +262,7 @@ public:
     SReal getTotalMass() const { return d_totalMass.getValue(); }
     std::size_t getMassCount() { return d_vertexMass.getValue().size(); }
 
-    /// Print key mass informations (totalMass, vertexMass and massDensity)
+    /// Print key mass information (totalMass, vertexMass and massDensity)
     void printMass();
 
     /// @name Read and write access functions in mass information
@@ -310,7 +310,7 @@ public:
     void addGravityToV(const core::MechanicalParams* mparams, DataVecDeriv& d_v) override;
 
     /// Add Mass contribution to global Matrix assembling
-    void addMToMatrix(const core::MechanicalParams *mparams, const sofa::core::behavior::MultiMatrixAccessor* matrix) override;
+    void addMToMatrix(sofa::linearalgebra::BaseMatrix * mat, SReal mFact, unsigned int &offset) override;
     void buildMassMatrix(sofa::core::behavior::MassMatrixAccumulator* matrices) override;
     void buildStiffnessMatrix(core::behavior::StiffnessMatrix* /* matrix */) override {}
     void buildDampingMatrix(core::behavior::DampingMatrix* /* matrices */) override {}

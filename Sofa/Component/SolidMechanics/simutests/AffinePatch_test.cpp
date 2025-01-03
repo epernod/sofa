@@ -121,7 +121,7 @@ struct AffinePatch_sofa_test : public sofa::testing::BaseSimulationTest, sofa::t
             quat.normalize();
             quat.toMatrix(testedRotation);
         }
-        patchStruct.affineConstraint->m_rotation.setValue(testedRotation);
+        patchStruct.affineConstraint->d_rotation.setValue(testedRotation);
 
         // Random Translation
         if(randomTranslation)
@@ -133,7 +133,7 @@ struct AffinePatch_sofa_test : public sofa::testing::BaseSimulationTest, sofa::t
                     testedTranslation[i]=0;
             }
         }
-        patchStruct.affineConstraint->m_translation.setValue(testedTranslation);
+        patchStruct.affineConstraint->d_translation.setValue(testedTranslation);
 
     }
 
@@ -176,7 +176,7 @@ struct AffinePatch_sofa_test : public sofa::testing::BaseSimulationTest, sofa::t
             quat.normalize();
             quat.toMatrix(testedRotation);
         }
-        patchStruct.affineConstraint->m_rotation.setValue(testedRotation);
+        patchStruct.affineConstraint->d_rotation.setValue(testedRotation);
 
         // Random Translation
         if(randomTranslation)
@@ -186,7 +186,7 @@ struct AffinePatch_sofa_test : public sofa::testing::BaseSimulationTest, sofa::t
                 testedTranslation[i] = helper::drand(2);
             }
         }
-        patchStruct.affineConstraint->m_translation.setValue(testedTranslation);
+        patchStruct.affineConstraint->d_translation.setValue(testedTranslation);
 
     }
 
@@ -208,7 +208,7 @@ struct AffinePatch_sofa_test : public sofa::testing::BaseSimulationTest, sofa::t
 
         // Compute the theoretical final positions
         VecCoord finalPos;
-        patchStruct.affineConstraint->getFinalPositions( finalPos,*patchStruct.dofs->write(core::VecCoordId::position()) );
+        patchStruct.affineConstraint->getFinalPositions( finalPos,*patchStruct.dofs->write(core::vec_id::write_access::position) );
 
 
         // Initialize
@@ -266,13 +266,13 @@ struct AffinePatch_sofa_test : public sofa::testing::BaseSimulationTest, sofa::t
 
 };
 
-// Define the list of DataTypes to instanciate
+// Define the list of DataTypes to instantiate
 using ::testing::Types;
 typedef Types<
     Vec3Types
-> DataTypes; // the types to instanciate.
+> DataTypes; // the types to instantiate.
 
-// Test suite for all the instanciations
+// Test suite for all the instantiations
 TYPED_TEST_SUITE(AffinePatch_sofa_test, DataTypes);
 
 // first test case

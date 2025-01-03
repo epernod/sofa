@@ -112,9 +112,9 @@ public:
     Data<SReal> d_tol; ///< Tolerance of the Gauss-Seidel
     Data<int> d_maxIt; ///< Maximum number of iterations of the Gauss-Seidel
     Data<bool> d_doCollisionsFirst; ///< Compute the collisions first (to support penality-based contacts)
-    Data<bool> d_doubleBuffer; ///< Buffer the constraint problem in a SReal buffer to be accessible with an other thread
+    Data<bool> d_doubleBuffer; ///< Double the buffer dedicated to the constraint problem to make it accessible to another thread
     Data<bool> d_scaleTolerance; ///< Scale the error tolerance with the number of constraints
-    Data<bool> d_allVerified; ///< All contraints must be verified (each constraint's error < tolerance)
+    Data<bool> d_allVerified; ///< All constraints must be verified (each constraint's error < tolerance)
     Data<SReal> d_sor; ///< Successive Over Relaxation parameter (0-2)
     Data<bool> d_schemeCorrection; ///< Apply new scheme where compliance is progressively corrected
     Data<bool> d_realTimeCompensation; ///< If the total computational time T < dt, sleep(dt-T)

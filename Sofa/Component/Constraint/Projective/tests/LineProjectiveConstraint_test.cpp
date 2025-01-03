@@ -91,9 +91,9 @@ const PointSetTopologyContainer::SPtr topology = core::objectmodel::New<PointSet
 
 
         origin = CPos(0,0,0);
-        projection->f_origin.setValue(origin);
+        projection->d_origin.setValue(origin);
         direction = CPos(1,1,1);
-        projection->f_direction.setValue(direction);
+        projection->d_direction.setValue(direction);
 
     }
 
@@ -109,7 +109,7 @@ const PointSetTopologyContainer::SPtr topology = core::objectmodel::New<PointSet
         indices.clear();
         indices.push_back(1);
         std::sort(indices.begin(),indices.end()); // checking vectors in linear time requires sorted indices
-        projection->f_indices.setValue(indices);
+        projection->d_indices.setValue(indices);
 
         /// Init
         sofa::simulation::node::initRoot(root.get());
@@ -122,7 +122,7 @@ const PointSetTopologyContainer::SPtr topology = core::objectmodel::New<PointSet
         indices.clear();
         for(unsigned i = 0; i<numNodes; i++)
             indices.push_back(i);
-         projection->f_indices.setValue(indices);
+         projection->d_indices.setValue(indices);
 
          /// Init
          sofa::simulation::node::initRoot(root.get());
@@ -137,7 +137,7 @@ const PointSetTopologyContainer::SPtr topology = core::objectmodel::New<PointSet
        for (unsigned i=0; i<numNodes; i++){
            xprev[i] = x[i] = CPos(i,0,0);
        }
-       projection->projectPosition(core::mechanicalparams::defaultInstance(), *dofs->write(core::VecCoordId::position()) );
+       projection->projectPosition(core::mechanicalparams::defaultInstance(), *dofs->write(core::vec_id::write_access::position) );
 
        bool succeed=true;
        typename Indices::const_iterator it = indices.begin(); // must be sorted
@@ -174,7 +174,7 @@ const PointSetTopologyContainer::SPtr topology = core::objectmodel::New<PointSet
        for (unsigned i=0; i<numNodes; i++){
            vprev[i] = v[i] = CPos(i,0,0);
        }
-       projection->projectVelocity(core::mechanicalparams::defaultInstance(), *dofs->write(core::VecDerivId::velocity()) );
+       projection->projectVelocity(core::mechanicalparams::defaultInstance(), *dofs->write(core::vec_id::write_access::velocity) );
 
        bool succeed=true;
        typename Indices::const_iterator it = indices.begin(); // must be sorted
@@ -214,13 +214,13 @@ const PointSetTopologyContainer::SPtr topology = core::objectmodel::New<PointSet
  };
 
 
-// Define the list of DataTypes to instanciate
+// Define the list of DataTypes to instantiate
 using ::testing::Types;
 typedef Types<
     Vec3Types
-> DataTypes; // the types to instanciate.
+> DataTypes; // the types to instantiate.
 
-// Test suite for all the instanciations
+// Test suite for all the instantiations
 TYPED_TEST_SUITE(LineProjectiveConstraint_test, DataTypes);
 // first test case
 TYPED_TEST( LineProjectiveConstraint_test , oneConstrainedParticle )

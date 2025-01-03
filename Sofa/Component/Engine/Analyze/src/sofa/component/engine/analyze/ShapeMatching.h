@@ -34,6 +34,7 @@
 #include <sofa/type/Vec.h>
 #include <sofa/type/SVector.h>
 
+#include <sofa/core/objectmodel/RenamedData.h>
 
 namespace sofa::component::engine::analyze
 {
@@ -70,14 +71,39 @@ public:
 
     void draw(const core::visual::VisualParams* vparams) override;
 
-    Data<unsigned int> iterations; ///< Number of iterations.
-    Data< Real > affineRatio; ///< Blending between affine and rigid.
-    Data< Real > fixedweight; ///< weight of fixed particles.
-    Data< VecCoord > fixedPosition0; ///< rest positions of non mechanical particles.
-    Data< VecCoord > fixedPosition; ///< current (fixed) positions of non mechanical particles.
-    Data< VecCoord > position; ///< input (current mstate position)
-    Data< VVI > cluster; ///< input2 (clusters)
-    Data< VecCoord > targetPosition;       ///< result
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<unsigned int> iterations;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<Real> affineRatio;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<Real> fixedweight;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<VecCoord> fixedPosition0;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<VecCoord> fixedPosition;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<VecCoord> position;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData< VVI >  cluster;
+
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_ENGINE_ANALYZE()
+    sofa::core::objectmodel::RenamedData<VecCoord> targetPosition;
+
+
+    Data<unsigned int> d_iterations; ///< Number of iterations.
+    Data< Real > d_affineRatio; ///< Blending between affine and rigid.
+    Data< Real > d_fixedweight; ///< weight of fixed particles.
+    Data< VecCoord > d_fixedPosition0; ///< rest positions of non mechanical particles.
+    Data< VecCoord > d_fixedPosition; ///< current (fixed) positions of non mechanical particles.
+    Data< VecCoord > d_position; ///< Input positions.
+    Data< VVI > d_cluster; ///< Input clusters.
+    Data< VecCoord > d_targetPosition; ///< Computed target positions.
 
 private:
     sofa::core::topology::BaseMeshTopology* topo;

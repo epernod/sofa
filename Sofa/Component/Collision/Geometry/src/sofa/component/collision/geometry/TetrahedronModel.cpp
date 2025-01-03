@@ -34,9 +34,11 @@ namespace sofa::component::collision::geometry
 using namespace sofa::type;
 using namespace sofa::defaulttype;
 
-int TetrahedronCollisionModelClass = core::RegisterObject("collision model using a tetrahedral mesh, as described in BaseMeshTopology")
-        .add< TetrahedronCollisionModel >()
-        ;
+void registerTetrahedronCollisionModel(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(core::ObjectRegistrationData("Collision model using a tetrahedral mesh, as described in BaseMeshTopology.")
+        .add< TetrahedronCollisionModel >());
+}
 
 TetrahedronCollisionModel::TetrahedronCollisionModel()
     : tetra(nullptr)
@@ -205,7 +207,7 @@ void TetrahedronCollisionModel::computeBoundingTree(int maxDepth)
     updateFromTopology();
 
     Vec3 minElem, maxElem;
-    const VecCoord& x = this->mstate->read(core::ConstVecCoordId::position())->getValue();
+    const VecCoord& x = this->mstate->read(core::vec_id::read_access::position)->getValue();
 
     for (std::size_t i=0; i<size; i++)
     {

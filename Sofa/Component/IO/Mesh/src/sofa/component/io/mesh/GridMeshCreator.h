@@ -23,6 +23,9 @@
 #include <sofa/component/io/mesh/config.h>
 
 #include <sofa/core/loader/MeshLoader.h>
+
+#include <sofa/core/objectmodel/RenamedData.h>
+
 namespace sofa::component::io::mesh
 {
 
@@ -40,16 +43,16 @@ public:
     virtual std::string type() { return "This object is procedurally created"; }
     bool canLoad() override { return true; }
     bool doLoad() override; ///< create the grid
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< type::Vec2i > resolution;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< type::Vec2i > resolution;
 
-    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA()
-    Data< int > trianglePattern;
+    SOFA_ATTRIBUTE_DEPRECATED__RENAME_DATA_IN_IO_MESH()
+    sofa::core::objectmodel::RenamedData< int > trianglePattern;
 
 
 
-    Data< type::Vec2i > d_resolution;  ///< Number of vertices in each direction
-    Data< int > d_trianglePattern;            ///< 0: no triangles, 1: alternate triangles, 2: upward triangles, 3: downward triangles.
+    Data< type::Vec2i > d_resolution; ///< Number of vertices in each direction
+    Data< int > d_trianglePattern; ///< 0: no triangles, 1: alternate triangles, 2: upward triangles, 3: downward triangles
 
 protected:
     GridMeshCreator();

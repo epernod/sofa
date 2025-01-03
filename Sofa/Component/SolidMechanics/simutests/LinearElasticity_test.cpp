@@ -157,15 +157,15 @@ CylinderTractionStruct<DataTypes>  createCylinderTractionScene(
     typename component::mechanicalload::TrianglePressureForceField<DataTypes>::SPtr tpff=
             modeling::addNew<typename component::mechanicalload::TrianglePressureForceField<DataTypes> >(root);
     tractionStruct.forceField=tpff;
-    sofa::modeling::setDataLink(&boxRoi2->d_triangleIndices,&tpff->triangleList);
+    sofa::modeling::setDataLink(&boxRoi2->d_triangleIndices,&tpff->d_triangleList);
     // LineProjectiveConstraint
     typename component::constraint::projective::LineProjectiveConstraint<DataTypes>::SPtr ptlc=
             modeling::addNew<typename component::constraint::projective::LineProjectiveConstraint<DataTypes> >(root);
-    ptlc->f_direction=Coord(1,0,0);
-    ptlc->f_origin=Coord(0,0,0);
+    ptlc->d_direction=Coord(1, 0, 0);
+    ptlc->d_origin=Coord(0, 0, 0);
     sofa::type::vector<sofa::Index> vArray;
     vArray.push_back(resolutionCircumferential*(resolutionRadial-1)+1);
-    ptlc->f_indices.setValue(vArray);
+    ptlc->d_indices.setValue(vArray);
 
     return tractionStruct;
 }
@@ -248,13 +248,13 @@ struct LinearElasticity_test : public sofa::testing::BaseSimulationTest, sofa::t
                     sofa::simulation::node::reset(tractionStruct.root.get());
                     
                     // record the initial point of a given vertex
-                    Coord p0=tractionStruct.dofs.get()->read(sofa::core::ConstVecCoordId::position())->getValue()[vIndex];
+                    Coord p0=tractionStruct.dofs.get()->read(sofa::core::vec_id::read_access::position)->getValue()[vIndex];
 
                     //  do one step of the static solver
                     sofa::simulation::node::animate(tractionStruct.root.get(), 0.5_sreal);
 
                     // Get the simulated final position of that vertex
-                    Coord p1=tractionStruct.dofs.get()->read(sofa::core::ConstVecCoordId::position())->getValue()[vIndex];
+                    Coord p1=tractionStruct.dofs.get()->read(sofa::core::vec_id::read_access::position)->getValue()[vIndex];
                     // test the young modulus
                     Real longitudinalDeformation=(p1[2]-p0[2])/p0[2];
                     if (fabs(longitudinalDeformation-pressure/youngModulus)>1e-4) {
@@ -289,13 +289,13 @@ struct LinearElasticity_test : public sofa::testing::BaseSimulationTest, sofa::t
 
 };
 
-// Define the list of DataTypes to instanciate
+// Define the list of DataTypes to instantiate
 using ::testing::Types;
 typedef Types<
     Vec3Types
-> DataTypes; // the types to instanciate.
+> DataTypes; // the types to instantiate.
 
-// Test suite for all the instanciations
+// Test suite for all the instantiations
 TYPED_TEST_SUITE(LinearElasticity_test, DataTypes);
 
 // first test topology
