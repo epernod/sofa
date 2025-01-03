@@ -19,49 +19,29 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#pragma once
+#include <sofa/gpu/cuda/CudaTypes.h>
+#include <SofaCUDA/component/solidmechanics/fem/elastic/CudaFastTetrahedralCorotationalForceField.inl>
+#include <sofa/core/ObjectFactory.h>
 
-#include <sofa/core/config.h>
-
-#include <sofa/core/State.h>
-#include <sofa/core/topology/TopologyData.inl>
-
-namespace sofa::core::visual
+namespace sofa::component::solidmechanics::fem::elastic
 {
 
-template< typename DataTypes >
-class VisualState : public core::State< DataTypes >
+template class SOFA_GPU_CUDA_API FastTetrahedralCorotationalForceField<sofa::gpu::cuda::CudaVec3fTypes>;
+#ifdef SOFA_GPU_CUDA_DOUBLE
+template class SOFA_GPU_CUDA_API FastTetrahedralCorotationalForceField<sofa::gpu::cuda::CudaVec3dTypes>;
+#endif // SOFA_GPU_CUDA_DOUBLE
+
+} // sofa::component::solidmechanics::fem::elastic
+
+
+namespace sofa::gpu::cuda
 {
-public:
-    SOFA_CLASS(SOFA_TEMPLATE(VisualState, DataTypes), SOFA_TEMPLATE(core::State, DataTypes));
 
-    using VecCoord = typename DataTypes::VecCoord;
-    using VecDeriv = typename DataTypes::VecCoord;
-    using MatrixDeriv = typename DataTypes::MatrixDeriv;
+int FastTetrahedralCorotationalForceFieldCudaClass = core::RegisterObject("Supports GPU-side computations using CUDA")
+    .add< sofa::component::solidmechanics::fem::elastic::FastTetrahedralCorotationalForceField<CudaVec3fTypes> >()
+#ifdef SOFA_GPU_CUDA_DOUBLE
+    .add< sofa::component::solidmechanics::fem::elastic::FastTetrahedralCorotationalForceField<CudaVec3dTypes> >()
+#endif // SOFA_GPU_CUDA_DOUBLE
+    ;
 
-    core::topology::PointData< VecCoord > m_positions; ///< Vertices coordinates
-    core::topology::PointData< VecCoord > m_restPositions; ///< Vertices rest coordinates
-    core::topology::PointData< VecDeriv > m_vnormals; ///< Normals of the model
-    bool modified; ///< True if input vertices modified since last rendering
-
-    VisualState();
-
-    virtual void resize(Size vsize) override;
-    virtual Size getSize() const override { return Size(m_positions.getValue().size()); }
-
-    //State API
-    virtual       Data<VecCoord>* write(core::VecCoordId  v) override;
-    virtual const Data<VecCoord>* read(core::ConstVecCoordId  v)  const override;
-    virtual Data<VecDeriv>* write(core::VecDerivId v) override;
-    virtual const Data<VecDeriv>* read(core::ConstVecDerivId v) const override;
-
-    virtual       Data<MatrixDeriv>* write(core::MatrixDerivId /* v */) override { return nullptr; }
-    virtual const Data<MatrixDeriv>* read(core::ConstMatrixDerivId /* v */) const override { return nullptr; }
-};
-
-#if !defined(SOFA_CORE_VISUAL_VISUALSTATE_CPP)
-extern template class SOFA_CORE_API VisualState< defaulttype::Vec3Types >;
-#endif
-
-
-} // namespace sofa::core::visual
+} // sofa::gpu::cuda

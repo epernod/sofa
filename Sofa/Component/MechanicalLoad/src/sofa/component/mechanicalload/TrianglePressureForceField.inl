@@ -70,7 +70,6 @@ template <class DataTypes>  TrianglePressureForceField<DataTypes>::TrianglePress
 
 }
 
-
 template <class DataTypes> void TrianglePressureForceField<DataTypes>::init()
 {
 

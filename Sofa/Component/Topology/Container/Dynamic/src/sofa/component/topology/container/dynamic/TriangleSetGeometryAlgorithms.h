@@ -21,7 +21,7 @@
 ******************************************************************************/
 #pragma once
 #include <sofa/component/topology/container/dynamic/config.h>
-
+#include <sofa/component/topology/container/dynamic/TriangleSubdividers.h>
 #include <sofa/component/topology/container/dynamic/EdgeSetGeometryAlgorithms.h>
 #include <sofa/type/Vec.h>
 
@@ -231,14 +231,28 @@ public:
      * @param baryCoef : barycoef of the intersection point on the edge
      * @param coord_kmin : barycoef of the intersection point on the vecteur AB.
      */
-
-
-    bool computeSegmentTriangleIntersection(bool is_entered, 
+    bool computeSegmentTriangleIntersection(bool is_entered,
         const sofa::type::Vec<3, Real>& a,
         const sofa::type::Vec<3, Real>& b,
         const TriangleID ind_t,
         sofa::type::vector<PointID>& indices,
         Real& baryCoef, Real& coord_kmin) const;
+
+
+    /** \brief Computes the intersection between the edges of the Triangle triId and the vector [AB] projected into this Triangle frame.
+     * @param ptA : first input point
+     * @param ptB : last input point
+     * @param triId : index of the triangle whose edges will be checked
+     * @param intersectedEdges : output list of Edge global Ids that are intersected by vector AB (size could be 0, 1 or 2)
+     * @param baryCoefs : output list of barycoef corresponding to the relative position of the intersection on the edge (same size and order as @sa intersectedEdges)
+    */
+    bool computeSegmentTriangleIntersectionInPlane(
+        const sofa::type::Vec<3, Real>& ptA,
+        const sofa::type::Vec<3, Real>& ptB,
+        const TriangleID triId,
+        sofa::type::vector<EdgeID>& intersectedEdges,
+        sofa::type::vector<Real>& baryCoefs) const;
+
 
     /** \brief Computes the intersections of the vector from point a to point b and the triangle indexed by t
     *
@@ -268,6 +282,14 @@ public:
             sofa::type::vector< Real >& coords_list,
             bool& is_on_boundary) const;
 
+
+    bool computeIntersectedPointsList2(const sofa::type::Vec<3, Real>& ptA, const sofa::type::Vec<3, Real>& ptB,
+        const TriangleID ind_ta, const TriangleID ind_tb,
+        sofa::type::vector< TriangleID >& triangles_list,
+        sofa::type::vector< EdgeID >& edges_list,
+        sofa::type::vector< Real >& coords_list) const;
+
+
     /** \brief Computes the list of objects (points, edges, triangles) intersected by the segment from point a to point b and the triangular mesh.
      *
      * @return List of object intersect (type enum @see geometry::ElementType)
@@ -281,6 +303,11 @@ public:
         sofa::type::vector< ElemID >& intersected_indices,
         sofa::type::vector< Vec3 >& intersected_barycoefs) const;
 
+
+    //bool computeTriangleIncisionPath(const PointID last_point, const Vec3& pointA, const Vec3& pointB,
+    //    TriangleID& ind_triA, TriangleID& ind_triB,
+    //    TriangleIncisionPath* incisionPath,
+    //    sofa::type::vector< TriangleSubdivider*> triangleToSplit);
 
     /** \brief Get the triangle in a given direction from a point.
      */
