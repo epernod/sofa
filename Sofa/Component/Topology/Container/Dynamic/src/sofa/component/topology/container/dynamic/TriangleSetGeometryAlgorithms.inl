@@ -1341,7 +1341,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
         }
 
         type::Vec2 baryCoords(type::NOINIT);
-        bool res = geometry::Edge::intersectionWithEdge(pa_proj, pb_proj, triP[localIds[0]], triP[localIds[1]], baryCoords);
+        bool res = geometry::Edge::intersectionWithEdge(triP[localIds[0]], triP[localIds[1]], pa_proj, pb_proj, baryCoords);
 
         if (res)
         {
