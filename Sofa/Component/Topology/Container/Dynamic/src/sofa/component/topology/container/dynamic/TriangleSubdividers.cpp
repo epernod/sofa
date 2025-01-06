@@ -82,6 +82,15 @@ bool TriangleSubdivider::subdivide(const sofa::type::fixed_array<sofa::type::Vec
             return subdivide_2Node(triCoords);
         }
     }
+    
+    if (!m_snappedPoints.empty())
+    {
+        type::vector<TriangleID> ancestors = { m_triangleId };
+        type::vector<SReal> coefs = { 1_sreal };
+        auto TTA = new TriangleToAdd(1000000 * m_triangleId, m_triangle, ancestors, coefs);
+        m_trianglesToAdd.push_back(TTA);
+        return true;
+    }
 
     msg_warning("TriangleSubdivider") << "subdivide with " << nbrPE << " points on Edge and " << nbrPT << " inside Triangle is not supported";
     return false;
@@ -90,18 +99,73 @@ bool TriangleSubdivider::subdivide(const sofa::type::fixed_array<sofa::type::Vec
 
 void TriangleSubdivider::addPoint(std::shared_ptr<PointToAdd> pTA)
 {
-    bool found = false;
-    for (auto ptAIt : m_points)
+    if (pTA->m_idLocalSnap == sofa::InvalidID)
     {
-        if (ptAIt->m_uniqueID == pTA->m_uniqueID)
+        bool found = false;
+        for (auto ptAIt : m_points)
         {
-            found = true;
-            break;
+            if (ptAIt->m_uniqueID == pTA->m_uniqueID)
+            {
+                found = true;
+                break;
+            }
         }
-    }
 
-    if (!found)
-        m_points.push_back(pTA);
+        if (!found)
+            m_points.push_back(pTA);
+    }
+    else
+    {
+        m_snappedPoints.push_back(pTA);
+    }
+}
+
+
+void TriangleSubdivider::cutTriangles(const sofa::type::Vec3& ptA, const sofa::type::Vec3& ptB, const sofa::type::Vec3& cutNorm)
+{
+    const sofa::type::Vec3 cutPath = ptB - ptA;
+
+    for (TriangleToAdd* TTA : m_trianglesToAdd)
+    {
+        const sofa::type::fixed_array<sofa::type::Vec3, 3>& triCoords = TTA->m_triCoords;
+        sofa::type::Vec3 gravityCenter = (triCoords[0] + triCoords[1] + triCoords[2]) / 3;
+        sofa::type::Vec3 triCutNorm = cutPath.cross(gravityCenter - ptA);
+        SReal dotValue = triCutNorm * cutNorm;
+
+        if (dotValue < 0)
+        {
+            TTA->isUp = false; // need to update points
+
+            for (auto PTA : m_points)
+            {
+                if (PTA->m_ancestorType == sofa::geometry::ElementType::TRIANGLE)
+                    continue;
+
+                for (unsigned int k = 0; k < 3; ++k)
+                {
+                    if (TTA->m_triangle[k] == PTA->m_idPoint)
+                    {
+                        TTA->m_triangle[k] = PTA->m_idClone;
+                        break;
+                    }
+                }
+            }
+
+            for (auto PTA : m_snappedPoints)
+            {
+                for (unsigned int k = 0; k < 3; ++k)
+                {
+                    if (TTA->m_triangle[k] == PTA->m_idPoint)
+                    {
+                        TTA->m_triangle[k] = PTA->m_idClone;
+                        break;
+                    }
+                }
+            }
+        }
+        else
+            TTA->isUp = true;
+    }
 }
 
 
@@ -132,6 +196,7 @@ sofa::type::Vec3 TriangleSubdivider::computePointCoordinates(const PointToAdd* P
 
 bool TriangleSubdivider::subdivide_1Node(const sofa::type::fixed_array<sofa::type::Vec3, 3>& triCoords)
 {
+    std::cout << "subdivide_1Node: " << m_triangleId << std::endl;
     if (m_points.size() != 1)
     {
         msg_error("TriangleSubdivider_1Node") << "More than 1 point to add to subdivide triangle id: " << m_triangleId;
@@ -166,6 +231,8 @@ bool TriangleSubdivider::subdivide_1Node(const sofa::type::fixed_array<sofa::typ
 
 bool TriangleSubdivider::subdivide_1Edge(const sofa::type::fixed_array<sofa::type::Vec3, 3>& triCoords)
 {
+    std::cout << "subdivide_1Edge: " << m_triangleId << std::endl;
+
     if (m_points.size() != 1)
     {
         msg_error("TriangleSubdivider_1Node") << "More than 1 point to add to subdivide triangle id: " << m_triangleId;
@@ -215,6 +282,7 @@ bool TriangleSubdivider::subdivide_1Edge(const sofa::type::fixed_array<sofa::typ
 
 bool TriangleSubdivider::subdivide_2Edge(const sofa::type::fixed_array<sofa::type::Vec3, 3>& triCoords)
 {
+    std::cout << "subdivide_2Edge: " << m_triangleId << std::endl;
     if (m_points.size() != 2)
     {
         msg_error("TriangleSubdivider_2Node") << "There are no 2 points to add to subdivide triangle id: " << m_triangleId;
@@ -341,6 +409,7 @@ bool TriangleSubdivider::subdivide_2Edge(const sofa::type::fixed_array<sofa::typ
 
 bool TriangleSubdivider::subdivide_3Edge(const sofa::type::fixed_array<sofa::type::Vec3, 3>& triCoords)
 {
+    std::cout << "subdivide_3Edge: " << m_triangleId << std::endl;
     if (m_points.size() != 3)
     {
         msg_error("TriangleSubdivider_3Edge") << "There are no 2 points to add to subdivide triangle id: " << m_triangleId;
@@ -410,6 +479,7 @@ bool TriangleSubdivider::subdivide_3Edge(const sofa::type::fixed_array<sofa::typ
 
 bool TriangleSubdivider::subdivide_2Node(const sofa::type::fixed_array<sofa::type::Vec3, 3>& triCoords)
 {
+    std::cout << "subdivide_2Node: " << m_triangleId << std::endl;
     if (m_points.size() != 2)
     {
         msg_error("TriangleSubdivider_2Node") << "There are no 2 points to add to subdivide triangle id: " << m_triangleId;
