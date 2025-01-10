@@ -92,7 +92,7 @@ bool TriangleSubdivider::subdivide(const sofa::type::fixed_array<sofa::type::Vec
         return true;
     }
 
-    msg_warning("TriangleSubdivider") << "subdivide with " << nbrPE << " points on Edge and " << nbrPT << " inside Triangle is not supported";
+    msg_warning("TriangleSubdivider") << "subdivide with " << nbrPE << " points on Edge and " << nbrPT << " inside Triangle is not supported.";
     return false;
 }
 
@@ -107,6 +107,7 @@ void TriangleSubdivider::addPoint(std::shared_ptr<PointToAdd> pTA)
             if (ptAIt->m_uniqueID == pTA->m_uniqueID)
             {
                 found = true;
+                msg_warning("TriangleSubdivider") << "PointToAdd with uniqId: " << pTA->m_uniqueID << " already added.";
                 break;
             }
         }
@@ -138,7 +139,7 @@ void TriangleSubdivider::cutTriangles(const sofa::type::Vec3& ptA, const sofa::t
 
             for (auto PTA : m_points)
             {
-                if (PTA->m_ancestorType == sofa::geometry::ElementType::TRIANGLE)
+                if (PTA->m_idClone == sofa::InvalidID)
                     continue;
 
                 for (unsigned int k = 0; k < 3; ++k)
@@ -153,6 +154,9 @@ void TriangleSubdivider::cutTriangles(const sofa::type::Vec3& ptA, const sofa::t
 
             for (auto PTA : m_snappedPoints)
             {
+                if (PTA->m_idClone == sofa::InvalidID)
+                    continue;
+
                 for (unsigned int k = 0; k < 3; ++k)
                 {
                     if (TTA->m_triangle[k] == PTA->m_idPoint)

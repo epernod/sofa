@@ -112,6 +112,13 @@ public:
     }
 
 
+    void printValue()
+    {
+        std::cout << "PTA: " << m_uniqueID << " | idPoint: " << m_idPoint << " | idClone: " << m_idClone << std::endl;
+        std::cout << "PTA: " << m_uniqueID << " | ancestors: " << m_ancestors << " | coefs: " << m_coefs << std::endl;
+    }
+
+
     /// Unique ID of this point structure. Will be a code combining ancestors ids
     PointID m_uniqueID;
     
