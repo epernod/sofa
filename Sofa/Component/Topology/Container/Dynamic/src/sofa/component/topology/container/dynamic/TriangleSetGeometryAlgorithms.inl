@@ -419,7 +419,7 @@ auto TriangleSetGeometryAlgorithms< DataTypes >::computeBaryEdgePoint(PointID p0
 }
 
 template<class DataTypes>
-auto TriangleSetGeometryAlgorithms< DataTypes >::computeBaryTrianglePoint(PointID p0, PointID p1, PointID p2, sofa::type::Vec<3,Real>& coord_p) const -> sofa::type::Vec<3, Real>
+auto TriangleSetGeometryAlgorithms< DataTypes >::computeBaryTrianglePoint(PointID p0, PointID p1, PointID p2, const sofa::type::Vec<3,Real>& coord_p) const -> sofa::type::Vec<3, Real>
 {
     const typename DataTypes::VecCoord& vect_c =(this->object->read(core::vec_id::read_access::position)->getValue());
 
@@ -2039,6 +2039,277 @@ void TriangleSetGeometryAlgorithms< DataTypes >::InciseAlongPath(const sofa::typ
 }
 
 
+template<class DataTypes>
+void TriangleSetGeometryAlgorithms< DataTypes >::ComputeIncision(const sofa::type::Vec<3, Real>& ptA, const sofa::type::Vec<3, Real>& ptB,
+    const TriangleID ind_ta, const TriangleID ind_tb, Real epsilonSnapPath, Real epsilonSnapBorder)
+{
+    auto nbrPoints = PointID(m_container->getNbPoints());
+    const auto& triangles = m_container->getTriangles();
+    const auto& edges = m_container->getEdges();
+    const auto& triAEdges = m_container->getTrianglesAroundEdgeArray();
+    const auto& edgesInTri = m_container->getEdgesInTriangleArray();
+
+    // Get triangle to subdivide information
+    type::fixed_array< TriangleID, 2> triIds = { ind_ta , ind_tb };
+    type::fixed_array< Triangle, 2> theTris = { triangles[triIds[0]], triangles[triIds[1]] };
+    type::fixed_array < Vec3, 2> _coefsTris;
+    _coefsTris[0] = computeBaryTrianglePoint(theTris[0], ptA);
+    _coefsTris[1] = computeBaryTrianglePoint(theTris[1], ptB);
+    
+    // Get points coordinates
+    const typename DataTypes::VecCoord& vect_c = (this->object->read(core::vec_id::read_access::position)->getValue());
+
+    // Compute path direction, path and normal
+    const typename DataTypes::Coord coord_AB = vect_c[theTris[0][1]] - vect_c[theTris[0][0]];
+    const typename DataTypes::Coord coord_AC = vect_c[theTris[0][2]] - vect_c[theTris[0][0]];
+    sofa::type::Vec<3, Real> AB = { coord_AB[0], coord_AB[1], coord_AB[2] };
+    sofa::type::Vec<3, Real> AC = { coord_AC[0], coord_AC[1], coord_AC[2] };
+    const sofa::type::Vec3 triNorm = AB.cross(AC);
+    const sofa::type::Vec3 cutPath = ptB - ptA;
+
+    // Compute Path
+    sofa::type::vector< TriangleID > triangles_list;
+    sofa::type::vector< EdgeID > edges_list;
+    sofa::type::vector< Real > coords_list;
+
+    computeIncisionPath(ptA, ptB, triIds[0], triIds[1], triangles_list, edges_list, coords_list);
+
+    // create map to store point to be added
+    std::map < TriangleID, std::vector<std::shared_ptr<PointToAdd> > > PTA_map;
+    std::map < PointID, PointID> cloneMap;
+    
+    /// /// TO Remove:
+    type::vector< TriangleSubdivider*> m_subviders;
+    type::vector< std::shared_ptr<PointToAdd> > m_pointsToAdd;
+    SReal snapThreshold = 0.8;
+    SReal snapThresholdBorder = 0.8;
+
+
+    // ProcessUpdate all coef due to the snapping
+    std::set <PointID> psnap;
+    for (unsigned int i = 0; i < edges_list.size(); ++i)
+    {
+        const Edge& edge = edges[edges_list[i]];
+        if (coords_list[i] > snapThreshold)
+            psnap.insert(edge[0]);
+        else if (1.0 - coords_list[i] > snapThreshold)
+            psnap.insert(edge[1]);
+    }
+
+    for (unsigned int i = 0; i < edges_list.size(); ++i)
+    {
+        const Edge& edge = edges[edges_list[i]];
+        if (psnap.find(edge[0]) != psnap.end())
+            coords_list[i] = 1.0;
+        else if (psnap.find(edge[1]) != psnap.end())
+            coords_list[i] = 0.0;
+    }
+
+
+    // create PointToAdd from edges
+    for (unsigned int i = 0; i < edges_list.size(); ++i)
+    {
+        const Edge& edge = edges[edges_list[i]];
+        type::vector<SReal> _coefs = { coords_list[i], 1.0 - coords_list[i] };
+        type::vector<PointID> _ancestors = { edge[0], edge[1] };
+
+        PointID uniqID = getUniqueId(edge[0], edge[1]);
+        std::shared_ptr<PointToAdd> PTA = std::make_shared<PointToAdd>(uniqID, nbrPoints, _ancestors, _coefs, snapThreshold);
+        bool snapped = PTA->updatePointIDForDuplication();
+        PTA->printValue();
+        if (snapped)
+        {
+            auto itM = cloneMap.find(PTA->m_idPoint);
+            if (itM == cloneMap.end())
+            {
+                cloneMap[PTA->m_idPoint] = PTA->m_idClone;
+                m_pointsToAdd.push_back(PTA);
+                nbrPoints++;
+            }
+            else {
+                PTA = m_pointsToAdd.back();
+            }
+        }
+        else
+        {
+            m_pointsToAdd.push_back(PTA);
+            nbrPoints = nbrPoints + 2;
+        }
+
+        const auto& triAEdge = triAEdges[edges_list[i]];
+        for (auto triId : triAEdge)
+        {
+            std::vector<std::shared_ptr<PointToAdd> >& PTAs = PTA_map[triId];
+            PTAs.push_back(PTA);
+        }
+    }
+
+
+    // Create subdividers and add PTA
+    for (auto itM : PTA_map)
+    {
+        TriangleID triId = itM.first;
+
+        std::vector<std::shared_ptr<PointToAdd> >& PTAs = itM.second;
+
+        const Triangle& theTri = triangles[triId];
+        TriangleSubdivider* subdivider = new TriangleSubdivider(triId, theTri);
+
+        const typename DataTypes::Coord p0 = vect_c[theTri[0]];
+        const typename DataTypes::Coord p1 = vect_c[theTri[1]];
+        const typename DataTypes::Coord p2 = vect_c[theTri[2]];
+
+        sofa::type::fixed_array<sofa::type::Vec3, 3> points; 
+        points[0] = { p0[0], p0[1], p0[2] };
+        points[1] = { p1[0], p1[1], p1[2] };
+        points[2] = { p2[0], p2[1], p2[2] };
+           
+        for (auto pta : PTAs)
+            subdivider->addPoint(pta);
+
+        m_subviders.push_back(subdivider);
+        subdivider->subdivide(points);
+    }
+
+    // create the list of new triangles around the inside path
+    for (auto triSub : m_subviders)
+    {
+        triSub->cutTriangles(ptA, ptB, triNorm);
+    }
+
+
+    // need to split snapped point in existing triangles
+    //m_addTriangles.clear();
+    //m_removedTriangles.clear();
+    type::vector<Triangle> m_addTriangles;
+    type::vector<TriangleID> m_removedTriangles;
+    for (auto itM : cloneMap)
+    {
+        std::cout << "need to update triangles arount v: " << itM.first << " -> " << itM.second << std::endl;
+        const auto& triAV = m_container->getTrianglesAroundVertex(itM.first);
+        for (TriangleID triId : triAV)
+        {
+            bool found = false;
+            for (auto triSub : m_subviders)
+            {
+                if (triSub->getTriangleIdToSplit() == triId) // already in subdivider
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found)
+                continue;
+
+            Triangle tri = triangles[triId];
+            const typename DataTypes::Coord center = computeTriangleCenter(triId);
+            
+            sofa::type::Vec3 _gravityCenter = { center[0], center[1], center[2] };
+
+            sofa::type::Vec3 triCutNorm = cutPath.cross(_gravityCenter - ptA);
+            SReal dotValue = triCutNorm * triNorm;
+
+            if (dotValue < 0)
+            {
+                for (unsigned int k = 0; k < 3; ++k)
+                {
+                    if (tri[k] == itM.first)
+                    {
+                        tri[k] = itM.second;
+                        break;
+                    }
+                }
+
+                std::cout << "add Tri: " << tri << " to replace triId: " << triId << std::endl;
+                m_addTriangles.push_back(tri);
+                m_removedTriangles.push_back(triId);
+            }
+        }
+
+    }
+
+
+
+
+    // processSubdividers();
+       // 1. Add all new points and duplicate point from snapped points
+    type::vector < type::vector<SReal> > _baryCoefs;
+    type::vector < type::vector< PointID > >_ancestors;
+    auto nbrPoints2 = PointID(m_container->getNbPoints());
+
+    for (auto ptA : m_pointsToAdd)
+    {
+        if (ptA->m_idPoint >= nbrPoints2)
+        {
+            std::cout << ptA->m_idPoint << " | " << nbrPoints2 << std::endl;
+            _ancestors.push_back(ptA->m_ancestors);
+            _baryCoefs.push_back(ptA->m_coefs);
+        }
+
+        if (ptA->m_idClone != sofa::InvalidID /*&& ptA->m_idLocalSnap == sofa::InvalidID*/) // check here to solve snapping: ptA->m_idClone >= nbrPoints
+        {
+            std::cout << ptA->m_idClone << " clone | " << nbrPoints2 << std::endl;
+            _ancestors.push_back(ptA->m_ancestors);
+            _baryCoefs.push_back(ptA->m_coefs);
+        }
+    }
+
+    size_t nbrP = _ancestors.size();
+    std::cout << "processSubdividers: nbrP: " << nbrP << std::endl;
+
+    // 2. resize the point buffer in the topology
+    // warn for the creation of all the points registered to be created
+    m_modifier->addPoints(nbrP, _ancestors, _baryCoefs);
+
+    // 3. Add all new Triangles from splitted one and remove old. With the corresponding ancestors and coefs
+    type::vector<Triangle> trianglesToAdd;
+    type::vector<TriangleID> trianglesToRemove;
+    _ancestors.clear();
+    _baryCoefs.clear();
+    for (auto triSub : m_subviders)
+    {
+        std::cout << "-- trianglesToRemove: " << triSub->getTriangleIdToSplit() << std::endl;
+        const type::vector<TriangleToAdd*>& TTAS = triSub->getTrianglesToAdd();
+        for (auto TTA : TTAS)
+        {
+            trianglesToAdd.push_back(TTA->m_triangle);
+            std::cout << "trianglesToAdd: " << TTA->m_triangle << std::endl;
+            _ancestors.push_back(TTA->m_ancestors);
+            _baryCoefs.push_back(TTA->m_coefs);
+        }
+        trianglesToRemove.push_back(triSub->getTriangleIdToSplit());
+        std::cout << "--------------" << std::endl;
+    }
+
+    for (auto tri : m_addTriangles)
+    {
+        trianglesToAdd.push_back(tri);
+    }
+
+    for (auto triId : m_removedTriangles)
+    {
+        trianglesToRemove.push_back(triId);
+    }
+
+    std::cout << "Nbr trianglesToAdd: " << trianglesToAdd.size() << std::endl;
+    m_modifier->addTriangles(trianglesToAdd, _ancestors, _baryCoefs);
+    std::cout << "Nbr trianglesToRemove: " << trianglesToRemove.size() << std::endl;
+    // 4. Propagate change to the topology and remove all Triangles registered for removal to the container
+    m_modifier->removeTriangles(trianglesToRemove, true, true);
+
+    // 5. clear all buffers for new cut
+    //clearBuffers();
+    for (unsigned int i = 0; i < m_subviders.size(); ++i)
+    {
+        delete m_subviders[i];
+    }
+    m_subviders.clear();
+
+    m_pointsToAdd.clear();
+}
+
+
 // Computes the list of points (edge,coord) intersected by the segment from point a to point b
 // and the triangular mesh
 template<class DataTypes>
@@ -2560,7 +2831,7 @@ bool TriangleSetGeometryAlgorithms<DataTypes>::computeIntersectedObjectsList (co
 //    //// 1 - First point a (for the moment: always a point in a triangle)
 //    //if (last_point != sofa::InvalidID)
 //    //{
-//    //    intersected_topoElements.push_back(core::topology::TopologyElementType::POINT);
+//    //    intersected_topoElements.push_back(core::TopologyElementType::POINT);
 //    //    intersected_indices.push_back(last_point);
 //    //    const typename DataTypes::VecCoord& realC = (this->object->read(core::ConstVecCoordId::position())->getValue());
 //    //    for (unsigned int i = 0; i < 3; i++)
