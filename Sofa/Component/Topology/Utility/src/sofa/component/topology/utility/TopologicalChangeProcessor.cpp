@@ -731,39 +731,41 @@ void TopologicalChangeProcessor::processTopologicalChanges()
                 Index uInd_ta = (Index) ind_ta;
                 Index uInd_tb = (Index) ind_tb;
 
-                bool isPathOk =
-                    triangleGeo->computeIntersectedObjectsList(
-                            a_last, a, b, uInd_ta, uInd_tb,
-                            topoPath_list, indices_list,
-                            coords2_list);
+                triangleGeo->ComputeIncision(a, b, uInd_ta, uInd_tb, 0.1, 0.25);
 
-                if (!isPathOk)
-                {
-                    msg_error() << "Invalid path in computeIntersectedPointsList";
-                    break;
-                }
+                //bool isPathOk =
+                //    triangleGeo->computeIntersectedObjectsList(
+                //            a_last, a, b, uInd_ta, uInd_tb,
+                //            topoPath_list, indices_list,
+                //            coords2_list);
 
-                sofa::type::vector<Index> new_edges;
+                //if (!isPathOk)
+                //{
+                //    msg_error() << "Invalid path in computeIntersectedPointsList";
+                //    break;
+                //}
 
-                //Split triangles to create edges along a path given as a the list of existing edges and triangles crossed by it.
-                triangleGeo->SplitAlongPath(a_last, a, b_last, b,
-                        topoPath_list, indices_list, coords2_list,
-                        new_edges, 0.1, 0.25);
+                //sofa::type::vector<Index> new_edges;
 
-                sofa::type::vector<Index> new_points;
-                sofa::type::vector<Index> end_points;
-                bool reachBorder = false;
+                ////Split triangles to create edges along a path given as a the list of existing edges and triangles crossed by it.
+                //triangleGeo->SplitAlongPath(a_last, a, b_last, b,
+                //        topoPath_list, indices_list, coords2_list,
+                //        new_edges, 0.1, 0.25);
 
-                //Duplicates the given edges
-                triangleGeo->InciseAlongEdgeList(new_edges,
-                        new_points, end_points, reachBorder);
+                //sofa::type::vector<Index> new_points;
+                //sofa::type::vector<Index> end_points;
+                //bool reachBorder = false;
 
-                if (!end_points.empty())
-                {
-                    a_last = end_points.back();
-                }
-                ind_ta = ind_tb;
-                firstCut = false;
+                ////Duplicates the given edges
+                //triangleGeo->InciseAlongEdgeList(new_edges,
+                //        new_points, end_points, reachBorder);
+
+                //if (!end_points.empty())
+                //{
+                //    a_last = end_points.back();
+                //}
+                //ind_ta = ind_tb;
+                //firstCut = false;
 
                 // notify the end for the current sequence of topological change events
                 //triangleMod->notifyEndingEvent();
@@ -1298,49 +1300,51 @@ void TopologicalChangeProcessor::inciseWithSavedIndices()
 
         //Computes the list of objects (points, edges, triangles) intersected by the segment from point a to point b and the triangular mesh.
         const bool isPathOk = triangleGeo->computeIntersectedObjectsList(a_last, a, b, ind_ta, ind_tb, topoPath_list, indices_list, coords2_list);
+        triangleGeo->ComputeIncision(a, b, ind_ta, ind_tb, 0.1, 0.25);
 
-        if (!isPathOk)
-        {
-            msg_error() << "While computing computeIntersectedPointsList between triangles '"
-                    << errorTrianglesIndices[errorTrianglesIndices.size() - 1] << "' and '" << errorTrianglesIndices[errorTrianglesIndices.size() - 2]  << "' at time = '" << getContext()->getTime()  << "'" ;
 
-            msg_error() << " a = " << a << " b = " << b << msgendl
-                             << "ind_ta = " << ind_ta << " ind_tb = " << ind_tb ;
+        //if (!isPathOk)
+        //{
+        //    msg_error() << "While computing computeIntersectedPointsList between triangles '"
+        //            << errorTrianglesIndices[errorTrianglesIndices.size() - 1] << "' and '" << errorTrianglesIndices[errorTrianglesIndices.size() - 2]  << "' at time = '" << getContext()->getTime()  << "'" ;
 
-            break;
-        }
-        else
-        {
-            errorTrianglesIndices.pop_back();
-            errorTrianglesIndices.pop_back();
-        }
+        //    msg_error() << " a = " << a << " b = " << b << msgendl
+        //                     << "ind_ta = " << ind_ta << " ind_tb = " << ind_tb ;
 
-        sofa::type::vector< Index > new_edges;
+        //    break;
+        //}
+        //else
+        //{
+        //    errorTrianglesIndices.pop_back();
+        //    errorTrianglesIndices.pop_back();
+        //}
 
-        //Split triangles to create edges along a path given as a the list of existing edges and triangles crossed by it.
-        triangleGeo->SplitAlongPath(a_last, a, b_last, b, topoPath_list, indices_list, coords2_list, new_edges, d_epsilonSnapPath.getValue(), d_epsilonSnapBorder.getValue());
+        //sofa::type::vector< Index > new_edges;
 
-        sofa::type::vector<Index> new_points;
-        sofa::type::vector<Index> end_points;
-        bool reachBorder = false;
+        ////Split triangles to create edges along a path given as a the list of existing edges and triangles crossed by it.
+        //triangleGeo->SplitAlongPath(a_last, a, b_last, b, topoPath_list, indices_list, coords2_list, new_edges, d_epsilonSnapPath.getValue(), d_epsilonSnapBorder.getValue());
 
-        //Duplicates the given edges
-        triangleGeo->InciseAlongEdgeList(new_edges, new_points, end_points, reachBorder);
+        //sofa::type::vector<Index> new_points;
+        //sofa::type::vector<Index> end_points;
+        //bool reachBorder = false;
 
-        msg_info_when(reachBorder) << "Incision has reached a border.";
+        ////Duplicates the given edges
+        //triangleGeo->InciseAlongEdgeList(new_edges, new_points, end_points, reachBorder);
 
-        if (!end_points.empty())
-        {
-            a_last = end_points.back();
-        }
-        ind_ta = ind_tb;
-        firstCut=false;
+        //msg_info_when(reachBorder) << "Incision has reached a border.";
 
-        // notify the end for the current sequence of topological change events
-        triangleMod->notifyEndingEvent();
+        //if (!end_points.empty())
+        //{
+        //    a_last = end_points.back();
+        //}
+        //ind_ta = ind_tb;
+        //firstCut=false;
+
+        //// notify the end for the current sequence of topological change events
+        //triangleMod->notifyEndingEvent();
 
         //update the triangle incision information
-        updateTriangleIncisionInformation();
+        //updateTriangleIncisionInformation();
     }
 }
 
