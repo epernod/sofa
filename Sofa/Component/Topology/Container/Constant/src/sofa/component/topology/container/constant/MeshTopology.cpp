@@ -916,6 +916,7 @@ void MeshTopology::createEdgesInTriangleArray ()
 {
     //const SeqEdges& edges = getEdges(); // do not use d_seqEdges directly as it might not be up-to-date
     const SeqTriangles& triangles = getTriangles(); // do not use d_seqTriangles directly as it might not be up-to-date
+
     m_edgesInTriangle.clear();
     m_edgesInTriangle.resize(triangles.size());
     for (unsigned int i = 0; i < triangles.size(); ++i)
@@ -937,14 +938,23 @@ void MeshTopology::createEdgesInQuadArray ()
     const SeqQuads& quads = getQuads(); // do not use d_seqQuads directly as it might not be up-to-date
     m_edgesInQuad.clear();
     m_edgesInQuad.resize(quads.size());
+
+    const auto edges = sofa::helper::getReadAccessor(d_seqEdges);
+    for (unsigned int i = 0; i < edges.size(); ++i)
+    {
+        std::cout << i << " | edges: " << edges[i] << std::endl;
+    }
+
     for (unsigned int i = 0; i < quads.size(); ++i)
     {
         const Quad &t=quads[i];
+        std::cout << i << " | quads: " << quads[i] << std::endl;
         // adding edge i in the edge shell of both points
         for (unsigned int j=0; j<4; ++j)
         {
             const EdgeID edgeIndex = getEdgeIndex(t[(j+1)%4],t[(j+2)%4]);
             assert(edgeIndex != InvalidID);
+            std::cout << i << " | edgeIndex: " << edgeIndex << std::endl;
             m_edgesInQuad[i][j]=edgeIndex;
         }
     }
@@ -1157,6 +1167,7 @@ void MeshTopology::createTrianglesAroundEdgeArray ()
     const SeqTriangles& triangles = getTriangles(); // do not use d_seqTriangles directly as it might not be up-to-date
     if (m_edgesInTriangle.empty())
         createEdgesInTriangleArray();
+
     m_trianglesAroundEdge.clear();
     m_trianglesAroundEdge.resize( getNbEdges());
     const vector< EdgesInTriangle > &tea=m_edgesInTriangle;
@@ -1354,11 +1365,17 @@ void MeshTopology::createQuadsAroundEdgeArray ()
     const SeqQuads& quads = getQuads(); // do not use d_seqQuads directly as it might not be up-to-date
     if (m_edgesInQuad.empty())
         createEdgesInQuadArray();
+    
     m_quadsAroundEdge.clear();
     m_quadsAroundEdge.resize( getNbEdges() );
+
+    std::cout << "m_quadsAroundEdge: " << m_quadsAroundEdge.size() << std::endl;
+
+   
     unsigned int j;
     for (unsigned int i = 0; i < quads.size(); ++i)
     {
+        std::cout << i << " | m_edgesInQuad: " << m_edgesInQuad[i] << std::endl;
         for (j=0; j<4; ++j)
             m_quadsAroundEdge[ m_edgesInQuad[i][j] ].push_back( i );
     }
@@ -1405,6 +1422,7 @@ void MeshTopology::createQuadsInHexahedronArray ()
 
 void MeshTopology::createTetrahedraAroundVertexArray ()
 {
+    m_tetrahedraAroundVertex.clear();
     m_tetrahedraAroundVertex.resize( nbPoints );
     unsigned int j;
 
@@ -1419,6 +1437,8 @@ void MeshTopology::createTetrahedraAroundEdgeArray ()
 {
     if (!m_edgesInTetrahedron.size())
         createEdgesInTetrahedronArray();
+
+    m_tetrahedraAroundEdge.clear();
     m_tetrahedraAroundEdge.resize( getNbEdges() );
     const vector< EdgesInTetrahedron > &tea = m_edgesInTetrahedron;
     unsigned int j;
@@ -1434,6 +1454,8 @@ void MeshTopology::createTetrahedraAroundTriangleArray ()
 {
     if (!m_trianglesInTetrahedron.size())
         createTrianglesInTetrahedronArray();
+
+    m_tetrahedraAroundTriangle.clear();
     m_tetrahedraAroundTriangle.resize( getNbTriangles());
     unsigned int j;
     const vector< TrianglesInTetrahedron > &tta=m_trianglesInTetrahedron;
@@ -1447,6 +1469,7 @@ void MeshTopology::createTetrahedraAroundTriangleArray ()
 
 void MeshTopology::createHexahedraAroundVertexArray ()
 {
+    m_hexahedraAroundVertex.clear();
     m_hexahedraAroundVertex.resize( nbPoints );
     unsigned int j;
 
@@ -1461,6 +1484,8 @@ void MeshTopology::createHexahedraAroundEdgeArray ()
 {
     if (!m_edgesInHexahedron.size())
         createEdgesInHexahedronArray();
+
+    m_hexahedraAroundEdge.clear();
     m_hexahedraAroundEdge.resize(getNbEdges());
     unsigned int j;
     const vector< EdgesInHexahedron > &hea=m_edgesInHexahedron;
@@ -1476,6 +1501,8 @@ void MeshTopology::createHexahedraAroundQuadArray ()
 {
     if (!m_quadsInHexahedron.size())
         createQuadsInHexahedronArray();
+
+    m_hexahedraAroundQuad.clear();
     m_hexahedraAroundQuad.resize( getNbQuads());
     unsigned int j;
     const vector< QuadsInHexahedron > &qha=m_quadsInHexahedron;

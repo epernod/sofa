@@ -60,6 +60,8 @@ set(HEADER_FILES
     
 
     ### FEM
+    ${SOFACUDA_SOURCE_DIR}/component/solidmechanics/fem/elastic/CudaFastTetrahedralCorotationalForceField.h
+    ${SOFACUDA_SOURCE_DIR}/component/solidmechanics/fem/elastic/CudaFastTetrahedralCorotationalForceField.inl
     ${SOFACUDA_SOURCE_DIR}/component/solidmechanics/fem/elastic/CudaHexahedronFEMForceField.h
     ${SOFACUDA_SOURCE_DIR}/component/solidmechanics/fem/elastic/CudaHexahedronFEMForceField.inl
     sofa/gpu/cuda/CudaHexahedronTLEDForceField.h
@@ -134,6 +136,7 @@ set(SOURCE_FILES
     ${SOFACUDA_SOURCE_DIR}/component/mass/CudaUniformMass.cpp
 
     ### FEM
+    ${SOFACUDA_SOURCE_DIR}/component/solidmechanics/fem/elastic/CudaFastTetrahedralCorotationalForceField.cpp
     ${SOFACUDA_SOURCE_DIR}/component/solidmechanics/fem/elastic/CudaHexahedronFEMForceField.cpp
     sofa/gpu/cuda/CudaHexahedronTLEDForceField.cpp
     ${SOFACUDA_SOURCE_DIR}/component/solidmechanics/fem/hyperelastic/CudaStandardTetrahedralFEMForceField.cpp
@@ -202,6 +205,7 @@ set(CUDA_SOURCES
     ${SOFACUDA_SOURCE_DIR}/component/mass/CudaUniformMass.cu
 
     ### FEM
+    ${SOFACUDA_SOURCE_DIR}/component/solidmechanics/fem/elastic/CudaFastTetrahedralCorotationalForceField.cu
     ${SOFACUDA_SOURCE_DIR}/component/solidmechanics/fem/elastic/CudaHexahedronFEMForceField.cu
     sofa/gpu/cuda/CudaHexahedronTLEDForceField.cu
     ${SOFACUDA_SOURCE_DIR}/component/solidmechanics/fem/hyperelastic/CudaStandardTetrahedralFEMForceField.cu
