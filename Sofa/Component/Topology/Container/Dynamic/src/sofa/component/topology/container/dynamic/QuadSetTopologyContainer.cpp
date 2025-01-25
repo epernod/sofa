@@ -72,13 +72,13 @@ void QuadSetTopologyContainer::init()
 
     // only init if triangles are present at init.
     if (!m_quads.empty())
-        computeCrossElementArrays();
+        computeCrossElementBuffers();
 }
 
-void QuadSetTopologyContainer::computeCrossElementArrays()
+void QuadSetTopologyContainer::computeCrossElementBuffers()
 {
     // Force creation of Edge Neighborhood buffers.
-    EdgeSetTopologyContainer::computeCrossElementArrays();
+    EdgeSetTopologyContainer::computeCrossElementBuffers();
 
     // Create triangle cross element buffers.
     createEdgesInQuadArray();
@@ -204,7 +204,7 @@ void QuadSetTopologyContainer::createEdgeSetArray()
             // sort vertices in lexicographic order
             const Edge e = ((v1<v2) ? Edge(v1,v2) : Edge(v2,v1));
 
-            if(edgeMap.find(e) == edgeMap.end())
+            if(!edgeMap.contains(e))
             {
                 // edge not in edgeMap so create a new one
                 const EdgeID edgeIndex = (EdgeID)edgeMap.size();

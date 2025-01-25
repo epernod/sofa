@@ -40,6 +40,48 @@ using sofa::helper::system::FileSystem;
 #include <fstream>
 #include <array>
 
+#ifdef SOFA_BUILD_CONFIGURATION
+constexpr std::string_view SOFA_BUILD_CONFIGURATION_STR = sofa_tostring(SOFA_BUILD_CONFIGURATION);
+#else
+constexpr std::string_view SOFA_BUILD_CONFIGURATION_STR = "NONE";
+#endif
+
+constexpr std::string_view GetSofaBuildConfigurationString()
+{
+    return SOFA_BUILD_CONFIGURATION_STR;
+}
+
+enum class SofaBuildConfiguration
+{
+    Release,
+    RelWithDebInfo,
+    Debug,
+    MinSizeRel,
+    NonStandard
+};
+
+constexpr SofaBuildConfiguration GetSofaBuildConfiguration()
+{
+    if constexpr (GetSofaBuildConfigurationString() == "Release")
+    {
+        return SofaBuildConfiguration::Release;
+    }
+    if constexpr (GetSofaBuildConfigurationString() == "RelWithDebInfo")
+    {
+        return SofaBuildConfiguration::RelWithDebInfo;
+    }
+    if constexpr (GetSofaBuildConfigurationString() == "Debug")
+    {
+        return SofaBuildConfiguration::Debug;
+    }
+    if constexpr (GetSofaBuildConfigurationString() == "MinSizeRel")
+    {
+        return SofaBuildConfiguration::MinSizeRel;
+    }
+
+    return SofaBuildConfiguration::NonStandard;
+}
+
 namespace sofa::helper::system
 {
 
@@ -146,11 +188,14 @@ void PluginManager::writeToIniFile(const std::string& path)
 /// (depends on platform, version, debug/release build)
 std::string PluginManager::getDefaultSuffix()
 {
-#ifdef SOFA_LIBSUFFIX
-    return sofa_tostring(SOFA_LIBSUFFIX);
-#else
-    return std::string();
-#endif
+    if constexpr(GetSofaBuildConfiguration() == SofaBuildConfiguration::Debug)
+    {
+        return "_d";
+    }
+    else
+    {
+        return "";
+    }
 }
 
 PluginManager::PluginLoadStatus PluginManager::loadPluginByPath(const std::string& pluginPath, std::ostream* errlog)
@@ -354,7 +399,7 @@ const std::unordered_set<std::string>& PluginManager::unloadedPlugins() const
 
 bool PluginManager::isPluginUnloaded(const std::string& pluginName) const
 {
-    return m_unloadedPlugins.find(pluginName) != m_unloadedPlugins.end();
+    return m_unloadedPlugins.contains(pluginName);
 }
 
 Plugin* PluginManager::getPlugin(const std::string& plugin, const std::string& /*suffix*/, bool /*ignoreCase*/)
@@ -365,7 +410,7 @@ Plugin* PluginManager::getPlugin(const std::string& plugin, const std::string& /
         return getPluginByName(plugin);
     }
 
-    if (!pluginPath.empty() && m_pluginMap.find(pluginPath) != m_pluginMap.end())
+    if (!pluginPath.empty() && m_pluginMap.contains(pluginPath))
     {
         return &m_pluginMap[pluginPath];
     }
@@ -469,17 +514,46 @@ std::string PluginManager::findPlugin(const std::string& pluginName, const std::
             }
         }
     }
-
-    // Second try: case-insensitive and recursive
+    
+    // Second try: case-insensitive and non-recursive
+    if (ignoreCase)
+    {
+        const std::string downcaseLibName = helper::downcaseString(libName);
+        
+        for (const auto & dir : searchPaths)
+        {
+            const std::array paths =
+            {
+                dir, // Non-Multi-Config build, install
+                FileSystem::append(dir, GetSofaBuildConfigurationString()) // Multi-Config build
+            };
+                
+            for (const auto & path : paths)
+            {
+                if ( fs::exists(path) )
+                {
+                    for (auto const& dirEntry : std::filesystem::directory_iterator{path})
+                    {
+                        const std::string filename = dirEntry.path().filename().string();
+                        const std::string downcaseFilename = helper::downcaseString(filename);
+                        if (downcaseFilename == downcaseLibName)
+                        {
+                            return FileSystem::cleanPath(dirEntry.path().string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Last try: case-insensitive and recursive
     if (ignoreCase)
     {
         if(!recursive) maxRecursiveDepth = 0;
         const std::string downcaseLibName = helper::downcaseString(libName);
-
-        for (std::vector<std::string>::iterator i = searchPaths.begin(); i!=searchPaths.end(); i++)
+        
+        for (const auto & dir : searchPaths)
         {
-            const std::string& dir = *i;
-
             fs::recursive_directory_iterator iter(dir);
             fs::recursive_directory_iterator end;
 
@@ -575,7 +649,7 @@ std::pair<std::string, bool> PluginManager::isPluginLoaded(const std::string& pl
 
     /// Check that the path (either provided by user or through the call to findPlugin()
     /// leads to a loaded plugin.
-    const bool isPluginPathInMap = m_pluginMap.find(pluginPath) != m_pluginMap.end();
+    const bool isPluginPathInMap = m_pluginMap.contains(pluginPath);
     return {pluginPath, isPluginPathInMap};
 }
 
