@@ -1357,7 +1357,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
 
         type::Vec2 baryCoords(type::NOINIT);
         bool res = geometry::Edge::intersectionWithEdge(triP[localIds[0]], triP[localIds[1]], pa_proj, pb_proj, baryCoords);
-
+        std::cout << "edge: " << edgeId << " inter: " << res << " -> " << baryCoords[0] << std::endl;
         if (res)
         {
             intersectedEdges.push_back(edgeId);
@@ -1975,7 +1975,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeIncisionPath(
 
         // Add current triangle into the list of intersected triangles
         triangles_list.push_back(current_triID);
-
+        std::cout << "Intersection in tri: " << current_triID << " | edges: " << intersectedEdges << " | coefs: " << baryCoefs << std::endl;
         // Only one edge intersected, beginning or end
         if (intersectedEdges.size() == 1) 
         {
@@ -2094,17 +2094,18 @@ type::vector< std::shared_ptr<PointToAdd> > TriangleSetGeometryAlgorithms< DataT
             // snap Vertex is prioritary
             PointID snapId = snapV[i];
             PointID vId = theTris[i][snapId];
-            std::cout << "Snap needed here: " << vId << std::endl;
+            std::cout << "Snap Vertex needed here: " << vId << std::endl;
 
             pathPts[i] = vect_c[vId];
             _elemBorders[i] = sofa::geometry::ElementType::POINT;
         }
         else if (snapE[i] != InvalidID) // snap edge
         {
+            
             PointID snapId = snapE[i];
             EdgeID edgeId = edgesInTri[triIds[i]][(snapId + 3) % 3];
             const Edge& edge = edges[edgeId];
-
+            std::cout << "Snap Edge needed here: " << edgeId << std::endl;
             type::Vec2 newCoefs;
             if (edge[0] == theTris[i][(snapId + 1) % 3])
             {
@@ -2169,12 +2170,14 @@ type::vector< std::shared_ptr<PointToAdd> > TriangleSetGeometryAlgorithms< DataT
     // process snapping here
     for (unsigned int i = 0; i < 2; ++i)
     {
+        if (_elemBorders[i] != sofa::geometry::ElementType::TRIANGLE)
+            continue;
+
         type::vector<SReal> _coefs = { _coefsTris[i][0], _coefsTris[i][1], _coefsTris[i][2] };
         type::vector<PointID> _ancestors = { theTris[i][0] , theTris[i][1], theTris[i][2] };
         PointID uniqID = getUniqueId(theTris[i][0], theTris[i][1], theTris[i][2]);
 
         std::shared_ptr<PointToAdd> PTA = std::make_shared<PointToAdd>(uniqID, nbrPoints, _ancestors, _coefs);
-        PTA->printValue();
         PTA->m_ancestorType = sofa::geometry::ElementType::TRIANGLE;
         PTA->m_ownerId = triIds[i];
         _pointsToAdd.push_back(PTA);
@@ -2215,18 +2218,6 @@ type::vector< std::shared_ptr<PointToAdd> > TriangleSetGeometryAlgorithms< DataT
     
 
     return _pointsToAdd;
-}
-
-
-
-template<class DataTypes>
-void TriangleSetGeometryAlgorithms< DataTypes >::InciseAlongPath(const sofa::type::Vec<3, Real>& ptA, const sofa::type::Vec<3, Real>& ptB,
-    const TriangleID ind_ta, const TriangleID ind_tb,
-    const sofa::type::vector< TriangleID >& triangles_list,
-    const sofa::type::vector< EdgeID >& edges_list,
-    const sofa::type::vector< Real >& coords_list, Real epsilonSnapPath, Real epsilonSnapBorder) const
-{
-
 }
 
 

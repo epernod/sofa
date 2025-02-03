@@ -292,14 +292,7 @@ public:
         sofa::type::vector< Real >& coords_list, Real epsilonSnapPath = 0.0, Real epsilonSnapBorder = 0.0) const;
 
     type::vector< std::shared_ptr<PointToAdd> > computeIncisionPathNew(const sofa::type::Vec<3, Real>& ptA, const sofa::type::Vec<3, Real>& ptB,
-        const TriangleID ind_ta, const TriangleID ind_tb, Real epsilonSnapPath = 0.0, Real epsilonSnapBorder = 0.0) const;
-
-
-    void InciseAlongPath(const sofa::type::Vec<3, Real>& ptA, const sofa::type::Vec<3, Real>& ptB,
-        const TriangleID ind_ta, const TriangleID ind_tb,
-        const sofa::type::vector< TriangleID >& triangles_list,
-        const sofa::type::vector< EdgeID >& edges_list,
-        const sofa::type::vector< Real >& coords_list, Real epsilonSnapPath = 0.0, Real epsilonSnapBorder = 0.0) const;
+        const TriangleID ind_ta, const TriangleID ind_tb, Real snapThreshold = 0.0, Real snapThresholdBorder = 0.0) const;
 
     void ComputeIncision(const sofa::type::Vec<3, Real>& ptA, const sofa::type::Vec<3, Real>& ptB,
         const TriangleID ind_ta, const TriangleID ind_tb, Real epsilonSnapPath = 0.0, Real epsilonSnapBorder = 0.0);
