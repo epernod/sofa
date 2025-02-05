@@ -100,23 +100,41 @@ public:
     // bool return true if point is snap
     bool updatePointIDForDuplication() 
     {
-        if (m_idLocalSnap != sofa::InvalidID)
-        {
-            m_idClone = m_idPoint;
-            m_idPoint = m_ancestors[m_idLocalSnap];
-            return true;
-        }
-        else
+        //if (m_idLocalSnap != sofa::InvalidID)
+        //{
+        //    m_idClone = m_idPoint;
+        //    m_idPoint = m_ancestors[m_idLocalSnap];
+        //    return true;
+        //}
+        //else
+        //{
+        //    m_idClone = m_idPoint + 1;
+        //    return false;
+        //}
+
+        if (m_ancestorType == sofa::geometry::ElementType::POINT)
         {
             m_idClone = m_idPoint + 1;
             return false;
         }
+        else if (m_ancestorType == sofa::geometry::ElementType::EDGE)
+        {
+            m_idClone = m_idPoint + 1;
+            return false;
+        }
+        else if (m_ancestorType == sofa::geometry::ElementType::TRIANGLE)
+        {
+            // point in middle of a triangle. It should not be duplicated
+            return false;
+        }
+        else
+            return false;
     }
 
 
     void printValue()
     {
-        std::cout << "PTA: " << m_uniqueID << " | idPoint: " << m_idPoint << " | idClone: " << m_idClone << std::endl;
+        std::cout << "PTA: " << m_uniqueID << " | idPoint: " << m_idPoint << " | idClone: " << m_idClone << " | m_ancestorType: " << int(m_ancestorType) << std::endl;
         std::cout << "PTA: " << m_uniqueID << " | ancestors: " << m_ancestors << " | coefs: " << m_coefs << std::endl;
     }
 
