@@ -296,7 +296,7 @@ public:
         const TriangleID ind_ta, const TriangleID ind_tb, Real snapThreshold = 0.0, Real snapThresholdBorder = 0.0) const;
 
     void ComputeIncision(const sofa::type::Vec<3, Real>& ptA, const sofa::type::Vec<3, Real>& ptB,
-        const TriangleID ind_ta, const TriangleID ind_tb, Real epsilonSnapPath = 0.0, Real epsilonSnapBorder = 0.0);
+        const TriangleID ind_ta, const TriangleID ind_tb, type::vector< std::shared_ptr<PointToAdd> >);
 
 
     /** \brief Computes the list of objects (points, edges, triangles) intersected by the segment from point a to point b and the triangular mesh.
