@@ -101,7 +101,11 @@ bool TriangleSubdivider::subdivide(const sofa::type::fixed_array<sofa::type::Vec
 
 void TriangleSubdivider::addPoint(std::shared_ptr<PointToAdd> pTA)
 {
-    if (pTA->m_idLocalSnap == sofa::InvalidID)
+    if (pTA->m_isSnapped)
+    {
+        m_snappedPoints.push_back(pTA);
+    }
+    else
     {
         bool found = false;
         for (auto ptAIt : m_points)
@@ -116,10 +120,6 @@ void TriangleSubdivider::addPoint(std::shared_ptr<PointToAdd> pTA)
 
         if (!found)
             m_points.push_back(pTA);
-    }
-    else
-    {
-        m_snappedPoints.push_back(pTA);
     }
 }
 
