@@ -1974,6 +1974,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangulationInte
         {
             if (current_edgeID == intersectedEdges[0]) // reach end
             {
+                triangles_list.push_back(current_triID);
                 break;
             }
 
