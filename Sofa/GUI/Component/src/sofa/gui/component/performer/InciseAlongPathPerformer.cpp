@@ -22,6 +22,8 @@
 #include <sofa/gui/component/performer/InciseAlongPathPerformer.h>
 
 #include <sofa/component/topology/container/dynamic/TriangleSetGeometryAlgorithms.h>
+#include <sofa/component/topology/container/dynamic/PointModifiers.h>
+
 
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/helper/Factory.inl>
@@ -210,6 +212,7 @@ InciseAlongPathPerformer::~InciseAlongPathPerformer()
     this->m_interactor->setBodyPicked(firstIncisionBody);
 }
 
+using sofa::component::topology::container::dynamic::PointToAdd;
 void InciseAlongPathPerformer::draw(const core::visual::VisualParams* vparams)
 {
     if (firstBody.body == nullptr) return;
@@ -229,59 +232,38 @@ void InciseAlongPathPerformer::draw(const core::visual::VisualParams* vparams)
         return;
 
     // Output declarations
-    sofa::type::vector< sofa::geometry::ElementType> topoPath_list;
-    sofa::type::vector<Index> indices_list;
-    sofa::type::vector< sofa::type::Vec3 > coords2_list;
     const sofa::type::Vec3 pointA = firstBody.point;
     const sofa::type::Vec3 pointB = currentBody.point;
 
-    sofa::type::vector< sofa::type::Vec3 > positions;
-    const bool path_ok = topoGeo->computeIntersectedObjectsList(0, pointA, pointB, firstBody.indexCollisionElement, currentBody.indexCollisionElement, topoPath_list, indices_list, coords2_list);
+    type::vector< std::shared_ptr<PointToAdd> > _pointsToAdd = topoGeo->computeIncisionPath(pointA, pointB, firstBody.indexCollisionElement, currentBody.indexCollisionElement, 0.8, 0.8);
 
-    if (!path_ok)
-        return;
-
-    if (!positions.empty())
-        positions.clear();
-
-    positions.resize(topoPath_list.size());
-
-    for (unsigned int i=0; i<topoPath_list.size(); ++i)
+    sofa::type::vector< sofa::type::Vec3 > positions, edges;
+    positions.resize(_pointsToAdd.size());
+    
+    for (unsigned int i = 0; i < _pointsToAdd.size(); ++i)
     {
-        if (topoPath_list[i] == sofa::geometry::ElementType::POINT)
+        const auto& ptA = _pointsToAdd[i];
+        sofa::type::Vec3 vecG = sofa::type::Vec3(0.0, 0.0, 0.0);
+        sofa::Size nbr = ptA->m_ancestors.size();
+        for (int i = 0; i < nbr; ++i)
         {
-            positions[i] = topoGeo->getPointPosition(indices_list[i]);
+            vecG += topoGeo->getPointPosition(ptA->m_ancestors[i]) * ptA->m_coefs[i];
         }
-        else if (topoPath_list[i] == sofa::geometry::ElementType::EDGE)
-        {
-            sofa::core::topology::BaseMeshTopology::Edge theEdge = topoCon->getEdge(indices_list[i]);
-            const auto AB = topoGeo->getPointPosition(theEdge[1])- topoGeo->getPointPosition(theEdge[0]);
-            positions[i] = topoGeo->getPointPosition(theEdge[0]) + AB *coords2_list[i][0];
-        }
-        else if(topoPath_list[i] == sofa::geometry::ElementType::TRIANGLE)
-        {
-            sofa::core::topology::BaseMeshTopology::Triangle theTriangle = topoCon->getTriangle(indices_list[i]);
-
-            for (unsigned int j=0; j<3; ++j)
-                positions[i] += topoGeo->getPointPosition(theTriangle[j])*coords2_list[i][j];
-            positions[i] = positions[i]/3;
-        }
+        positions[i] = vecG;
     }
 
-    positions[0] = pointA;
-    positions[positions.size()-1] = pointB;
+    for (unsigned int i = 1; i < positions.size(); ++i)
+    {
+        edges.push_back(positions[i - 1]);
+        edges.push_back(positions[i]);
+    }
 
     const auto stateLifeCycle = vparams->drawTool()->makeStateLifeCycle();
     vparams->drawTool()->disableLighting();
     constexpr sofa::type::RGBAColor color(0.3f, 0.8f, 0.3f, 1.0f);
-    std::vector<sofa::type::Vec3> vertices;
-    for (unsigned int i = 1; i<positions.size(); ++i)
-    {
-        vertices.push_back(sofa::type::Vec3(positions[i-1][0], positions[i-1][1], positions[i-1][2]));
-        vertices.push_back(sofa::type::Vec3(positions[i][0], positions[i][1], positions[i][2]));
-    }
-    vparams->drawTool()->drawLines(vertices,1,color);
 
+    vparams->drawTool()->drawLines(edges, 1, color);
+    vparams->drawTool()->drawSpheres(positions, 0.1, sofa::type::RGBAColor::red());
 }
 
 

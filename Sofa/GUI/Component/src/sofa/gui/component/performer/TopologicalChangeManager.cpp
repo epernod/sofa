@@ -442,7 +442,7 @@ Index TopologicalChangeManager::removeItemsFromCollisionModel(sofa::core::Collis
 // Handle Cutting (activated only for a triangular topology), using global variables to register the two last input points
 bool TopologicalChangeManager::incisionCollisionModel(sofa::core::CollisionElementIterator elem, sofa::type::Vec3& pos, const bool firstInput, int snapingValue, int snapingBorderValue)
 {
-    const Triangle triangle(elem);
+    const sofa::component::collision::geometry::Triangle triangle(elem);
     TriangleCollisionModel<sofa::defaulttype::Vec3Types>* model = triangle.getCollisionModel();
 
     if (model != nullptr)
@@ -510,8 +510,8 @@ bool TopologicalChangeManager::incisionTriangleModel(TriangleCollisionModel<sofa
     TriangleCollisionModel<sofa::defaulttype::Vec3Types>* firstCollisionModel = dynamic_cast< TriangleCollisionModel<sofa::defaulttype::Vec3Types>* >(firstModel);
     TriangleCollisionModel<sofa::defaulttype::Vec3Types>* secondCollisionModel = dynamic_cast< TriangleCollisionModel<sofa::defaulttype::Vec3Types>* >(secondModel);
 
-    Triangle firstTriangle(firstCollisionModel, idxA);
-    Triangle secondTriangle(secondCollisionModel, idxB);
+    sofa::component::collision::geometry::Triangle firstTriangle(firstCollisionModel, idxA);
+    sofa::component::collision::geometry::Triangle secondTriangle(secondCollisionModel, idxB);
 
     if (firstCollisionModel != secondCollisionModel)
     {
@@ -566,58 +566,59 @@ bool TopologicalChangeManager::incisionTriangleModel(TriangleCollisionModel<sofa
         sofa::type::vector< Vec3 > coords2_list;
 
         // Snapping value: input are percentages, we need to transform it as real epsilon value;
-        const double epsilonSnap = (double)snapingValue/200;
-        const double epsilonBorderSnap = (double)snapingBorderValue/210; // magic number (0.5 is max value and must not be reached, as threshold is compared to barycoord value)
+        const double epsilonSnap = 1.0 - (double)snapingValue/200;
+        const double epsilonBorderSnap = 1.0 - (double)snapingBorderValue/210; // magic number (0.5 is max value and must not be reached, as threshold is compared to barycoord value)
+
+        triangleGeometry->ComputeIncision(coord_a, coord_b, idxA, idxB, epsilonSnap, epsilonBorderSnap);
+        
+        //// -- STEP 4: Creating path through different elements
+        //const bool path_ok = triangleGeometry->computeIntersectedObjectsList(last_indexPoint, coord_a, coord_b, idxA, idxB, topoPath_list, indices_list, coords2_list);
+
+        //if (!path_ok)
+        //{
+        //    dmsg_error("TopologicalChangeManager") << " in computeIntersectedObjectsList" ;
+        //    return false;
+        //}
 
 
-        // -- STEP 4: Creating path through different elements
-        const bool path_ok = triangleGeometry->computeIntersectedObjectsList(last_indexPoint, coord_a, coord_b, idxA, idxB, topoPath_list, indices_list, coords2_list);
+        //// -- STEP 5: Splitting elements along path (incision path is stored inside "new_edges")
+        //sofa::type::vector< Index > new_edges;
+        //const int result = triangleGeometry->SplitAlongPath(last_indexPoint, coord_a, sofa::InvalidID, coord_b, topoPath_list, indices_list, coords2_list, new_edges, epsilonSnap, epsilonBorderSnap);
 
-        if (!path_ok)
-        {
-            dmsg_error("TopologicalChangeManager") << " in computeIntersectedObjectsList" ;
-            return false;
-        }
+        //if (result == -1)
+        //{
+        //    incision.indexPoint = last_indexPoint;
+        //    return false;
+        //}
 
+        //// -- STEP 6: Incise along new_edges path (i.e duplicating edges to create an incision)
+        //sofa::type::vector<Index> new_points;
+        //sofa::type::vector<Index> end_points;
+        //bool reachBorder = false;
+        //const bool incision_ok = triangleGeometry->InciseAlongEdgeList(new_edges, new_points, end_points, reachBorder);
 
-        // -- STEP 5: Splitting elements along path (incision path is stored inside "new_edges")
-        sofa::type::vector< Index > new_edges;
-        const int result = triangleGeometry->SplitAlongPath(last_indexPoint, coord_a, sofa::InvalidID, coord_b, topoPath_list, indices_list, coords2_list, new_edges, epsilonSnap, epsilonBorderSnap);
-
-        if (result == -1)
-        {
-            incision.indexPoint = last_indexPoint;
-            return false;
-        }
-
-        // -- STEP 6: Incise along new_edges path (i.e duplicating edges to create an incision)
-        sofa::type::vector<Index> new_points;
-        sofa::type::vector<Index> end_points;
-        bool reachBorder = false;
-        const bool incision_ok = triangleGeometry->InciseAlongEdgeList(new_edges, new_points, end_points, reachBorder);
-
-        if (!incision_ok)
-        {
-            dmsg_error("TopologicalChangeManager") << " in InciseAlongEdgeList" ;
-            return false;
-        }
+        //if (!incision_ok)
+        //{
+        //    dmsg_error("TopologicalChangeManager") << " in InciseAlongEdgeList" ;
+        //    return false;
+        //}
 
 
-        // -- STEP 7: Updating information if incision has reached a border.
-        if (reachBorder)
-            incision.firstCut = true;
-        else
-        {
-            incision.firstCut = false;
-            // updating triangle index for second function case!!
-            if (!end_points.empty())
-                incision.indexPoint = end_points.back();
-        }
-        if (!end_points.empty())
-            incision.indexPoint = end_points.back();
+        //// -- STEP 7: Updating information if incision has reached a border.
+        //if (reachBorder)
+        //    incision.firstCut = true;
+        //else
+        //{
+        //    incision.firstCut = false;
+        //    // updating triangle index for second function case!!
+        //    if (!end_points.empty())
+        //        incision.indexPoint = end_points.back();
+        //}
+        //if (!end_points.empty())
+        //    incision.indexPoint = end_points.back();
 
-        // -- STEP 8: Propagating topological events.
-        triangleModifier->notifyEndingEvent();
+        //// -- STEP 8: Propagating topological events.
+        //triangleModifier->notifyEndingEvent();
 
         return true;
     }

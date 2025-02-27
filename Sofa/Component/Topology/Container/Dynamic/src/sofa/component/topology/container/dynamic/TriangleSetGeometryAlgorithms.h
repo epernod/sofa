@@ -21,7 +21,7 @@
 ******************************************************************************/
 #pragma once
 #include <sofa/component/topology/container/dynamic/config.h>
-
+#include <sofa/component/topology/container/dynamic/TriangleSubdividers.h>
 #include <sofa/component/topology/container/dynamic/EdgeSetGeometryAlgorithms.h>
 #include <sofa/type/Vec.h>
 
@@ -123,6 +123,8 @@ public:
     */
     sofa::type::vector< SReal > computeTriangleBarycoefs(const TriangleID ind_t, const sofa::type::Vec<3,Real> &p) const;
 
+    sofa::type::Vec<3, Real> computeBarycentricCoordinates(const TriangleID ind_t, const sofa::type::Vec<3, Real>& p) const;
+
     /** \brief Computes barycentric coefficients of point p in initial triangle (a,b,c) indexed by ind_t
     *
     */
@@ -164,8 +166,8 @@ public:
     /** \brief Computes the point defined by 3 indices of vertex and 1 barycentric coordinate
      *
      */
-    sofa::type::Vec<3, Real> computeBaryTrianglePoint(PointID p0, PointID p1, PointID p2, sofa::type::Vec<3, Real>& coord_p) const;
-    sofa::type::Vec<3, Real> computeBaryTrianglePoint(Triangle& t, sofa::type::Vec<3, Real>& coord_p) const
+    sofa::type::Vec<3, Real> computeBaryTrianglePoint(PointID p0, PointID p1, PointID p2, const sofa::type::Vec<3, Real>& coord_p) const;
+    sofa::type::Vec<3, Real> computeBaryTrianglePoint(Triangle& t, const sofa::type::Vec<3, Real>& coord_p) const
     {
         return computeBaryTrianglePoint(t[0], t[1], t[2], coord_p);
     }
@@ -231,7 +233,7 @@ public:
      * @param baryCoef : barycoef of the intersection point on the edge
      * @param coord_kmin : barycoef of the intersection point on the vecteur AB.
      */
-    bool computeSegmentTriangleIntersection(bool is_entered, 
+    bool computeSegmentTriangleIntersection(bool is_entered,
         const sofa::type::Vec<3, Real>& a,
         const sofa::type::Vec<3, Real>& b,
         const TriangleID ind_t,
@@ -252,6 +254,7 @@ public:
         sofa::type::vector<EdgeID>& intersectedEdges,
         sofa::type::vector<Real>& baryCoefs) const;
 
+
     /** \brief Computes the intersections of the vector from point a to point b and the triangle indexed by t
     *
     * @param a : first input point
@@ -268,30 +271,26 @@ public:
         sofa::type::vector<Real>& vecBaryCoef,
         sofa::type::vector<Real>& vecCoordKmin) const;
 
-    /** \brief Computes the list of points (ind_edge,coord) intersected by the segment from point a to point b and the triangular mesh
-     *
-     */
-    bool computeIntersectedPointsList(const PointID last_point,
-            const sofa::type::Vec<3,Real>& a,
-            const sofa::type::Vec<3,Real>& b,
-            TriangleID& ind_ta, TriangleID& ind_tb,
-            sofa::type::vector< TriangleID > &triangles_list,
-            sofa::type::vector< EdgeID > &edges_list,
-            sofa::type::vector< Real >& coords_list,
-            bool& is_on_boundary) const;
 
-    /** \brief Computes the list of objects (points, edges, triangles) intersected by the segment from point a to point b and the triangular mesh.
-     *
-     * @return List of object intersect (type enum @see geometry::ElementType)
-     * @return List of indices of these objects
-     * @return List of barycentric coordinate defining the position of the intersection in each object
-     * (i.e 0 coord for a point, 1 for and edge and 3 for a triangle).
-     */
-    bool computeIntersectedObjectsList(const PointID last_point, const Vec3& pointA, const Vec3& pointB,
-        TriangleID& ind_triA, TriangleID& ind_triB,
-        sofa::type::vector< sofa::geometry::ElementType >& intersected_topoElements,
-        sofa::type::vector< ElemID >& intersected_indices,
-        sofa::type::vector< Vec3 >& intersected_barycoefs) const;
+
+    bool computeSegmentTriangulationIntersections(const sofa::type::Vec<3, Real>& ptA, const sofa::type::Vec<3, Real>& ptB,
+        const TriangleID ind_ta, const TriangleID ind_tb,
+        sofa::type::vector< TriangleID >& triangles_list,
+        sofa::type::vector< EdgeID >& edges_list,
+        sofa::type::vector< Real >& coords_list) const;
+
+
+    type::vector< std::shared_ptr<PointToAdd> > computeIncisionPath(const sofa::type::Vec<3, Real>& ptA, const sofa::type::Vec<3, Real>& ptB,
+        const TriangleID ind_ta, const TriangleID ind_tb, Real snapThreshold = 1.0, Real snapThresholdBorder = 1.0) const;
+
+
+    void InciseAlongPath(const sofa::type::Vec<3, Real>& ptA, const sofa::type::Vec<3, Real>& ptB,
+        const TriangleID ind_ta, const TriangleID ind_tb, const type::vector< std::shared_ptr<PointToAdd> >& _pointsToAdd);
+
+
+    void ComputeIncision(const sofa::type::Vec<3, Real>& ptA, const sofa::type::Vec<3, Real>& ptB,
+        const TriangleID ind_ta, const TriangleID ind_tb, Real snapThreshold = 1.0, Real snapThresholdBorder = 1.0);
+
 
 
     /** \brief Get the triangle in a given direction from a point.
@@ -323,16 +322,74 @@ public:
         const sofa::type::Vec<3, Real>& b,
         const TriangleID ind_ta, const TriangleID ind_tb);
 
-    /** \brief Incises along the list of points (ind_edge,coord) intersected by the sequence of input segments (list of input points) and the triangular mesh
-     */
-    void InciseAlongLinesList(const sofa::type::vector< sofa::type::Vec<3, Real> >& input_points,
-        const sofa::type::vector< TriangleID > &input_triangles);
 
+    SOFA_ATTRIBUTE_DISABLED("v23.12", "v23.12", "Method writeMSHfile has been disabled. To export the topology as .gmsh file, use the sofa::component::io::mesh::MeshExporter.")
+    void writeMSHfile(const char *filename) const {msg_deprecated() << "Method writeMSHfile has been disabled. To export the topology as " << filename << " file, use the sofa::component::io::mesh::MeshExporter."; }
+
+    ///////////////////// DEPRECATED METHODS //////////////////
+
+
+    /** \brief Computes the list of points (ind_edge,coord) intersected by the segment from point a to point b and the triangular mesh
+     *
+     *  TODO: To be removed or redirect to computeIncisionPath
+     */
+    SOFA_ATTRIBUTE_DEPRECATED("v25.06", "v26.06", "Use computeSegmentTriangulationIntersections instead")
+    bool computeIntersectedPointsList(const PointID last_point,
+        const sofa::type::Vec<3, Real>& a,
+        const sofa::type::Vec<3, Real>& b,
+        TriangleID& ind_ta, TriangleID& ind_tb,
+        sofa::type::vector< TriangleID >& triangles_list,
+        sofa::type::vector< EdgeID >& edges_list,
+        sofa::type::vector< Real >& coords_list,
+        bool& is_on_boundary) const;
+
+    /** \brief Computes the list of objects (points, edges, triangles) intersected by the segment from point a to point b and the triangular mesh.
+     *
+     * @return List of object intersect (type enum @see geometry::ElementType)
+     * @return List of indices of these objects
+     * @return List of barycentric coordinate defining the position of the intersection in each object
+     * (i.e 0 coord for a point, 1 for and edge and 3 for a triangle).
+     */
+    SOFA_ATTRIBUTE_DEPRECATED("v25.06", "v26.06", "Use computeSegmentTriangulationIntersections instead")
+    bool computeIntersectedObjectsList(const PointID last_point, const Vec3& pointA, const Vec3& pointB,
+        TriangleID& ind_triA, TriangleID& ind_triB,
+        sofa::type::vector< sofa::geometry::ElementType >& intersected_topoElements,
+        sofa::type::vector< ElemID >& intersected_indices,
+        sofa::type::vector< Vec3 >& intersected_barycoefs) const;
+
+    /* void SnapAlongPath (sofa::type::vector<TriangleID>& triangles_list, sofa::type::vector<EdgeID>& edges_list,
+      sofa::type::vector<Real>& intersected_barycoefs, sofa::type::vector<Real>& points2Snap);*/
+      // TODO to me removed, only used by SplitAlongPath
+    void SnapAlongPath(sofa::type::vector< sofa::geometry::ElementType>& intersected_topoElements,
+        sofa::type::vector<ElemID>& intersected_indices, sofa::type::vector< Vec3 >& intersected_barycoefs,
+        sofa::type::vector< sofa::type::vector<Real> >& points2Snap,
+        Real epsilonSnapPath);
+
+    // TODO to me removed, only used by SplitAlongPath
+    void SnapBorderPath(PointID pa, Coord& a, PointID pb, Coord& b,
+        sofa::type::vector< sofa::geometry::ElementType>& intersected_topoElements,
+        sofa::type::vector<ElemID>& intersected_indices,
+        sofa::type::vector< Vec3 >& intersected_barycoefs,
+        sofa::type::vector< sofa::type::vector<Real> >& points2Snap,
+        Real epsilonSnapBorder);
+
+    /** \brief Duplicates the given edges. Only works if at least the first or last point is adjacent to a border.
+     * @returns true if the incision succeeded.
+     */
+    virtual bool InciseAlongEdgeList(const sofa::type::vector<EdgeID>& edges, sofa::type::vector<PointID>& new_points, sofa::type::vector<PointID>& end_points, bool& reachBorder);
+
+    /** \brief Incises along the list of points (ind_edge,coord) intersected by the sequence of input segments (list of input points) and the triangular mesh
+    * TODO check what is this one?
+    */
+    void InciseAlongLinesList(const sofa::type::vector< sofa::type::Vec<3, Real> >& input_points,
+        const sofa::type::vector< TriangleID >& input_triangles);
 
 
     /** \brief Split triangles to create edges along a path given as a the list of existing edges and triangles crossed by it.
      * Each end of the path is given either by an existing point or a point inside the first/last triangle. If the first/last triangle is (TriangleID)-1, it means that to path crosses the boundary of the surface.
      * @returns the indice of the end point, or -1 if the incision failed.
+     *
+     * TODO: To be removed or redirect to InciseAlongPath with PTA
      */
     virtual int SplitAlongPath(PointID ind_A, Coord& pointA, PointID ind_B, Coord& pointB,
         sofa::type::vector< sofa::geometry::ElementType >& intersected_topoElements,
@@ -341,32 +398,6 @@ public:
         sofa::type::vector< EdgeID >& new_edges, Real epsilonSnapPath = 0.0, Real epsilonSnapBorder = 0.0);
 
 
-
-    /* void SnapAlongPath (sofa::type::vector<TriangleID>& triangles_list, sofa::type::vector<EdgeID>& edges_list,
-      sofa::type::vector<Real>& intersected_barycoefs, sofa::type::vector<Real>& points2Snap);*/
-
-    void SnapAlongPath(sofa::type::vector< sofa::geometry::ElementType>& intersected_topoElements,
-        sofa::type::vector<ElemID>& intersected_indices, sofa::type::vector< Vec3 >& intersected_barycoefs,
-        sofa::type::vector< sofa::type::vector<Real> >& points2Snap,
-        Real epsilonSnapPath);
-
-    void SnapBorderPath(PointID pa, Coord& a, PointID pb, Coord& b,
-        sofa::type::vector< sofa::geometry::ElementType>& intersected_topoElements,
-        sofa::type::vector<ElemID>& intersected_indices,
-        sofa::type::vector< Vec3 >& intersected_barycoefs,
-        sofa::type::vector< sofa::type::vector<Real> >& points2Snap,
-        Real epsilonSnapBorder);
-
-
-
-    /** \brief Duplicates the given edges. Only works if at least the first or last point is adjacent to a border.
-     * @returns true if the incision succeeded.
-     */
-    virtual bool InciseAlongEdgeList(const sofa::type::vector<EdgeID>& edges, sofa::type::vector<PointID>& new_points, sofa::type::vector<PointID>& end_points, bool& reachBorder);
-
-
-    SOFA_ATTRIBUTE_DISABLED("v23.12", "v23.12", "Method writeMSHfile has been disabled. To export the topology as .gmsh file, use the sofa::component::io::mesh::MeshExporter.")
-    void writeMSHfile(const char *filename) const {msg_deprecated() << "Method writeMSHfile has been disabled. To export the topology as " << filename << " file, use the sofa::component::io::mesh::MeshExporter."; }
 
 protected:
     Data<bool> showTriangleIndices; ///< Debug : view Triangle indices
