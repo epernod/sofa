@@ -36,12 +36,13 @@ namespace multithreading::component::collision::detection::algorithm
 const bool isParallelBVHNarrowPhaseImplementationRegistered =
     multithreading::ParallelImplementationsRegistry::addEquivalentImplementations("BVHNarrowPhase", "ParallelBVHNarrowPhase");
 
+void registerParallelBVHNarrowPhase(sofa::core::ObjectFactory* factory)
+{
+    factory->registerObjects(sofa::core::ObjectRegistrationData("Parallel version of the narrow phase collision detection based on boundary volume hierarchy.")
+                             .add< ParallelBVHNarrowPhase >());
+}
 
 using sofa::helper::ScopedAdvancedTimer;
-
-int ParallelBVHNarrowPhaseClass = sofa::core::RegisterObject("Narrow phase collision detection based on boundary volume hierarchy")
-        .add< ParallelBVHNarrowPhase >()
-;
 
 ParallelBVHNarrowPhase::ParallelBVHNarrowPhase()
 {}
@@ -131,10 +132,10 @@ void ParallelBVHNarrowPhase::initializeTopology(sofa::core::topology::BaseMeshTo
     auto insertionIt = m_initializedTopology.insert(topology);
     if (insertionIt.second)
     {
-        // We need to make sure All topology buffers are well created.
+        // We need to make sure all topology buffers are well created.
         // Those arrays cannot be created on the fly later, in a concurrent environment,
         // due to possible race conditions.
-        topology->computeCrossElementArrays();
+        topology->computeCrossElementBuffers();
     }
 }
 

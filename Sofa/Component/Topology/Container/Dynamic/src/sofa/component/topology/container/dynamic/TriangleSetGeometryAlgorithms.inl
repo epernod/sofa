@@ -1357,6 +1357,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
 
         type::Vec2 baryCoords(type::NOINIT);
         bool res = geometry::Edge::intersectionWithEdge(triP[localIds[0]], triP[localIds[1]], pa_proj, pb_proj, baryCoords);
+
         if (res)
         {
             intersectedEdges.push_back(edgeId);
@@ -4811,7 +4812,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::SnapAlongPath(sofa::type::vector<
         {
         case geometry::ElementType::POINT:
         {
-            if (map_point2snap.find(intersected_indices[i]) != map_point2snap.end())
+            if (map_point2snap.contains(intersected_indices[i]))
             {
                 map_point2snap[intersected_indices[i]].push_back((PointID)i);
 
@@ -4828,7 +4829,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::SnapAlongPath(sofa::type::vector<
             for (EdgeID indEdge = 0; indEdge < 2; indEdge++)
             {
                 PointID thePoint = theEdge[indEdge];
-                if (map_point2snap.find(thePoint) != map_point2snap.end())
+                if (map_point2snap.contains(thePoint))
                 {
                     PointFind = true;
                     map_point2snap[thePoint].push_back((PointID)i);
@@ -4855,7 +4856,7 @@ void TriangleSetGeometryAlgorithms<DataTypes>::SnapAlongPath(sofa::type::vector<
             {
                 PointID thePoint = theTriangle[indTri];
 
-                if ((map_point2snap.find(thePoint) != map_point2snap.end()) && (intersected_barycoefs[i][indTri] > (1 - epsilon)))
+                if ((map_point2snap.contains(thePoint)) && (intersected_barycoefs[i][indTri] > (1 - epsilon)))
                 {
                     PointFind = true;
                     map_point2snap[thePoint].push_back((PointID)i);

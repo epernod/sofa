@@ -73,13 +73,13 @@ void TriangleSetTopologyContainer::init()
 
     // only init if triangles are present at init.
     if (!m_triangle.empty())
-        computeCrossElementArrays();
+        computeCrossElementBuffers();
 }
 
-void TriangleSetTopologyContainer::computeCrossElementArrays()
+void TriangleSetTopologyContainer::computeCrossElementBuffers()
 {
     // Force creation of Edge Neighborhood buffers.
-    EdgeSetTopologyContainer::computeCrossElementArrays();
+    EdgeSetTopologyContainer::computeCrossElementBuffers();
 
     // Create triangle cross element buffers.
     createEdgesInTriangleArray();
@@ -222,7 +222,7 @@ void TriangleSetTopologyContainer::createEdgeSetArray()
             // sort vertices in lexicographic order
             const Edge e = ((v1<v2) ? Edge(v1,v2) : Edge(v2,v1));
 
-            if(edgeMap.find(e) == edgeMap.end())
+            if(!edgeMap.contains(e))
             {
                 // edge not in edgeMap so create a new one
                 const size_t edgeIndex = edgeMap.size();
@@ -326,7 +326,7 @@ void TriangleSetTopologyContainer::createEdgesInTriangleArray()
                 // sort vertices in lexicographic order
                 const Edge e = ((v1<v2) ? Edge(v1,v2) : Edge(v2,v1));
 
-                if(edgeMap.find(e) == edgeMap.end())
+                if(!edgeMap.contains(e))
                 {
                     // edge not in edgeMap so create a new one
                     const size_t edgeIndex = edgeMap.size();

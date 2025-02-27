@@ -8,9 +8,15 @@ usage() {
 if [ "$#" -ge 1 ]; then
     SCRIPT_DIR="$(cd $1 && pwd)"
     INSTALL_DIR="$(cd $2 && pwd)"
-    QT_LIB_DIR="$3"
-    QT_DATA_DIR="$4"
-    MACDEPLOYQT_EXE="$5"
+
+    if [ "$#" -ge 3 ]; then
+      QT_LIB_DIR="$3"
+      QT_DATA_DIR="$4"
+      MACDEPLOYQT_EXE="$5"
+      SHIP_QT=1
+    else
+      SHIP_QT=0
+    fi
 else
     usage; exit 1
 fi
@@ -39,18 +45,20 @@ if [ -e "$INSTALL_DIR/runSofa" ]; then
     mv -f $INSTALL_DIR/runSofa* $INSTALL_DIR/bin/
 fi
 
-if [ -d "$BUNDLE_DIR" ] && [ -e "$MACDEPLOYQT_EXE" ]; then
-    echo "Fixing up libs with MacDeployQt ..."
-    $MACDEPLOYQT_EXE $BUNDLE_DIR -always-overwrite
+if [ "$SHIP_QT" = "1" ]; then
+  if [ -d "$BUNDLE_DIR" ] && [ -e "$MACDEPLOYQT_EXE" ]; then
+      echo "Fixing up libs with MacDeployQt ..."
+      $MACDEPLOYQT_EXE $BUNDLE_DIR -always-overwrite
 
-    cp -R $BUNDLE_DIR/Contents/PlugIns/* $BUNDLE_DIR/Contents/MacOS/bin && rm -rf $BUNDLE_DIR/Contents/PlugIns
+      cp -R $BUNDLE_DIR/Contents/PlugIns/* $BUNDLE_DIR/Contents/MacOS/bin && rm -rf $BUNDLE_DIR/Contents/PlugIns
 
-    printf "[Paths] \n    Plugins = MacOS/bin \n" > $BUNDLE_DIR/Contents/Resources/qt.conf
-elif [ -d "$QT_DATA_DIR" ]; then
-    cp -Rf $QT_DATA_DIR/plugins/iconengines $INSTALL_DIR/bin
-    cp -Rf $QT_DATA_DIR/plugins/imageformats $INSTALL_DIR/bin
-    cp -Rf $QT_DATA_DIR/plugins/platforms $INSTALL_DIR/bin
-    cp -Rf $QT_DATA_DIR/plugins/styles $INSTALL_DIR/bin
+      printf "[Paths] \n    Plugins = MacOS/bin \n" > $BUNDLE_DIR/Contents/Resources/qt.conf
+  elif [ -d "$QT_DATA_DIR" ]; then
+      cp -Rf $QT_DATA_DIR/plugins/iconengines $INSTALL_DIR/bin
+      cp -Rf $QT_DATA_DIR/plugins/imageformats $INSTALL_DIR/bin
+      cp -Rf $QT_DATA_DIR/plugins/platforms $INSTALL_DIR/bin
+      cp -Rf $QT_DATA_DIR/plugins/styles $INSTALL_DIR/bin
+  fi
 fi
 
 move_metis "$INSTALL_DIR"
@@ -70,6 +78,7 @@ check-all-deps() {
         echo "  Checking (pass $pass) $lib"
 
         libqt=""
+        libpython=""
         libboost=""
         libicu=""
         libglew=""
@@ -83,6 +92,7 @@ check-all-deps() {
 
         is_fixup_needed="false"
         if echo "$dependencies" | grep --quiet "/Qt"       ||
+           echo "$dependencies" | grep --quiet "/Python" ||
            echo "$dependencies" | grep --quiet "/libboost" ||
            echo "$dependencies" | grep --quiet "/libicu"   ||
            echo "$dependencies" | grep --quiet "/libGLEW"  ||
@@ -101,6 +111,8 @@ check-all-deps() {
         (echo "$dependencies") | while read dep; do
             if libqt="$(echo $dep | egrep -o "/Qt[A-Za-z]*$" | cut -c2-)" && [ -n "$libqt" ]; then
                 libname="$libqt"
+            elif libpython="$(echo $dep | egrep -o "/Python.framework.*"  | cut -c2-)" && [ -n "$libpython" ]; then
+                libname="$libpython"
             elif libboost="$(echo $dep | egrep -o "/libboost_[^\/]*?\.dylib" | cut -c2-)" && [ -n "$libboost" ]; then
                 libname="$libboost"
             elif libicu="$(echo $dep | egrep -o "/libicu[^\/]*?\.dylib$" | cut -c2-)" && [ -n "$libicu" ]; then
@@ -135,13 +147,15 @@ check-all-deps() {
                     originlib="$dep"
                     destlib="$INSTALL_DIR/lib/$libname"
                 fi
-                if [ -e $originlib ] && [ ! -e $destlib ]; then
+                if [ -e $originlib ] && [ ! -e $destlib ] && [ -z "$libpython" ]; then
                     echo "    cp -Rf $dep $INSTALL_DIR/lib"
                     cp -Rf $originlib $INSTALL_DIR/lib
                 fi
             elif [[ "$mode" == "fixup" ]]; then
                 if [ -n "$libqt" ]; then
                     rpathlib="$libqt.framework/$libqt"
+                elif [  -n "$libpython" ]; then
+                    rpathlib="$libpython"
                 else
                     rpathlib="$libname"
                 fi

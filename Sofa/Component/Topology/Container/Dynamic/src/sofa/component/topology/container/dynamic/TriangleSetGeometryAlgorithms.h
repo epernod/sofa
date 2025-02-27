@@ -240,7 +240,6 @@ public:
         sofa::type::vector<PointID>& indices,
         Real& baryCoef, Real& coord_kmin) const;
 
-
     /** \brief Computes the intersection between the edges of the Triangle triId and the vector [AB] projected into this Triangle frame.
      * @param ptA : first input point
      * @param ptB : last input point

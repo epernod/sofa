@@ -94,13 +94,13 @@ Node::Node(const std::string& name)
     , configurationSetting(initLink("configurationSetting", "The ConfigurationSetting(s) attached to this node"))
     , shaders(initLink("shaders", "The shaders attached to this node"))
     , visualModel(initLink("visualModel", "The VisualModel(s) attached to this node"))
-    , visualStyle(initLink("visualStyle", "The VisualStyle(s) attached to this node"))
     , visualManager(initLink("visualManager", "The VisualManager(s) attached to this node"))
     , collisionModel(initLink("collisionModel", "The CollisionModel(s) attached to this node"))
     , unsorted(initLink("unsorted", "The remaining objects attached to this node"))
 
     , animationManager(initLink("animationLoop","The AnimationLoop attached to this node (only valid for root node)"))
     , visualLoop(initLink("visualLoop", "The VisualLoop attached to this node (only valid for root node)"))
+    , visualStyle(initLink("visualStyle", "The VisualStyle(s) attached to this node"))
     , topology(initLink("topology", "The Topology attached to this node"))
     , meshTopology(initLink("meshTopology", "The MeshTopology / TopologyContainer attached to this node"))
     , state(initLink("state", "The State attached to this node (storing vectors such as position, velocity)"))
@@ -1024,8 +1024,26 @@ void Node::setSleeping(bool val)
     }
 }
 
+template<class LinkType, class Component>
+void checkAlreadyContains(Node& self, LinkType& link, Component* obj)
+{
+    if constexpr (!LinkType::IsMultiLink)
+    {
+        if (link != obj && link != nullptr)
+        {
+            static const auto componentClassName = Component::GetClass()->className;
+            msg_warning(&self) << "Trying to add a " << componentClassName << " ('"
+                << obj->getName() << "' [" << obj->getClassName() << "] " << obj << ")"
+                << " into the Node '" << self.getPathName()
+                << "', whereas it already contains one ('" << link->getName() << "' [" << link->getClassName() << "] " << link.get() << ")."
+                << " Only one " << componentClassName << " is permitted in a Node. The previous "
+                << componentClassName << " is replaced and the behavior is undefined.";
+        }
+    }
+}
+
 #define NODE_DEFINE_SEQUENCE_ACCESSOR( CLASSNAME, FUNCTIONNAME, SEQUENCENAME ) \
-    void Node::add##FUNCTIONNAME( CLASSNAME* obj ) { SEQUENCENAME.add(obj); } \
+    void Node::add##FUNCTIONNAME( CLASSNAME* obj ) { checkAlreadyContains(*this, SEQUENCENAME, obj); SEQUENCENAME.add(obj); } \
     void Node::remove##FUNCTIONNAME( CLASSNAME* obj ) { SEQUENCENAME.remove(obj); }
 
 NODE_DEFINE_SEQUENCE_ACCESSOR( sofa::core::behavior::BaseAnimationLoop, AnimationLoop, animationManager )
