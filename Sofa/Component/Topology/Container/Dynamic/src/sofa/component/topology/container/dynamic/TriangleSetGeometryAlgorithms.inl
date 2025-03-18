@@ -1955,7 +1955,8 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangulationInte
     EdgeID current_edgeID = sofa::InvalidID;       
     Real current_bary = 0;
     
-    for(;;)
+    sofa::Size cptLoop = 0;
+    while(cptLoop < m_container->getNbTriangles())
     {
         // Get the edges of a the current_triID [AB] that are intersected by Segment [AB]
         sofa::type::vector<EdgeID> intersectedEdges;
@@ -1964,7 +1965,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangulationInte
 
         if (!is_intersected)
         {
-            msg_error() << "No intersection can be found in method computeIncisionPath between input segment A: " << ptA << " - B: " << ptB << " and triangle: " << current_triID;
+            msg_error() << "No intersection can be found in method computeSegmentTriangulationIntersections between input segment A: " << ptA << " - B: " << ptB << " and triangle: " << current_triID;
             return false;
         }
 
@@ -2059,7 +2060,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangulationInte
 
             if (nbrV != 2)
             {
-                msg_error() << "3 intersections have been found in method computeIncisionPath between input segment A: " << ptA << " - B: " << ptB << " and triangle: " << current_triID << ". But the intersection is not going through a vertex. This is not possible!";
+                msg_error() << "3 intersections have been found in method computeSegmentTriangulationIntersections between input segment A: " << ptA << " - B: " << ptB << " and triangle: " << current_triID << ". But the intersection is not going through a vertex. This is not possible!";
                 return false;
             }
 
@@ -2077,7 +2078,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangulationInte
         }
         else if (intersectedEdges.size() > 3)
         {
-            msg_error() << "More than 3 intersections have been found in method computeIncisionPath between input segment A: " << ptA << " - B: " << ptB << " and triangle: " << current_triID << ". This is not possible!";
+            msg_error() << "More than 3 intersections have been found in method computeSegmentTriangulationIntersections between input segment A: " << ptA << " - B: " << ptB << " and triangle: " << current_triID << ". This is not possible!";
             return false;
         }
 
@@ -2119,10 +2120,19 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangulationInte
         }
         else
         {
-            msg_error() << "More than 2 triangles found around edge: "<< current_edgeID << ". Non - Manifold triangulation is not supported by computeIncisionPath method";
+            msg_error() << "More than 2 triangles found around edge: "<< current_edgeID << ". Non - Manifold triangulation is not supported by computeSegmentTriangulationIntersections method";
             return false;
         }
+
+        cptLoop++;
     }
+
+    if (cptLoop >= m_container->getNbTriangles())
+    {
+        msg_error() << "Method computeSegmentTriangulationIntersections reach security loop end";
+        return false;
+    }
+
 
     return !coords_list.empty();
 }
