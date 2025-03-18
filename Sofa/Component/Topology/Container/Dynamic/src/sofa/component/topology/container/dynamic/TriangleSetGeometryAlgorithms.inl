@@ -1992,9 +1992,15 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangulationInte
             const sofa::type::Vec<3, Real> pG{ cG[0], cG[1], cG[2] };
 
             computeSegmentTriangleIntersectionInPlane(pG, ptB, current_triID, tmp_intersectedEdges, tmp_baryCoefs);
-            if (tmp_intersectedEdges.size() != 1) // only one edge should be intersected to find the next edge in cut direction
+            if (tmp_intersectedEdges.empty()) // intersection stay inside the first triangle
+            {
+                triangles_list.push_back(current_triID);
+                break;
+            } 
+            else if (tmp_intersectedEdges.size() != 1) // only one edge should be intersected to find the next edge in cut direction
             {
                 msg_error() << "Impossible to determine cut direction at start due to snapping. Between input segment A: " << ptA << " - B: " << ptB << " and triangle: " << current_triID;
+                msg_error() << "Found tmp_intersectedEdges: " << tmp_intersectedEdges << " with barycoordinates: " << tmp_baryCoefs;
                 return false;
             }
 
@@ -2015,7 +2021,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangulationInte
             current_edgeID = intersectedEdges[nextLocalId];
         }
 
-        
+        std::cout << "Tri: " << current_triID << " |intersectedEdges.size(): " << intersectedEdges.size() << "| intersectedEdges: " << intersectedEdges << " | " << baryCoefs << std::endl;
         if (intersectedEdges.size() == 2) // triangle fully traversed, look for the next edge
         {
             if (current_edgeID == intersectedEdges[0])
@@ -2036,6 +2042,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangulationInte
         }
         else if (intersectedEdges.size() == 3) // triangle fully traversed and going in/out through a vertex
         {
+            
             // double check that one edge is the previous one and the 2 others have a baryCoef equal to 0 or 1
             sofa::Index curLocalId = sofa::InvalidID;
             sofa::Index localNoSnapId = sofa::InvalidID;
@@ -2101,8 +2108,8 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangulationInte
         sofa::type::Vec<3, Real> p1 = { c1[0], c1[1], c1[2] };
 
         // update pA with the intersection point on the new edge 
-        sofa::type::Vec<3, Real> newIntersection = p0 * current_bary + p1 * (1.0 - current_bary);
-        current_point = current_point + (newIntersection - current_point) * 0.8; // add a small threshold to make sure point is out of next triangle
+        //sofa::type::Vec<3, Real> newIntersection = p0 * current_bary + p1 * (1.0 - current_bary);
+        //current_point = current_point + (newIntersection - current_point) * 0.8; // add a small threshold to make sure point is out of next triangle
 
 
         // search for next triangle to be intersected
