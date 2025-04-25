@@ -312,12 +312,12 @@ struct Edge
                 || alpha > 1 || beta > 1 // if alpha > 1 means intersection but after outside from [AB]
                 || (pY - pX).norm2() > EQUALITY_THRESHOLD ) // if pY and pX are not se same means no intersection.
             {
-                intersectionBaryCoord = sofa::type::Vec<2, T>(0, 0);
+                intersectionBaryCoord = sofa::type::Vec<2, T>(1 - alpha, 1 - beta);
                 return false;
             }
             else
             {
-                intersectionBaryCoord = sofa::type::Vec<2, T>(1-alpha, alpha);
+                intersectionBaryCoord = sofa::type::Vec<2, T>(1-alpha, 1- beta);
                 return true;
             }
         }

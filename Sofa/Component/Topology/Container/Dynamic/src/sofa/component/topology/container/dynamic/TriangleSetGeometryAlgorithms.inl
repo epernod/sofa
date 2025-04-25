@@ -1358,6 +1358,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangleIntersect
 
         type::Vec2 baryCoords(type::NOINIT);
         bool res = geometry::Edge::intersectionWithEdge(triP[localIds[0]], triP[localIds[1]], pa_proj, pb_proj, baryCoords);
+
         if (res)
         {
             intersectedEdges.push_back(edgeId);
@@ -2021,7 +2022,7 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangulationInte
             current_edgeID = intersectedEdges[nextLocalId];
         }
 
-        std::cout << "Tri: " << current_triID << " |intersectedEdges.size(): " << intersectedEdges.size() << "| intersectedEdges: " << intersectedEdges << " | " << baryCoefs << std::endl;
+
         if (intersectedEdges.size() == 2) // triangle fully traversed, look for the next edge
         {
             if (current_edgeID == intersectedEdges[0])
@@ -2089,6 +2090,15 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangulationInte
             return false;
         }
 
+        // check that triangle is not already in the list of intersected triangles
+        for (const TriangleID triId : triangles_list)
+        {
+            if (triId == current_triID) // means intersection is trapped in a mesh loop
+            {
+                return false;
+            }
+        }
+
         // Add current triangle into the list of intersected triangles
         triangles_list.push_back(current_triID);
 
@@ -2108,9 +2118,8 @@ bool TriangleSetGeometryAlgorithms< DataTypes >::computeSegmentTriangulationInte
         sofa::type::Vec<3, Real> p1 = { c1[0], c1[1], c1[2] };
 
         // update pA with the intersection point on the new edge 
-        //sofa::type::Vec<3, Real> newIntersection = p0 * current_bary + p1 * (1.0 - current_bary);
-        //current_point = current_point + (newIntersection - current_point) * 0.8; // add a small threshold to make sure point is out of next triangle
-
+        sofa::type::Vec<3, Real> newIntersection = p0 * current_bary + p1 * (1.0 - current_bary);
+        current_point = current_point + (newIntersection - current_point) * 0.8; // add a small threshold to make sure point is out of next triangle
 
         // search for next triangle to be intersected
         sofa::type::vector< TriangleID > triAE = this->m_topology->getTrianglesAroundEdge(current_edgeID);

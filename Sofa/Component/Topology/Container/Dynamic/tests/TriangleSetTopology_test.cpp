@@ -75,6 +75,8 @@ public:
     /// Test on @sa TriangleSetGeometryAlgorithms::computeSegmentTriangulationIntersections method starting/ending on vertices or edges.
     bool testSegmentTriangulationIntersections_snappingBounderies();
 
+    bool testTriangleSegmentIntersectionInPlaneManual();
+
 
 private:
     /// Method to factorize the creation and loading of the @sa m_scene and retrieve Topology container @sa m_topoCon
@@ -614,6 +616,43 @@ bool TriangleSetTopology_test::testTriangleSegmentIntersectionInPlane(const sofa
     return true;
 }
 
+bool TriangleSetTopology_test::testTriangleSegmentIntersectionInPlaneManual()
+{
+    const sofa::type::Vec3 ptA = sofa::type::Vec3(6.31576, 7.76161, 0.043679);
+    const sofa::type::Vec3 ptB = sofa::type::Vec3(7.16151, 8.21362, -0.381549);
+
+    const sofa::type::Vec3 triP0 = sofa::type::Vec3(6.31576, 7.76161, 0.043679); // 260
+    const sofa::type::Vec3 triP1 = sofa::type::Vec3(6.522128, 8.004234, -0.140950); // 701
+    const sofa::type::Vec3 triP2 = sofa::type::Vec3(6.551188, 7.622298, -0.207425); // 404
+    sofa::type::Vec2 baryCoords(sofa::type::NOINIT);
+
+    bool res = sofa::geometry::Edge::intersectionWithEdge(triP0, triP1, ptA, ptB, baryCoords);
+    std::cout << "res0: " << res << " | baryCoords: " << baryCoords << std::endl;
+
+    res = sofa::geometry::Edge::intersectionWithEdge(triP0, triP2, ptA, ptB, baryCoords);
+    std::cout << "res1: " << res << " | baryCoords: " << baryCoords << std::endl;
+
+    res = sofa::geometry::Edge::intersectionWithEdge(triP1, triP2, ptA, ptB, baryCoords);
+    std::cout << "res2: " << res << " | baryCoords: " << baryCoords << std::endl;
+
+    const sofa::type::Vec3 pX = sofa::type::Vec3(6.52947, 7.90768, -0.157755);
+    const sofa::type::Vec3 pY = sofa::type::Vec3(6.57125, 7.89816, -0.084779);
+    std::cout << "(pY - pX).norm2(): " << (pY - pX).norm2() << std::endl;
+
+    sofa::type::Vec3 v_normal0 = (triP2 - triP0).cross(triP1 - triP0);
+    v_normal0.normalize();
+
+    sofa::type::Vec3 v_normal1 = (triP2 - triP0).cross(ptB - triP0);
+    v_normal1.normalize();
+
+    sofa::type::Vec3 resN = v_normal0.cross(v_normal1);
+    std::cout << "v_normal0: " << v_normal0 << std::endl;
+    std::cout << "v_normal1: " << v_normal1 << std::endl;
+    std::cout << "resN: " << resN << std::endl;
+
+    return true;
+}
+
 
 bool TriangleSetTopology_test::testSegmentTriangulationIntersections_simpleCases()
 {
@@ -859,6 +898,11 @@ TEST_F(TriangleSetTopology_test, testSegmentTriangulationIntersections_simpleCas
 TEST_F(TriangleSetTopology_test, testSegmentTriangulationIntersections_snappingBounderies)
 {
     ASSERT_TRUE(testSegmentTriangulationIntersections_snappingBounderies());
+}
+
+TEST_F(TriangleSetTopology_test, testTriangleSegmentIntersectionInPlaneManual)
+{
+    ASSERT_TRUE(testTriangleSegmentIntersectionInPlaneManual());
 }
 
 
