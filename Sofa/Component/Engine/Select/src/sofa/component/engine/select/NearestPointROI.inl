@@ -186,6 +186,10 @@ void NearestPointROI<DataTypes>::computeNearestPointMaps(const VecCoord& x1, con
         msg_error() << "Size mismatch between indices1 and indices2";
         this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
     }
+
+    std::cout << "indices1: " << indices1 << std::endl;
+    std::cout << "indices2: " << indices2 << std::endl;
+    std::cout << "distances: " << distances << std::endl;
 }
 
 
